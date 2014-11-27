@@ -32,18 +32,18 @@ class Connection implements Runnable {
 		/* autoflush */
 		try(
 			PrintWriter   out = new PrintWriter(socket.getOutputStream(), true);
-			//PrintWriter   out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-			//OutputStreamWriter out = new OutputStreamWriter(socket.getOutputStream(), "UTF-8");
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		) {
 			String input, foo = "foo";
 
 			System.err.print("Sending \"" + foo + "\" to " + this + ".\n");
 			out.print("You are " + this + "; " + foo + ".\n");
-			out.flush(); /* <- important! */
+			out.flush(); /* <- important */
 			while((input = in.readLine()) != null) {
 				if(input.length() == 0) break;
+				System.out.print(this + " sent \"" + input + ".\"\n");
 				out.print(this + " sent \"" + input + ".\"\n");
+				out.flush();
 			}
 			out.print("10-4 over and out.\n");
 			out.flush();

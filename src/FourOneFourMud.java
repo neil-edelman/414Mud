@@ -49,6 +49,7 @@ class FourOneFourMud {
 
 	/** Run the mud. */
 	public void run() {
+		/* fixme: try-with-resorces */
 		try {
 			for( ; ; ) {
 				pool.execute(new Connection(serverSocket.accept()));

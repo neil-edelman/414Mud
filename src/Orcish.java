@@ -1,7 +1,8 @@
 import java.util.Random;
 
 /** Random words are useful. Apologies to linguists; this is very crude.
- The strings are loosely based on Orcish from Smaug1.8. */
+ The strings are loosely based on Orcish from Smaug1.8.
+ @author Neil */
 
 class Orcish {
 
@@ -27,12 +28,13 @@ class Orcish {
 		random = new Random();
 	}
 
-	/** get a random word in Orcish */
+	/** get a random word in "Orcish" */
 	public static String get() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(sylables[random.nextInt(sylables.length)]);
 		sb.append(sylables[random.nextInt(sylables.length)]);
 		sb.append(suffixes[random.nextInt(suffixes.length)]);
+		sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
 		return sb.toString();
 	}
 

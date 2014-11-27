@@ -9,9 +9,9 @@ import java.util.concurrent.TimeUnit;
 
 class FourOneFourMud {
 
-	static final int fibonacci20    = 6765;
-	static final int maxConnections = 256;
-	static final int sShutdownTime  = 20;
+	private static final int fibonacci20    = 6765;
+	private static final int maxConnections = 256;
+	private static final int sShutdownTime  = 20;
 
 	/** Starts up the mud and listens for connections.
 	 @param args
@@ -48,11 +48,13 @@ class FourOneFourMud {
 	}
 
 	/** Run the mud. */
-	public void run() {
+	private void run() {
 		/* fixme: try-with-resorces */
 		try {
 			for( ; ; ) {
-				pool.execute(new Connection(serverSocket.accept()));
+				/* if shutdown == true? */
+				/* public void setSoTimeout(int timeout) */
+				pool.execute(new Connection(serverSocket.accept(), this));
 			}
 		} catch (IOException e) {
 			System.err.print("Shutting down all connections: " + e + ".\n");
@@ -60,7 +62,7 @@ class FourOneFourMud {
 		}
 	}
 
-	/** Shutdown the mud; eg, an administrator. */
+	/** Shutdown the mud; eg, an administrator */
 	public void shutdown() {
 
 		/* fixme: notify the players, too! */
@@ -81,11 +83,15 @@ class FourOneFourMud {
 					System.err.print("A thread did not terminate.\n");
 				}
 			}
-		} catch (InterruptedException ie) {
+			/* ??? */
+			serverSocket.close();
+		} catch(InterruptedException ie) {
 			// (Re-)Cancel if current thread also interrupted
 			pool.shutdownNow();
 			// Preserve interrupt status
 			Thread.currentThread().interrupt();
+		} catch (IOException e) {
+			System.err.print("Error with shutdown; " + e + ".\n");
 		}
 	}
 

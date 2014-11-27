@@ -17,13 +17,16 @@ class Connection implements Runnable {
 
 	private final Socket socket;
 	private final String name = Orcish.get();
+	private final FourOneFourMud mud;
+	/* fixme: ip */
 
 	/** Initalize the connection.
 	 @param socket
 		the client socket */
-	Connection(Socket socket) {
+	Connection(Socket socket, FourOneFourMud mud) {
 		System.err.print(this + " initialising.\n");
 		this.socket = socket;
+		this.mud    = mud;
 	}
 
 	/** The server-side handler for connections. */
@@ -39,11 +42,19 @@ class Connection implements Runnable {
 			System.err.print("Sending \"" + foo + "\" to " + this + ".\n");
 			out.print("You are " + this + "; " + foo + ".\n");
 			out.flush(); /* <- important */
+			/* "telnet newline sequence \r\n" <- or this? */
 			while((input = in.readLine()) != null) {
 				if(input.length() == 0) break;
 				System.out.print(this + " sent \"" + input + ".\"\n");
 				out.print(this + " sent \"" + input + ".\"\n");
 				out.flush();
+				/* oops! fixme: you always call shutdown to free up sockets!
+				 this should be out of the loop, mud shutdown is handled in
+				 414Mud::run */
+				if(input.compareToIgnoreCase("shutdown") == 0) {
+					mud.shutdown();
+					break;
+				}
 			}
 			out.print("10-4 over and out.\n");
 			out.flush();

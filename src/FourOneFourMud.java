@@ -1,8 +1,11 @@
 import java.net.ServerSocket;
-import java.util.concurrent.ExecutorService;
+import java.net.SocketException;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.LinkedList;
 
 /** This is the entry-point for starting the mud and listening for connections.
  @author Neil */
@@ -34,6 +37,8 @@ class FourOneFourMud {
 	private final ServerSocket    serverSocket;
 	private final ExecutorService pool;
 
+	private List<Connection> clients;
+
 	/* fixme: whenStarted, name, connected, players, etc . . . */
 
 	/** The entire mud constructor.
@@ -45,53 +50,56 @@ class FourOneFourMud {
 		System.err.print("414Mud starting up.\n");
 		serverSocket = new ServerSocket(port);
 		pool         = Executors.newFixedThreadPool(poolSize);
+		clients      = new LinkedList<Connection>();
 	}
 
 	/** Run the mud. */
 	private void run() {
-		/* fixme: try-with-resorces */
+		/* fixme: how to get try-with-resorces to work? */
 		try {
 			for( ; ; ) {
-				/* if shutdown == true? */
-				/* public void setSoTimeout(int timeout) */
-				pool.execute(new Connection(serverSocket.accept(), this));
+				Connection client = new Connection(serverSocket.accept(), this);
+				clients.add(client);
+				pool.execute(client);
 			}
-		} catch (IOException e) {
-			System.err.print("Shutting down all connections: " + e + ".\n");
+		} catch(SocketException e) {
+			/* this occurs if the serverSocket is closed; fixme: yes, this is
+			 how we shut it down :[ */
+			System.err.print("Shutting down.\n");
+		} catch(IOException e) {
+			System.err.print("Shutting down: " + e + ".\n");
+		} finally {
+			/* reject incoming tasks */
 			pool.shutdown();
+			try {
+				System.err.print("Waiting " + sShutdownTime + "s for clients to terminate.\n");
+				if(!pool.awaitTermination(sShutdownTime, TimeUnit.SECONDS)) {
+					System.err.print("Terminating clients " + sShutdownTime + "s.\n");
+					pool.shutdownNow();
+					if(!pool.awaitTermination(sShutdownTime, TimeUnit.SECONDS)) {
+						System.err.print("A clients did not terminate.\n");
+					}
+				}
+				System.err.print("Server socket closing.\n");
+				serverSocket.close(); // fixme: autoclosable, will already be closed in most sit
+			} catch(InterruptedException ie) {
+				// (Re-)Cancel if current thread also interrupted
+				pool.shutdownNow();
+				// Preserve interrupt status
+				Thread.currentThread().interrupt();
+			} catch(IOException e) {
+				System.err.print("Server socket error. " + e + ".\n");
+			}
 		}
+
 	}
 
-	/** Shutdown the mud; eg, an administrator */
+	/** sets the shutdown flag */
 	public void shutdown() {
-
-		/* fixme: notify the players, too! */
-		System.err.print("Shuting down incoming connections.\n");
-
-		/* reject incoming tasks */
-		pool.shutdown();
-
-		/* from the ExecutorService JavaSE7 docs */
 		try {
-			// Wait a while for existing tasks to terminate
-			System.err.print("Waiting for threads to terminate.\n");
-			if(!pool.awaitTermination(sShutdownTime, TimeUnit.SECONDS)) {
-				System.err.print("Waiting for threads to respond to being terminated.\n");
-				pool.shutdownNow(); // Cancel currently executing tasks
-				// Wait a while for tasks to respond to being cancelled
-				if(!pool.awaitTermination(sShutdownTime, TimeUnit.SECONDS)) {
-					System.err.print("A thread did not terminate.\n");
-				}
-			}
-			/* ??? */
 			serverSocket.close();
-		} catch(InterruptedException ie) {
-			// (Re-)Cancel if current thread also interrupted
-			pool.shutdownNow();
-			// Preserve interrupt status
-			Thread.currentThread().interrupt();
-		} catch (IOException e) {
-			System.err.print("Error with shutdown; " + e + ".\n");
+		} catch(IOException e) {
+			System.err.print("414Mud::shutdown: badness. " + e + ".\n");
 		}
 	}
 

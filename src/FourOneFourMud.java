@@ -94,7 +94,7 @@ class FourOneFourMud {
 
 	}
 
-	/** sets the shutdown flag */
+	/** closes the server; it will detect this, and shutdown */
 	public void shutdown() {
 		try {
 			serverSocket.close();

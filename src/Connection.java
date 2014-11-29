@@ -18,12 +18,14 @@ class Connection implements Runnable {
 	private final Socket socket;
 	private final String name = Orcish.get();
 	private final FourOneFourMud mud;
+	private PrintWriter   out;
+	private BufferedReader in;
 	/* fixme: ip */
 
 	/** Initalize the connection.
 	 @param socket
 		the client socket */
-	Connection(Socket socket, FourOneFourMud mud) {
+	Connection(final Socket socket, final FourOneFourMud mud) {
 		System.err.print(this + " initialising.\n");
 		this.socket = socket;
 		this.mud    = mud;
@@ -37,20 +39,17 @@ class Connection implements Runnable {
 			PrintWriter   out = new PrintWriter(socket.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		) {
+			this.out = out;
+			this.in  = in;
+
 			String input, foo = "foo";
 
-			System.err.print("Sending \"" + foo + "\" to " + this + ".\n");
-			out.print("You are " + this + "; " + foo + ".\n");
-			out.flush(); /* <- important */
-			/* "telnet newline sequence \r\n" <- or this? */
-			while((input = in.readLine()) != null) {
+			//System.err.print("Sending \"" + foo + "\" to " + this + ".\n");
+			this.sendTo("You are " + this + "; " + foo + ".\n");
+			while((input = this.getFrom()) != null) {
 				if(input.length() == 0) break;
 				System.out.print(this + " sent \"" + input + ".\"\n");
-				out.print(this + " sent \"" + input + ".\"\n");
-				out.flush();
-				/* oops! fixme: you always call shutdown to free up sockets!
-				 this should be out of the loop, mud shutdown is handled in
-				 414Mud::run */
+				this.sendTo(this + " sent \"" + input + ".\"\n");
 				if(input.compareToIgnoreCase("shutdown") == 0) {
 					mud.shutdown();
 					break;
@@ -63,7 +62,28 @@ class Connection implements Runnable {
 			System.err.print(this + " doesn't like UTF-8 " + e + ".\n");
 		} catch(IOException e) {
 			System.err.print(this + " " + e + ".\n");
+		} finally {
+			this.out = null;
+			this.in  = null;
 		}
+	}
+
+	/** Send a message to the connection.
+	 @param message
+		The message. */
+	public void sendTo(final String message) {
+		/* "telnet newline sequence \r\n" <- or this? */
+		if(out == null) return;
+		out.print(message);
+		out.flush();
+		System.err.print("Sending " + this + ": " + message);
+	}
+
+	/** Wait for a message from the connection.
+	 @return The message. */
+	public String getFrom() throws IOException {
+		if(in == null) return null;
+		return in.readLine();
 	}
 
 	public String toString() {

@@ -1,10 +1,12 @@
+package main;
+
 import java.util.Random;
 
 /** Random words are useful. Apologies to linguists; this is very crude.
  The strings are loosely based on Orcish from Smaug1.8.
  @author Neil */
 
-class Orcish {
+public class Orcish {
 
 	private static final String sylables[] = {
 		"uk", "all", "uk", "ul", "um", "orc", "uruk", "ee", "ou", "eth", "om",
@@ -28,7 +30,7 @@ class Orcish {
 		random = new Random();
 	}
 
-	/** get a random word in "Orcish" */
+	/** @return Get a random word in "Orcish." */
 	public static String get() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(sylables[random.nextInt(sylables.length)]);

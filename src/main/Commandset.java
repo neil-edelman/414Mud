@@ -33,7 +33,7 @@ public class Commandset {
 	}
 
 	private static void exit(final Connection c, final String arg) {
-		//System.err.print(c + " has exited.%n");
+		//System.err.print(c + " has exited.\n");
 		Player p = c.getPlayer();
 		if(p != null) p.sendToRoom(p + " has suddenly vashished.");
 		c.sendTo("Goodbye.");
@@ -43,7 +43,7 @@ public class Commandset {
 	private static void say(final Connection c, final String arg) {
 		Player p = c.getPlayer();
 		if(p == null) return;
-		//System.out.print(c + ": " + arg + "%n");
+		//System.out.print(c + ": " + arg + "\n");
 		c.sendTo("You say, \"" + arg + "\"");
 		p.sendToRoom(p + " says \"" + arg + "\"");
 	}
@@ -102,7 +102,7 @@ public class Commandset {
 		/* passed the grammar police */
 		Player p = new Player(c, arg);
 		c.setPlayer(p);
-		System.err.print(c + " has created " + arg + ".%n");
+		System.err.print(c + " has created " + arg + ".\n");
 		c.sendTo("You create a character named " + arg + "!");
 
 		Room r = c.getMud().getUniverse();
@@ -151,7 +151,7 @@ public class Commandset {
 		Player p = c.getPlayer();
 		if(p == null) return;
 
-		System.out.print(c + " initated shutdown.%n");
+		System.out.print(c + " initated shutdown.\n");
 
 		String s = p + " initiated shutdown!";
 		for(Connection everyone : c.getMud()) {
@@ -160,7 +160,7 @@ public class Commandset {
 			try {
 				everyone.getSocket().close();
 			} catch(IOException e) {
-				System.err.format("%s just wouldn't close: %s.%n", everyone, e);
+				System.err.format("%s just wouldn't close: %s.\n", everyone, e);
 			}
 		}
 
@@ -180,7 +180,7 @@ public class Commandset {
 		}
 		p.sendToRoom("A glorious light surronds " + p + " as they ascend.");
 		c.setImmortal();
-		System.err.print(c + " has ascended.%n");
+		System.err.print(c + " has ascended.\n");
 		c.sendTo("You are now an immortal; type 'help' for new commands.");
 	}
 
@@ -308,7 +308,7 @@ public class Commandset {
 		try {
 			commands.put(command, this.getClass().getDeclaredMethod(method, Connection.class, String.class));
 		} catch(NoSuchMethodException e) {
-			System.err.format("%s: %s!%n", this, e);
+			System.err.format("%s: %s!\n", this, e);
 		}
 	}
 
@@ -320,7 +320,7 @@ public class Commandset {
 	public void interpret(final Connection c, final String command) {
 		String cmd, arg;
 
-		//System.err.print(c + " running Command::interpret: " + command + ".%n");
+		//System.err.print(c + " running Command::interpret: " + command + ".\n");
 
 		/* break the string up (fixme: I suppose would could be pedantic and
 		 make it any white space; more difficult) */
@@ -345,8 +345,8 @@ public class Commandset {
 				 "object is not an instance of declaring class" whatev */
 				run.invoke(null, c, arg);
 			} catch(Exception e) {
-				c.sendTo("Can't do that.%n");
-				System.err.print(c + " input '" + command + "' which: " + e + ".%n");
+				c.sendTo("Can't do that.\n");
+				System.err.print(c + " input '" + command + "' which: " + e + ".\n");
 			}
 		}
 	}

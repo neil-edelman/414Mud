@@ -45,12 +45,12 @@ public class Connection implements Runnable {
 		this.socket   = socket;
 		this.mud      = mud;
 		this.buffer   = new char[bufferSize];
-		System.err.print(this + " has connected to " + mud + ".%n");
+		System.err.print(this + " has connected to " + mud + ".\n");
 	}
 
 	/** The server-side handler for connections. */
 	public void run() {
-		//System.err.print(this + " up and running, waiting for character creation.%n");
+		//System.err.print(this + " up and running, waiting for character creation.\n");
 		try(
 			PrintWriter   out = new PrintWriter(socket.getOutputStream(), true /* autoflush (doesn't work) */);
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -62,7 +62,7 @@ public class Connection implements Runnable {
 			this.out = out;
 			this.in  = in;
 
-			System.err.print("Sending MOTD to " + this + ".%n");
+			System.err.print("Sending MOTD to " + this + ".\n");
 			this.sendTo(mud.getMotd());
 			this.sendTo("");
 			this.sendTo(mud.getName() + ": you are " + this + "; type 'create <Character>' to start.");
@@ -81,13 +81,13 @@ public class Connection implements Runnable {
 			mud.deleteClient(this);
 
 		} catch(UnsupportedEncodingException e) {
-			System.err.format("%s doesn't like UTF-8: %s.%n", this, e);
+			System.err.format("%s doesn't like UTF-8: %s.\n", this, e);
 		} catch(SocketException e) {
 			/* this is usual: input is blocked on the socket, so we close the
 			 socket to signal that we're done */
-			System.err.format("%s shutting down.%n", this);
+			System.err.format("%s shutting down.\n", this);
 		} catch(IOException e) {
-			System.err.format("%s: %s.%n", this, e);
+			System.err.format("%s: %s.\n", this, e);
 		} finally {
 			this.out = null;
 			this.in  = null;
@@ -99,11 +99,11 @@ public class Connection implements Runnable {
 	 @param message
 		The message. */
 	public void sendTo(final String message) {
-		/* "telnet newline sequence \r%n" <- or this? */
+		/* "telnet newline sequence \r\n" <- or this? */
 		if(out == null) return;
-		out.print(message + "%n");
+		out.print(message + "\n");
 		out.flush();
-		//System.err.print("Sending " + this + ": " + message + "%n");
+		//System.err.print("Sending " + this + ": " + message + "\n");
 	}
 
 	/** Wait for a message from the connection. Ignores characters beyond
@@ -118,12 +118,12 @@ public class Connection implements Runnable {
 		if(no >= bufferSize) {
 			/* it will never be > bufferSize, I'm just being paranoid */
 			no = bufferSize;
-			//System.err.print("Skipping characters.%n");
+			//System.err.print("Skipping characters.\n");
 			//if(in.ready()) in.readLine(); /* <- fixme: still allocating mem :[ */
 			while(in.ready()) in.skip(1);   /* <- fixme: O(n); hack! */
 		}
 		String input = new String(buffer, 0, no).trim();
-		//System.err.print(this + ".getFrom: " + input + "%n");
+		//System.err.print(this + ".getFrom: " + input + "\n");
 
 		return input;
 	}

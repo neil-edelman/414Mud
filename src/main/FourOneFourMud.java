@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.FileSystems;
 
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 import entities.Room;
 import entities.Object;
@@ -31,12 +32,12 @@ public class FourOneFourMud implements Iterable<Connection> {
 	private static final int fibonacci20    = 6765;
 	private static final int sStartupDelay  = 2;
 	private static final int sShutdownTime  = 10;
-	private static final int sPeriod        = 1;
+	private static final int sPeriod        = 3;
 
 	private static final Runnable chonos = new Runnable() {
 		/* one time step */
 		public void run() {
-			System.out.println("Hello world");
+			System.out.print("<Bump>\n");
 		}
 	};
 
@@ -88,9 +89,30 @@ public class FourOneFourMud implements Iterable<Connection> {
 			return;
 		}
 
+		/* start the timer */
+		System.err.print("Starting timer.\n");
+		ScheduledFuture<?> future = mud.timer.scheduleAtFixedRate(chonos, sStartupDelay, sPeriod, TimeUnit.SECONDS);
+
 		mud.run();
 
+		System.err.print("Stopping timer.\n");
+		future.cancel(false);
+		mud.timer.shutdown();
+		try {
+			if(!mud.timer.awaitTermination(sShutdownTime, TimeUnit.SECONDS)) {
+				mud.timer.shutdownNow();
+				if(!mud.timer.awaitTermination(sShutdownTime, TimeUnit.SECONDS)) {
+					System.err.print("The timer would not terminate.\n");
+				}
+			}
+		} catch (InterruptedException e) {
+			System.err.print("Terminating timer.");
+			mud.timer.shutdownNow();
+			Thread.currentThread().interrupt();
+		}
+
 		mud.shutdown();
+		System.err.format("%s is shutdown.\n", name);
 
 	}
 
@@ -118,9 +140,6 @@ public class FourOneFourMud implements Iterable<Connection> {
 		serverSocket = new ServerSocket(port);
 		pool         = Executors.newFixedThreadPool(poolSize);
 		centerOfUniverse = load(area);
-
-		/* start the timer */
-		timer.scheduleAtFixedRate(chonos, sStartupDelay, sPeriod, TimeUnit.SECONDS);
 	}
 
 	/** Run the mud. */
@@ -177,7 +196,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 		try {
 			serverSocket.close();
 		} catch(IOException e) {
-			System.err.format("414Mud::shutdown: badness. %s.\n", e);
+			System.err.format("%s::shutdown: badness. %s.\n", name, e);
 		}
 	}
 

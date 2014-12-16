@@ -16,6 +16,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.FileSystems;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
@@ -76,6 +79,31 @@ public class FourOneFourMud implements Iterable<Connection> {
 		System.err.print("Set max connections: " + maxConnections + ".\n");
 		System.err.print("Set the secret password for becoming an Immortal: <" + password + ">.\n");
 		System.err.print("Set MOTD: <" + motd + ">.\n");
+
+		/* read in areas */
+		//path = FileSystems.getDefault().getPath("data", "areas");
+
+		File dir = new File("data/areas");
+		if(!dir.exists() || !dir.isDirectory()) {
+			System.err.print("data/areas is not a thing.\n");
+		} else {
+			File files[] = dir.listFiles(new FilenameFilter() {
+				public boolean accept(File current, String name) { return name.endsWith(".area"); }
+			});
+			for(File f : files) {
+				System.err.print("> " + f + "\n");
+			}
+		}
+/*try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+String line;
+if((line = reader.readLine()) != null) name     = line;
+if((line = reader.readLine()) != null) port     = Integer.parseInt(line);
+if((line = reader.readLine()) != null) maxConnections = Integer.parseInt(line);
+if((line = reader.readLine()) != null) password = line;
+if((line = reader.readLine()) != null) motd     = line;
+} catch(IOException e) {
+System.err.format("IOException: %s.\n", e);
+}*/
 
 		/* run mud */
 

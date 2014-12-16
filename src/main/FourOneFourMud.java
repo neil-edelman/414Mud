@@ -11,11 +11,12 @@ import java.util.LinkedList;
 import java.util.Iterator;
 
 import java.io.BufferedReader;
-//import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.FileSystems;
+
+import java.util.concurrent.ScheduledExecutorService;
 
 import entities.Room;
 import entities.Object;
@@ -28,7 +29,16 @@ import main.Connection;
 public class FourOneFourMud implements Iterable<Connection> {
 
 	private static final int fibonacci20    = 6765;
+	private static final int sStartupDelay  = 2;
 	private static final int sShutdownTime  = 10;
+	private static final int sPeriod        = 1;
+
+	private static final Runnable chonos = new Runnable() {
+		/* one time step */
+		public void run() {
+			System.out.println("Hello world");
+		}
+	};
 
 	private static final String area        = "troter.area"; /* fixme: not used */
 
@@ -84,6 +94,8 @@ public class FourOneFourMud implements Iterable<Connection> {
 
 	}
 
+	private ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
+
 	private final ServerSocket    serverSocket;
 	private final ExecutorService pool;
 
@@ -106,6 +118,9 @@ public class FourOneFourMud implements Iterable<Connection> {
 		serverSocket = new ServerSocket(port);
 		pool         = Executors.newFixedThreadPool(poolSize);
 		centerOfUniverse = load(area);
+
+		/* start the timer */
+		timer.scheduleAtFixedRate(chonos, sStartupDelay, sPeriod, TimeUnit.SECONDS);
 	}
 
 	/** Run the mud. */

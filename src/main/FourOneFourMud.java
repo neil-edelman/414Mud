@@ -27,45 +27,53 @@ import main.Connection;
 
 public class FourOneFourMud implements Iterable<Connection> {
 
-	private static final int fibonacci20    = 6765; /* fixme: should be variable */
-	private static final int maxConnections = 256;
+	private static final int fibonacci20    = 6765;
 	private static final int sShutdownTime  = 10;
 
 	private static final String area        = "troter.area"; /* fixme: not used */
 
-	private static String name     = "414Mud";
-	private static String password = "";
-	private static String motd     = "Hello.";
+	private static String name        = "414Mud";
+	private static String password    = "";
+	private static String motd        = "Hello.";
 
 	/** Starts up the mud and listens for connections.
 	 @param args
 		for future use */
 	public static void main(String args[]) {
+		int port = fibonacci20, maxConnections = 256;
 
-		if(args.length <= 0) System.err.print("java main.FourOneFourMud [<mud name> [<set password> [<motd>]]]");
+		/* read in settings */
+
+		/*if(args.length <= 0) System.err.print("java main.FourOneFourMud [<mud name> [<set password> [<motd>]]]");
 		if(args.length >= 1) name     = args[0];
 		if(args.length >= 2) password = args[1];
-		if(args.length >= 3) motd     = args[2];
-		System.err.print("Set MUD name: <" + name + ">.\n");
-		System.err.print("Set the secret password for becoming an Immortal: <" + password + ">.\n");
-		System.err.print("Set MOTD: <" + motd + ">.\n");
+		if(args.length >= 3) motd     = args[2];*/
 
 		Path path = FileSystems.getDefault().getPath("data", "mud");
 		try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				System.out.println(line);
-			}
-		} catch (IOException e) {
+			String line;
+			if((line = reader.readLine()) != null) name     = line;
+			if((line = reader.readLine()) != null) port     = Integer.parseInt(line);
+			if((line = reader.readLine()) != null) maxConnections = Integer.parseInt(line);
+			if((line = reader.readLine()) != null) password = line;
+			if((line = reader.readLine()) != null) motd     = line;
+		} catch(IOException e) {
 			System.err.format("IOException: %s.\n", e);
 		}
+
+		System.err.print("Set MUD: <" + name + " : " + port + ">.\n");
+		System.err.print("Set max connections: " + maxConnections + ".\n");
+		System.err.print("Set the secret password for becoming an Immortal: <" + password + ">.\n");
+		System.err.print("Set MOTD: <" + motd + ">.\n");
+
+		/* run mud */
 
 		FourOneFourMud mud;
 
 		try {
-			mud = new FourOneFourMud(fibonacci20, maxConnections);
-		} catch (IOException e) {
-			System.err.print("Connection wouldn't complete: " + e + ".\n");
+			mud = new FourOneFourMud(port, maxConnections);
+		} catch(IOException e) {
+			System.err.format("Connection wouldn't complete: %s.\n", e);
 			/* deal-breaker */
 			return;
 		}
@@ -113,9 +121,9 @@ public class FourOneFourMud implements Iterable<Connection> {
 		} catch(SocketException e) {
 			/* this occurs if the serverSocket is closed; yes, this is how we
 			 shut it down :[ */
-			System.err.print(this + " shutting down.\n");
+			System.err.format("%s shutting down.\n", this);
 		} catch(IOException e) {
-			System.err.print("Shutting down: " + e + ".\n");
+			System.err.format("Shutting down: %s.\n", e);
 		} finally {
 			/* reject incoming tasks */
 			pool.shutdown();
@@ -136,7 +144,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 				// Preserve interrupt status
 				Thread.currentThread().interrupt();
 			} catch(IOException e) {
-				System.err.print("Server socket error. " + e + ".\n");
+				System.err.format("Server socket error. %s.\n", e);
 			}
 		}
 
@@ -154,7 +162,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 		try {
 			serverSocket.close();
 		} catch(IOException e) {
-			System.err.print("414Mud::shutdown: badness. " + e + ".\n");
+			System.err.format("414Mud::shutdown: badness. %s.\n", e);
 		}
 	}
 

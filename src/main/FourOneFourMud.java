@@ -21,7 +21,7 @@ import java.util.concurrent.ScheduledFuture;
 
 import entities.Room;
 import entities.Object;
-import entities.NPC;
+import entities.Mob;
 import main.Connection;
 import main.Area;
 
@@ -75,17 +75,8 @@ public class FourOneFourMud implements Iterable<Connection> {
 		System.err.print("Set MOTD: <" + motd + ">.\n");
 
 		/* read in areas */
+
 		Area.loadAreas(areasDir);
-/*try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-String line;
-if((line = reader.readLine()) != null) name     = line;
-if((line = reader.readLine()) != null) port     = Integer.parseInt(line);
-if((line = reader.readLine()) != null) maxConnections = Integer.parseInt(line);
-if((line = reader.readLine()) != null) password = line;
-if((line = reader.readLine()) != null) motd     = line;
-} catch(IOException e) {
-System.err.format("IOException: %s.\n", e);
-}*/
 
 		/* run mud */
 
@@ -237,7 +228,7 @@ System.err.format("IOException: %s.\n", e);
 		Room a1 = new Room("stairs", "North-West stairs.", "The base of the stairs.");
 		Room a1u = new Room("stairs", "North-West stairs.", "There is construction and the stairs to the outside are blocked.");
 		Room a2 = new Room("snack", "Snack counter.", "There is a snack counter here.");
-		NPC woman = new NPC("woman", "A smiling woman waits here to take your order.", /*friendly*/true, /*xeno*/false);
+		Mob woman = new Mob("woman", "A smiling woman waits here to take your order.", /*friendly*/true, /*xeno*/false);
 		woman.transportTo(a2);
 		Room a3 = new Room("tunnel", "Tunnel to MacDonald-Stewart", "The tunnel is locked for the night.");
 		Object vending = new Object("vending", "A vending-machine is here.", /*break*/true, /*trans*/false);

@@ -16,9 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.FileSystems;
 
-import java.io.File;
-import java.io.FilenameFilter;
-
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
@@ -26,6 +23,7 @@ import entities.Room;
 import entities.Object;
 import entities.NPC;
 import main.Connection;
+import main.Area;
 
 /** This is the entry-point for starting the mud and listening for connections.
  @author Neil */
@@ -36,6 +34,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 	private static final int sStartupDelay  = 2;
 	private static final int sShutdownTime  = 10;
 	private static final int sPeriod        = 3;
+	private static final String areasDir    = "data/areas";
 
 	private static final Runnable chonos = new Runnable() {
 		/* one time step */
@@ -58,11 +57,6 @@ public class FourOneFourMud implements Iterable<Connection> {
 
 		/* read in settings */
 
-		/*if(args.length <= 0) System.err.print("java main.FourOneFourMud [<mud name> [<set password> [<motd>]]]");
-		if(args.length >= 1) name     = args[0];
-		if(args.length >= 2) password = args[1];
-		if(args.length >= 3) motd     = args[2];*/
-
 		Path path = FileSystems.getDefault().getPath("data", "mud");
 		try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 			String line;
@@ -81,19 +75,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 		System.err.print("Set MOTD: <" + motd + ">.\n");
 
 		/* read in areas */
-		//path = FileSystems.getDefault().getPath("data", "areas");
-
-		File dir = new File("data/areas");
-		if(!dir.exists() || !dir.isDirectory()) {
-			System.err.print("data/areas is not a thing.\n");
-		} else {
-			File files[] = dir.listFiles(new FilenameFilter() {
-				public boolean accept(File current, String name) { return name.endsWith(".area"); }
-			});
-			for(File f : files) {
-				System.err.print("> " + f + "\n");
-			}
-		}
+		Area.loadAreas(areasDir);
 /*try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 String line;
 if((line = reader.readLine()) != null) name     = line;

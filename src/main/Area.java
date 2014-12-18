@@ -9,14 +9,11 @@
 
 package main;
 
-import java.io.BufferedReader;
-import java.io.LineNumberReader;
-import java.lang.StringBuilder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
@@ -29,8 +26,8 @@ import java.util.Collections;
 
 import java.lang.reflect.Method;
 
+import main.MoreReader;
 import entities.*;
-import entities.Object;
 
 class Area {
 
@@ -204,38 +201,6 @@ class Area {
 		}
 	}
 
-	/** LineNumberReader with nextLine, etc. */
-	private class MudReader extends LineNumberReader {
-		public MudReader(BufferedReader in) {
-			super(in);
-			setLineNumber(1);
-		}
-		public String nextLine() throws NoSuchElementException, IOException {
-			String line = this.readLine();
-			if(line == null) throw new NoSuchElementException("unexpected eof");
-			return line;
-		}
-		public void assertLine(final String asrt) throws IOException, Exception {
-			String line = nextLine();
-			if(asrt.compareTo(line) != 0) throw new Exception("expected " + asrt);
-		}
-		public String nextParagraph() throws NoSuchElementException, IOException {
-			boolean       isFirst = true;
-			StringBuilder sb = new StringBuilder(256);
-			String        str;
-			for( ; ; ) {
-				if((str = nextLine()).length() <= 0) break;
-				if(isFirst) {
-					isFirst = false;
-				} else {
-					sb.append(" ");
-				}
-				sb.append(str);
-			}
-			return sb.toString();
-		}
-	}
-
 	private String             title   = "Untitled";
 	private String             author  = "Unauthored";
 	private Map<String, Stuff> stuff   = new HashMap<String, Stuff>();
@@ -245,7 +210,7 @@ class Area {
 		String recallStr = null;
 
 		try(
-			MudReader in = new MudReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
+			MoreReader in = new MoreReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
 		) {
 			Scanner scan;
 			String word, line;
@@ -287,7 +252,7 @@ class Area {
 						line = in.nextLine();
 						ObjectFlags.apply(line, flags);
 						//System.err.print(id + ": isB " + flags[0] + "; isT " + flags[1] + "; toLine: <" + ObjectFlags.toLine(flags) + ">.\n");
-						stuff.put(id, new Object(name, title, flags[0], flags[1]));
+						stuff.put(id, new entities.Object(name, title, flags[0], flags[1]));
 						break;
 					case CHARACTER:
 					case CONTAINER:

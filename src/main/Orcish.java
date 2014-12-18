@@ -2,7 +2,7 @@
  the GNU General Public License, see copying.txt
  
  Tolkienised random words are useful:
- < http://en.wikipedia.org/wiki/Languages_constructed_by_J._R._R._Tolkien >.
+ @link{http://en.wikipedia.org/wiki/Languages_constructed_by_J._R._R._Tolkien}.
  
  @author Neil
  @version 1.1
@@ -11,9 +11,6 @@
 package main;
 
 import java.util.Random;
-
-/** 
- @author Neil */
 
 public class Orcish {
 
@@ -51,7 +48,7 @@ public class Orcish {
 
 	private static Random random = new Random();
 
-	/** @return Get a random word in "Orcish." */
+	/** @return Get a random word in psudo-Orcish. */
 	public static String get() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(sylables[random.nextInt(sylables.length)]);

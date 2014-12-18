@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
 public class MoreReader extends LineNumberReader {
 	/** Creates a new MudReader wrapping around BufferedReader.
 	 @param in
-	 The BufferedReader. */
+		The BufferedReader. */
 	public MoreReader(BufferedReader in) {
 		super(in);
 		setLineNumber(1);

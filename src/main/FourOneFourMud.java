@@ -54,6 +54,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 	private static String homearea    = "";
 	private static String password    = "";
 	private static String motd        = "Hello.";
+	private static Room   homeroom;
 
 	/** Starts up the mud and listens for connections.
 	 @param args
@@ -84,6 +85,8 @@ public class FourOneFourMud implements Iterable<Connection> {
 		/* read in areas */
 
 		Area.loadAreas(areasDir);
+		homeroom = Area.getArea(homearea).getRecall();
+		System.err.print("Set home room: <" + homeroom + ">.\n");
 
 		/* run mud */
 
@@ -131,7 +134,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 
 	private List<Connection> clients = new LinkedList<Connection>();
 
-	private Room centerOfUniverse;
+	//private Room centerOfUniverse;
 
 	/* fixme: whenStarted, name-done, connected-done, players-done, etc . . . */
 
@@ -147,7 +150,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 						 + "; FixedThreadPool size " + poolSize + ".\n");
 		serverSocket = new ServerSocket(port);
 		pool         = Executors.newFixedThreadPool(poolSize);
-		centerOfUniverse = load();
+		//centerOfUniverse = load();
 	}
 
 	/** Run the mud. */
@@ -214,6 +217,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 	}
 
 	/* hack: load from file; this is how Burnside is laid out in my imagination */
+/* unused!!! */
 	private Room load() {
 		//////////////////////////////////////////////
 		/* fixme: Map<String, Stuff> load() */ //<---
@@ -324,7 +328,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 
 	/** @return The place you start. */
 	public Room getUniverse() {
-		return this.centerOfUniverse;
+		return homeroom;//this.centerOfUniverse;
 	}
 
 	/** @param p

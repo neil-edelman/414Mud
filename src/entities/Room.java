@@ -9,6 +9,10 @@
 
 package entities;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
+
 import java.util.List;
 import java.util.LinkedList;
 import java.lang.reflect.Field;
@@ -25,16 +29,19 @@ public class Room extends Stuff {
 		private Direction(final String name/*, final Direction back, "illegal forward reference" */) {
 			this.name = name;
 		}
-		private String    name;
-		private Direction back;
-		private static Field     room;
+		private String       name;
+		private Direction    back;
+		private static Field room;
+		private static final Map<String, Direction> map;
 		static {
+			/* back */
 			N.back = S;
 			S.back = N;
 			E.back = W;
 			W.back = E;
 			U.back = D;
 			D.back = U;
+			/* room */
 			try {
 				N.room = Room.class.getDeclaredField("n");
 				E.room = Room.class.getDeclaredField("e");
@@ -45,6 +52,10 @@ public class Room extends Stuff {
 			} catch(NoSuchFieldException e) {
 				System.err.print("Direction: impossible; " + e + ".\n");
 			}
+			/* map */
+			Map<String, Direction> mod = new HashMap<String, Direction>();
+			for(Direction d : values()) mod.put(d.name(), d);
+			map = Collections.unmodifiableMap(mod);
 		}
 		public  Direction getBack() { return back; }
 		private Room      getRoom(Room r) {
@@ -67,7 +78,8 @@ public class Room extends Stuff {
 			}
 			return null;
 		}
-		public String toString() { return name; }
+		public String toString()                       { return name; }
+		public static Direction find(final String str) { return map.get(str); }
 	};
 
 	@Override

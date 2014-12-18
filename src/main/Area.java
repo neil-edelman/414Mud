@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.lang.String;
 
 import java.util.Scanner;
+import java.util.Collections;
 
 import entities.*;
 import entities.Object;
@@ -79,23 +80,33 @@ class Area {
 
 	/* these are weak */
 
-	private enum MobFlags {
+	private interface Flags {
+		void apply(final String line, boolean bv[]);
+	}
+	private enum MobFlags /* implements Flags*/ {
 		FRIENDLY("friendly"),
 		XENO("xeno");
 		private String symbol;
-		private static final Map<String, MobFlags> back = new HashMap<String, MobFlags>();
+		private static final Map<String, MobFlags> map;
 		static {
-			back.put("friendly", FRIENDLY);
-			back.put("xeno", XENO);
-			/* etc; fixme: find out how to get this in constuctor */
+			/* populate map */
+			Map<String, MobFlags> mod = new HashMap<String, MobFlags>();
+			for(MobFlags f : values()) mod.put(f.symbol, f);
+			map = Collections.unmodifiableMap(mod);
 		}
-		private MobFlags(final String symbol) {
-			this.symbol = symbol;
-			//back.put(symbol, this);
+		private MobFlags(final String symbol) { this.symbol = symbol; }
+		public static void apply(final String line, boolean bv[]) throws Exception {
+			MobFlags sym;
+			String toks[] = line.trim().split("\\s++"); /* split on whitespace */
+			for(String tok : toks) {
+				System.err.println("tok: " + tok);
+				if((sym = map.get(tok)) == null) throw new Exception("unrecongnised " + tok);
+				bv[sym.ordinal()] = true;
+			}
 		}
 		public static void set(final String str, Boolean isFriendly, Boolean isXeno) throws Exception {
 			MobFlags f;
-			if((f = back.get(str)) == null) throw new Exception("unrecongnised " + str);
+			if((f = map.get(str)) == null) throw new Exception("unrecongnised " + str);
 			switch(f) {
 				case FRIENDLY:
 					isFriendly = true;
@@ -238,8 +249,11 @@ class Area {
 						stuff.put(id, new Room(name, title, desc));
 						break;
 					case MOB:
+						boolean flags[] = new boolean[2];
 						no++;
-						scanLine = new Scanner(in.nextLine());
+						String str = in.nextLine();
+						MobFlags.apply(str, flags);
+						/*scanLine = new Scanner(in.nextLine());
 						boolean isF = false, isX = false;
 						while(scanLine.hasNext()) {
 							word = scanLine.next();
@@ -249,9 +263,9 @@ class Area {
 							} catch(Exception e) {
 								System.err.format("%s: line %d; %s.\n", file, no, e);
 							}
-						}
-						System.err.print("isF " + isF + " isX " + isX + "\n");
-						stuff.put(id, new Mob(name, title, isF, isX));
+						}*/
+						System.err.print("isF " + flags[0] + " isX " + flags[1] + "\n");
+						stuff.put(id, new Mob(name, title, flags[0], flags[1]));
 						break;
 					case OBJECT:
 						no++;

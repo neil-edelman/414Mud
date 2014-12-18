@@ -43,9 +43,8 @@ public class FourOneFourMud implements Iterable<Connection> {
 		}
 	};
 
-	private static final String area        = "troter.area"; /* fixme: not used */
-
 	private static String name        = "414Mud";
+	private static String homearea    = "";
 	private static String password    = "";
 	private static String motd        = "Hello.";
 
@@ -61,6 +60,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 		try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
 			String line;
 			if((line = reader.readLine()) != null) name     = line;
+			if((line = reader.readLine()) != null) homearea = line;
 			if((line = reader.readLine()) != null) port     = Integer.parseInt(line);
 			if((line = reader.readLine()) != null) maxConnections = Integer.parseInt(line);
 			if((line = reader.readLine()) != null) password = line;
@@ -140,7 +140,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 						 + "; FixedThreadPool size " + poolSize + ".\n");
 		serverSocket = new ServerSocket(port);
 		pool         = Executors.newFixedThreadPool(poolSize);
-		centerOfUniverse = load(area);
+		centerOfUniverse = load();
 	}
 
 	/** Run the mud. */
@@ -207,7 +207,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 	}
 
 	/* hack: load from file; this is how Burnside is laid out in my imagination */
-	private Room load(String area) {
+	private Room load() {
 		//////////////////////////////////////////////
 		/* fixme: Map<String, Stuff> load() */ //<---
 

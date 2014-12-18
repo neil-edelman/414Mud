@@ -1,7 +1,7 @@
 /** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
  the GNU General Public License, see copying.txt
  
- I was lazy, LineNumberReader always checking for error conditions.
+ I was lazy, LineNumberReader always checking for error conditions; made my own.
  
  @author Neil
  @version 1.1
@@ -25,33 +25,33 @@ public class MoreReader extends LineNumberReader {
 	}
 	/** Like {@see BufferedReader#readLine}, but throws an exception when
 	 the line isn't there.
-	 @throws NoSuchElementException
-	 The file has ended.
+	 @throws ParseException
+		The file has ended.
 	 @throws IOException
-	 Underlying readLine.
+		Underlying readLine.
 	 @return A string minus the newline. */
-	public String nextLine() throws NoSuchElementException, IOException {
+	public String nextLine() throws ParseException, IOException {
 		String line = this.readLine(); /* IOException */
-		if(line == null) throw new NoSuchElementException("unexpected eof");
+		if(line == null) throw new ParseException(this, "unexpected eof");
 		return line;
 	}
 	/** Like {@see #nextLine}, but throws an exception when asrt is not
 	 exactly like the file.
-	 @throws NoSuchElementException
-	 The file has ended.
+	 @throws ParseException
+		The file has ended.
 	 @throws IOException
-	 Underlying nextLine. */
-	public void assertLine(final String asrt) throws IOException, Exception {
+		Underlying nextLine. */
+	public void assertLine(final String asrt) throws ParseException, IOException {
 		String line = nextLine();
-		if(asrt.compareTo(line) != 0) throw new Exception("expected " + asrt);
+		if(asrt.compareTo(line) != 0) throw new ParseException(this, "expected " + asrt);
 	}
 	/** Like {@see #nextLine}, but reads all paragraph.
-	 @throws NoSuchElementException
-	 The file has ended before the paragraph was complete.
+	 @throws ParseException
+		The file has ended before the paragraph was complete.
 	 @throws IOException
-	 Underlying nextLine.
+		Underlying nextLine.
 	 @return The whole paragraph, minus newlines, as a string. */
-	public String nextParagraph() throws NoSuchElementException, IOException {
+	public String nextParagraph() throws ParseException, IOException {
 		boolean       isFirst = true;
 		StringBuilder sb = new StringBuilder(256);
 		String        str;
@@ -65,5 +65,17 @@ public class MoreReader extends LineNumberReader {
 			sb.append(str);
 		}
 		return sb.toString();
+	}
+
+}
+
+/** We are very stict about this. */
+class ParseException extends Exception {
+	/** @param in
+		The MoreReader that caused the exception.
+	 @param why
+		Guess why it happened. */
+	ParseException(final MoreReader in, final String why) {
+		super(why + "; line " + in.getLineNumber());
 	}
 }

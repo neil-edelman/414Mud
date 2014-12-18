@@ -23,25 +23,22 @@ public class Room extends Stuff {
 	protected String description;
 	protected Room n, e, s, w, u, d;
 
-	/* I love and hate Java */
+	/* I love and hate Java. -Neil */
 	public enum Direction {
 		N("north"), E("east"), S("south"), W("west"), U("up"), D("down");
-		private Direction(final String name/*, final Direction back, "illegal forward reference" */) {
-			this.name = name;
-		}
 		private String       name;
 		private Direction    back;
 		private static Field room;
 		private static final Map<String, Direction> map;
 		static {
-			/* back */
+			/* reverse direction */
 			N.back = S;
 			S.back = N;
 			E.back = W;
 			W.back = E;
 			U.back = D;
 			D.back = U;
-			/* room */
+			/* the actual rooms */
 			try {
 				N.room = Room.class.getDeclaredField("n");
 				E.room = Room.class.getDeclaredField("e");
@@ -50,15 +47,16 @@ public class Room extends Stuff {
 				U.room = Room.class.getDeclaredField("u");
 				D.room = Room.class.getDeclaredField("d");
 			} catch(NoSuchFieldException e) {
-				System.err.print("Direction: impossible; " + e + ".\n");
+				System.err.format("Direction: inconceivable! %s.\n", e);
 			}
-			/* map */
+			/* map for turning strings into Directions */
 			Map<String, Direction> mod = new HashMap<String, Direction>();
 			for(Direction d : values()) mod.put(d.name(), d);
 			map = Collections.unmodifiableMap(mod);
 		}
-		public  Direction getBack() { return back; }
-		private Room      getRoom(Room r) {
+		private Direction(final String name)           { this.name = name; }
+		public  Direction getBack()                    { return back; }
+		private Room      getRoom(Room r)              {
 			/* so so so sad! why won't it work? :[ */
 			/*try {
 				Room d = (Room)room.get(r);

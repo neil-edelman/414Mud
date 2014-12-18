@@ -31,6 +31,8 @@ import entities.*;
 
 class Area {
 
+	private static final String areaExt = ".area";
+
 	private static Map<String, Area> areas = new HashMap<String, Area>();
 
 	/** Load all areas in specified directory.
@@ -45,7 +47,7 @@ class Area {
 		File files[] = dir.listFiles(new FilenameFilter() {
 			public boolean accept(File current, String name) {
 				/* fixme: isFile(), canRead() */
-				return name.endsWith(".area");
+				return name.endsWith(areaExt);
 			}
 		});
 		for(File f : files) {
@@ -201,6 +203,7 @@ class Area {
 		}
 	}
 
+	private String             name;
 	private String             title   = "Untitled";
 	private String             author  = "Unauthored";
 	private Map<String, Stuff> stuff   = new HashMap<String, Stuff>();
@@ -209,15 +212,23 @@ class Area {
 	public Area(final File file) {
 		String recallStr = null;
 
+		/* determine the name by the (file - areaExt) */
+		name = file.getName();
+		if(name.endsWith(areaExt)) {
+			name = name.substring(0, name.length() - areaExt.length());
+		} else {
+			System.err.format("%s: area file didn't end in %s.\n", name, areaExt);
+		}
+
+		/* load the files contents */
 		try(
 			MoreReader in = new MoreReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
 		) {
 			Scanner scan;
 			String word, line;
-			String whatStr, id, name, title;
+			String id, name, title, desc, info = "no info";
 			TypeOfStuff what;
 			boolean flags[];
-			in.setLineNumber(1);
 
 			/* grab the header */
 			this.title = in.nextLine(); /* this.title belongs to Area; title belongs to Stuff */
@@ -229,38 +240,40 @@ class Area {
 			/* grab the Stuff */
 			while("~".compareTo(line = in.nextLine()) != 0) {
 				scan = new Scanner(line);
-				if((what = TypeOfStuff.find(scan.next())) == null) throw new Exception("unknown token, line " + in.getLineNumber());
+				/* Exception -> FileParseException */
+				if((what = TypeOfStuff.find(scan.next())) == null) throw new ParseException(in, "unknown token");
 				id = scan.next();
-				if(scan.hasNext()) throw new Exception("too many things, line " + in.getLineNumber());
+				if(scan.hasNext()) throw new ParseException(in, "too many things");
 				name  = in.nextLine();
 				title = in.nextLine();
-				//System.err.format("%s: id:<%s>, name:<%s>, title:<%s>.\n", file, id, name, title);
 				switch(what) {
 					case ROOM:
-						//System.err.format("desc:<%s>.\n", desc);
-						stuff.put(id, new Room(name, title, in.nextParagraph()));
+						stuff.put(id, new Room(name, title, desc = in.nextParagraph()));
+						info = String.format("desc <%s>", desc);
 						break;
 					case MOB:
 						flags = new boolean[2];
 						line = in.nextLine();
 						MobFlags.apply(line, flags);
-						//System.err.print(id + ": isF " + flags[0] + "; isX " + flags[1] + "; toLine: <" + MobFlags.toLine(flags) + ">.\n");
 						stuff.put(id, new Mob(name, title, flags[0], flags[1]));
+						info = String.format("F %b, X %b", flags[0], flags[1]);
 						break;
 					case OBJECT:
 						flags = new boolean[2];
 						line = in.nextLine();
 						ObjectFlags.apply(line, flags);
-						//System.err.print(id + ": isB " + flags[0] + "; isT " + flags[1] + "; toLine: <" + ObjectFlags.toLine(flags) + ">.\n");
 						stuff.put(id, new entities.Object(name, title, flags[0], flags[1]));
+						info = String.format("B %b, T %b", flags[0], flags[1]);
 						break;
 					case CHARACTER:
 					case CONTAINER:
 					case MONEY:
 					case PLAYER:
 					case STUFF:
-						throw new Exception(what + " not implemented, line " + in.getLineNumber());
+						throw new ParseException(in, what + " not implemented");
 				}
+
+				if(FourOneFourMud.isVerbose) System.err.format("%s.%s: name <%s>,  title <%s>, %s.\n", this, id, name, title, info);
 			}
 
 			/* set the default room now that we've loaded them */
@@ -269,31 +282,29 @@ class Area {
 			}
 
 			/* resets to the end */
-			Stuff thing, arg;
+			Stuff thing, target;
 			Reset reset;
 			Room.Direction dir;
 			while((line = in.readLine()) != null) {
 				scan = new Scanner(line);
-				if((thing =  stuff.get(scan.next())) == null) throw new Exception("unknown stuff, line " + in.getLineNumber());
-				if((reset = Reset.find(scan.next())) == null) throw new Exception("unknown token, line " + in.getLineNumber());
+				if((thing  =  stuff.get(scan.next())) == null) throw new ParseException(in, "unknown stuff");
+				if((reset  = Reset.find(scan.next())) == null) throw new ParseException(in, "unknown token");
 				if(reset == Reset.CONNECT || reset == Reset.SET) {
-					if((dir = Room.Direction.find(scan.next())) == null) throw new Exception("unknown direction, line " + in.getLineNumber());
+					if((dir = Room.Direction.find(scan.next())) == null) throw new ParseException(in, "unknown direction");
 				} else {
-					dir = Room.Direction.N;
+					dir = null;
 				}
-				if((arg   =  stuff.get(scan.next())) == null) throw new Exception("unknown argument, line " + in.getLineNumber());
-				if(scan.hasNext()) throw new Exception("too much stuff, line " + in.getLineNumber());
+				if((target =  stuff.get(scan.next())) == null) throw new ParseException(in, "unknown argument");
+				if(scan.hasNext()) throw new ParseException(in, "too much stuff");
+				reset.invoke(thing, target, dir);
 
-				//System.err.print(line + ": <" + thing + ">; <" + reset + ">; <" + dir + ">; <" + arg + ">.\n");
-				reset.invoke(thing, arg, dir);
+				if(FourOneFourMud.isVerbose) System.err.print(this + ": <" + thing + "> <" + reset + "> direction <" + dir + "> to/in <" + target + ">.\n");
 			}
 
-		} catch(NoSuchElementException e) {
-			System.err.format("%s: %s.\n", file, e);
-		} catch(IOException e) {
-			System.err.format("%s: error; %s.\n", file, e);
+		} catch(ParseException e) {
+			System.err.format(" *** %s (syntax error:) %s.\n", file, e.getMessage());
 		} catch(Exception e) {
-			System.err.format("%s: error; %s.\n", file, e);
+			System.err.format(" *** %s: %s.\n", file, e);
 		}
 
 		System.err.format("%s: loaded %s, default room %s.\n", file, this, recall);
@@ -304,7 +315,8 @@ class Area {
 	}
 
 	public String toString() {
-		return "" + title + " by " + author;
+		//return "" + title + " by " + author;
+		return name;
 	}
 
 }

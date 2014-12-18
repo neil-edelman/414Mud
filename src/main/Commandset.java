@@ -351,11 +351,9 @@ public class Commandset {
 			c.sendTo("Huh? " + cmd + " (use help for a list)");
 		} else {
 			try {
-				/* null: static method; extend Connection? nice try,
-				 "object is not an instance of declaring class" whatev */
 				run.invoke(null, c, arg);
 			} catch(Exception e) {
-				c.sendTo("Can't do that.\n");
+				c.sendTo(command + ": there was a slight problem with doing that.");
 				System.err.print(c + " input '" + command + "' which: " + e + ".\n");
 			}
 		}

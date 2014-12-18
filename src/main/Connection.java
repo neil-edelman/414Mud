@@ -75,8 +75,7 @@ public class Connection implements Runnable {
 
 			System.err.print("Sending MOTD to " + this + ".\n");
 			this.sendTo(mud.getMotd());
-			this.sendTo("");
-			this.sendTo(mud.getName() + ": you are " + this + "; type 'create <Character>' to start.");
+			this.sendTo(mud + ": you are " + this + "; type 'create <Character>' to start.");
 
 			while(!isExit && (input = this.getFrom()) != null) {
 
@@ -144,7 +143,9 @@ public class Connection implements Runnable {
 	}
 
 	public String toString() {
-		return "Connection " + name;
+		String s = "Connection " + name;
+		if(player != null) s += "(" + player + ")";
+		return s;
 	}
 
 	public String getName() {

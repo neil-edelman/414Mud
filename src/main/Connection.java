@@ -32,10 +32,12 @@ import entities.Player;
 
 public class Connection implements Runnable {
 
-	private static final int bufferSize = 80;
+	private static final int bufferSize = 4;//80;
 	private static final Commandset newbie   = new Commandset(Commandset.Level.NEWBIE);
 	private static final Commandset common   = new Commandset(Commandset.Level.COMMON);
 	private static final Commandset immortal = new Commandset(Commandset.Level.IMMORTAL);
+
+	private static char garbage[] = new char[bufferSize];
 
 	private final Socket socket;
 	private final String name = Orcish.get();
@@ -121,19 +123,18 @@ public class Connection implements Runnable {
 	 @return The message.
 	 @throws IOException Passes the underlieing socket's exceptions to the caller. */
 	public String getFrom() throws IOException {
+		int no;
+
 		if(in == null) return null;
-		/* no way that's safe: return in.readLine();*/
-		int no = in.read(buffer, 0, bufferSize);
-		if(no == -1) return null; /* steam closed */
-		if(no >= bufferSize) {
-			/* it will never be > bufferSize, I'm just being paranoid */
-			no = bufferSize;
-			//System.err.print("Skipping characters.\n");
-			//if(in.ready()) in.readLine(); /* <- fixme: still allocating mem :[ */
-			while(in.ready()) in.skip(1);   /* <- fixme: O(n); hack! */
-		}
+		if((no = in.read(buffer, 0, bufferSize)) == -1) return null; /* steam closed */
+		System.err.format("%s.getFrom: %d/%d inital characters <%s>.\n", this, no, bufferSize, new String(buffer));
 		String input = new String(buffer, 0, no).trim();
-		//System.err.print(this + ".getFrom: " + input + "\n");
+		/* skip the rest */
+		while(no >= bufferSize && in.ready()) {
+			if((no = in.read(garbage, 0, bufferSize)) == -1) break;
+			if(FourOneFourMud.isVerbose) System.err.format("%s.getFrom: skipping characters <%s>.\n", this, new String(garbage).trim());
+		}
+		if(FourOneFourMud.isVerbose) System.err.print(this + ".getFrom: <" + input + ">.\n");
 
 		return input;
 	}

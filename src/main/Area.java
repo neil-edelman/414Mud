@@ -78,12 +78,12 @@ class Area {
 		}
 	}
 
-	/* these are weak */
+	/* this is a glaring error in Java8, I must pay the price in repeated code */
+	/* private interface Flags { static int lookup(final String tok); } */
+	/*implements Flags*/
+	/*public static int lookup(final String tok) { return map.get(tok).ordinal();  }*/
 
-	private interface Flags {
-		void apply(final String line, boolean bv[]);
-	}
-	private enum MobFlags /* implements Flags*/ {
+	private enum MobFlags {
 		FRIENDLY("friendly"),
 		XENO("xeno");
 		private String symbol;
@@ -99,23 +99,24 @@ class Area {
 			MobFlags sym;
 			String toks[] = line.trim().split("\\s++"); /* split on whitespace */
 			for(String tok : toks) {
-				System.err.println("tok: " + tok);
 				if((sym = map.get(tok)) == null) throw new Exception("unrecongnised " + tok);
-				bv[sym.ordinal()] = true;
+				bv[sym.ordinal()] = true; /* IndexOutOfBounds */
 			}
 		}
-		public static void set(final String str, Boolean isFriendly, Boolean isXeno) throws Exception {
-			MobFlags f;
-			if((f = map.get(str)) == null) throw new Exception("unrecongnised " + str);
-			switch(f) {
-				case FRIENDLY:
-					isFriendly = true;
-					System.err.print("in MobFlags isF "+isFriendly+"\n");
-					break;
-				case XENO:
-					isXeno = true;
-					break;
+		public static String toLine(boolean bv[]) {
+			StringBuilder sb = new StringBuilder();
+			boolean isFirst = true;
+			for(MobFlags sym : MobFlags.values()) {
+				if(bv[sym.ordinal()]) {
+					if(isFirst) {
+						isFirst = false;
+					} else {
+						sb.append(" ");
+					}
+					sb.append(sym);
+				}
 			}
+			return sb.toString();
 		}
 		public String toString() {
 			return symbol;
@@ -126,27 +127,36 @@ class Area {
 		BREAKABLE("breakable"),
 		TRANSPORTABLE("transportable");
 		private String symbol;
-		private static final Map<String, ObjectFlags> back = new HashMap<String, ObjectFlags>();
+		private static final Map<String, ObjectFlags> map;
 		static {
-			back.put("breakable", BREAKABLE);
-			back.put("transportable", TRANSPORTABLE);
-			/* etc; fixme: find out how to get this in constuctor */
+			/* populate map */
+			Map<String, ObjectFlags> mod = new HashMap<String, ObjectFlags>();
+			for(ObjectFlags f : values()) mod.put(f.symbol, f);
+			map = Collections.unmodifiableMap(mod);
 		}
-		private ObjectFlags(final String symbol) {
-			this.symbol = symbol;
-			//back.put(symbol, this);
-		}
-		public static void set(final String str, Boolean isBreakable, Boolean isTransportable) throws Exception {
-			ObjectFlags f;
-			if((f = back.get(str)) == null) throw new Exception("unrecongnised " + str);
-			switch(f) {
-				case BREAKABLE:
-					isBreakable = true;
-					break;
-				case TRANSPORTABLE:
-					isTransportable = true;
-					break;
+		private ObjectFlags(final String symbol) { this.symbol = symbol; }
+		public static void apply(final String line, boolean bv[]) throws Exception {
+			ObjectFlags sym;
+			String toks[] = line.trim().split("\\s++"); /* split on whitespace */
+			for(String tok : toks) {
+				if((sym = map.get(tok)) == null) throw new Exception("unrecongnised " + tok);
+				bv[sym.ordinal()] = true; /* IndexOutOfBounds */
 			}
+		}
+		public static String toLine(boolean bv[]) {
+			StringBuilder sb = new StringBuilder();
+			boolean isFirst = true;
+			for(ObjectFlags sym : ObjectFlags.values()) {
+				if(bv[sym.ordinal()]) {
+					if(isFirst) {
+						isFirst = false;
+					} else {
+						sb.append(" ");
+					}
+					sb.append(sym);
+				}
+			}
+			return sb.toString();
 		}
 		public String toString() {
 			return symbol;
@@ -171,6 +181,7 @@ class Area {
 			String word, line;
 			String whatStr, id, name, title;
 			TypeOfStuff what;
+			boolean flags[];
 
 			/* grab the header */
 			no++;
@@ -249,37 +260,20 @@ class Area {
 						stuff.put(id, new Room(name, title, desc));
 						break;
 					case MOB:
-						boolean flags[] = new boolean[2];
+						flags = new boolean[2];
 						no++;
-						String str = in.nextLine();
-						MobFlags.apply(str, flags);
-						/*scanLine = new Scanner(in.nextLine());
-						boolean isF = false, isX = false;
-						while(scanLine.hasNext()) {
-							word = scanLine.next();
-							try {
-								MobFlags.set(word, isF, isX);
-								System.err.print("in Area: isF " + isF + "\n");
-							} catch(Exception e) {
-								System.err.format("%s: line %d; %s.\n", file, no, e);
-							}
-						}*/
-						System.err.print("isF " + flags[0] + " isX " + flags[1] + "\n");
+						line = in.nextLine();
+						MobFlags.apply(line, flags);
+						System.err.print(id + ": isF " + flags[0] + "; isX " + flags[1] + "; toLine: <" + MobFlags.toLine(flags) + ">.\n");
 						stuff.put(id, new Mob(name, title, flags[0], flags[1]));
 						break;
 					case OBJECT:
+						flags = new boolean[2];
 						no++;
-						scanLine = new Scanner(in.nextLine());
-						boolean isBreakable = false, isTransportable = false;
-						while(scanLine.hasNext()) {
-							word = scanLine.next();
-							try {
-								ObjectFlags.set(word, isBreakable, isTransportable);
-							} catch(Exception e) {
-								System.err.format("%s: line %d; %s.\n", file, no, e);
-							}
-						}
-						stuff.put(id, new Object(name, title, isBreakable, isTransportable));
+						line = in.nextLine();
+						ObjectFlags.apply(line, flags);
+						System.err.print(id + ": isB " + flags[0] + "; isT " + flags[1] + "; toLine: <" + ObjectFlags.toLine(flags) + ">.\n");
+						stuff.put(id, new Object(name, title, flags[0], flags[1]));
 						break;
 					case CHARACTER:
 					case CONTAINER:

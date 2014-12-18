@@ -32,12 +32,10 @@ import entities.Player;
 
 public class Connection implements Runnable {
 
-	private static final int bufferSize = 4;//80;
+	private static final int bufferSize = 80;
 	private static final Commandset newbie   = new Commandset(Commandset.Level.NEWBIE);
 	private static final Commandset common   = new Commandset(Commandset.Level.COMMON);
 	private static final Commandset immortal = new Commandset(Commandset.Level.IMMORTAL);
-
-	private static char garbage[] = new char[bufferSize];
 
 	private final Socket socket;
 	private final String name = Orcish.get();
@@ -125,15 +123,15 @@ public class Connection implements Runnable {
 	public String getFrom() throws IOException {
 		int no;
 
-		if(in == null) return null;
-		if((no = in.read(buffer, 0, bufferSize)) == -1) return null; /* steam closed */
-		System.err.format("%s.getFrom: %d/%d inital characters <%s>.\n", this, no, bufferSize, new String(buffer));
+		/* read up to bufferSize */
+		if(in == null || (no = in.read(buffer, 0, bufferSize)) == -1) return null;
 		String input = new String(buffer, 0, no).trim();
+
 		/* skip the rest */
 		while(no >= bufferSize && in.ready()) {
-			if((no = in.read(garbage, 0, bufferSize)) == -1) break;
-			if(FourOneFourMud.isVerbose) System.err.format("%s.getFrom: skipping characters <%s>.\n", this, new String(garbage).trim());
+			if((no = in.read(buffer, 0, bufferSize)) == -1) break;
 		}
+
 		if(FourOneFourMud.isVerbose) System.err.print(this + ".getFrom: <" + input + ">.\n");
 
 		return input;

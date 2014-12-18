@@ -1,3 +1,12 @@
+/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt
+ 
+ Money.
+ 
+ @author Sid, Neil
+ @version 1
+ @since 2014 */
+
 package entities;
 
 public class Money extends Object {

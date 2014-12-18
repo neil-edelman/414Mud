@@ -1,3 +1,15 @@
+/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt
+ 
+ Commands you can enact; different commands may be given to you in the same
+ Connection (controlled by Level.) Eg, when you start, you have limited options
+ (Newbie,) but once you have a body, you can do much more (Common) but some
+ players are able to shutdown the mud, create things, etc (Immortal.)
+ 
+ @author Neil
+ @version 1.1
+ @since 2014 */
+
 package main;
 
 import java.util.Map;
@@ -10,9 +22,7 @@ import entities.Stuff;
 import entities.Player;
 import entities.Room;
 
-/** Commands. eg, a connection has limited options (Newbie,) but once you have
- a body, you can do much more (Common) but some players be able to shutdown the
- mud, create things, etc (Immortal.)
+/** Commands. 
 
  @author Neil */
 

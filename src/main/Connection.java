@@ -1,3 +1,14 @@
+/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt
+ 
+ Connections are Runnable things; the FixedThreadPool socket pool assigns
+ serverSocket.accept() which is passed to the constructor. Boolean isExit is
+ checked at every line, or we could force exit though a SocketException.
+ 
+ @author Neil
+ @version 1.1
+ @since 2014 */
+
 package main;
 
 import java.net.Socket;

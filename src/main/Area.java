@@ -1,3 +1,12 @@
+/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt
+
+ Loading/storing of areas.
+ 
+ @author Neil
+ @version 1.1
+ @since 2014 */
+
 package main;
 
 import java.io.BufferedReader;
@@ -18,8 +27,6 @@ import java.util.Collections;
 
 import entities.*;
 import entities.Object;
-
-/* Areas. */
 
 class Area {
 
@@ -78,9 +85,8 @@ class Area {
 		}
 	}
 
-	/* this is a glaring error in Java8, I must pay the price in repeated code */
-	/* private interface Flags { static int lookup(final String tok); } */
-	/*implements Flags*/
+	/* this is a glaring error in Java8; I must pay the price in repeated code */
+	/*private interface Flags { static int lookup(final String tok); }*/
 	/*public static int lookup(final String tok) { return map.get(tok).ordinal();  }*/
 
 	private enum MobFlags {

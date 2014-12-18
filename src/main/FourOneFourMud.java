@@ -1,3 +1,13 @@
+/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt
+ 
+ This is the entry-point for starting the mud and listening for connections;
+ connnections are handled by a fixed socket pool.
+ 
+ @author Neil
+ @version 1.1
+ @since 2014 */
+
 package main;
 
 import java.net.ServerSocket;
@@ -24,9 +34,6 @@ import entities.Object;
 import entities.Mob;
 import main.Connection;
 import main.Area;
-
-/** This is the entry-point for starting the mud and listening for connections.
- @author Neil */
 
 public class FourOneFourMud implements Iterable<Connection> {
 

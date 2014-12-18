@@ -132,7 +132,7 @@ public class Connection implements Runnable {
 			if((no = in.read(buffer, 0, bufferSize)) == -1) break;
 		}
 
-		if(FourOneFourMud.isVerbose) System.err.print(this + ".getFrom: <" + input + ">.\n");
+		if(FourOneFourMud.isVerbose) System.err.format("%s.getFrom: <%s>.\n", this, input);
 
 		return input;
 	}

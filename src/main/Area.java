@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 
 import main.TextReader;
+import main.Flags;
 import entities.*;
 
 class Area {
@@ -53,7 +54,7 @@ class Area {
 			}
 		});
 		for(File f : files) {
-			//System.err.print("Loading area <" + f + ">.\n");
+			System.err.print("Loading area <" + f + ">.\n");
 			areas.put(f.getName(), new Area(f));
 		}
 	}
@@ -76,32 +77,20 @@ class Area {
 		PLAYER("Player"),
 		ROOM("Room"),
 		STUFF("Stuff");
-		private String symbol;
-		private static final Map<String, TypeOfStuff> map;
-		static {
-			Map<String, TypeOfStuff> mod = new HashMap<String, TypeOfStuff>();
-			for(TypeOfStuff t : values()) mod.put(t.symbol, t);
-			map = Collections.unmodifiableMap(mod);
-		}
-		private TypeOfStuff(final String symbol)         { this.symbol = symbol; }
-		public String toString()                         { return symbol; }
-		public static TypeOfStuff find(final String str) { return map.get(str); }
+		String symbol;
+		private TypeOfStuff(final String symbol) { this.symbol = symbol; }
+		public String toString()                 { return symbol; }
 	}
+
+	Flags<TypeOfStuff> typeOfStuffFlags = new Flags<TypeOfStuff>(TypeOfStuff.class);
 
 	private enum Reset {
 		IN("in"),
 		CONNECT("connect"),
 		SET("set");
-		private String symbol;
-		private static final Map<String, Reset> map;
-		static {
-			Map<String, Reset> mod = new HashMap<String, Reset>();
-			for(Reset r : values()) mod.put(r.symbol, r);
-			map = Collections.unmodifiableMap(mod);
-		}
+		String symbol;
 		private Reset(final String symbol)         { this.symbol = symbol; }
 		public String toString()                   { return symbol; }
-		public static Reset find(final String str) { return map.get(str); }
 		public void invoke(final Stuff thing, final Stuff arg, final Room.Direction dir) throws Exception {
 			//System.err.format("%s.invoke(%s, %s, %s);\n", this, thing, arg, dir);
 			Reset.class.getDeclaredMethod(symbol, Stuff.class, Stuff.class,
@@ -125,177 +114,27 @@ class Area {
 		}
 	}
 
+	Flags<Reset> resetFlags = new Flags<Reset>(Reset.class);
+
 	private enum MobFlags {
 		FRIENDLY("friendly"),
 		XENO("xeno");
-		private String symbol;
-		private static final Map<String, MobFlags> map;
-		static {
-			/* populate map */
-			Map<String, MobFlags> mod = new HashMap<String, MobFlags>();
-			for(MobFlags f : values()) mod.put(f.symbol, f);
-			map = Collections.unmodifiableMap(mod);
-		}
+		String symbol;
 		private MobFlags(final String symbol) { this.symbol = symbol; }
-		public static void apply(final String line, boolean bv[]) throws Exception {
-			MobFlags sym;
-			String toks[] = line.trim().split("\\s++"); /* split on whitespace */
-			for(String tok : toks) {
-				if((sym = map.get(tok)) == null) throw new Exception("unrecongnised " + tok);
-				bv[sym.ordinal()] = true; /* IndexOutOfBounds */
-			}
-		}
-		public static String toLine(boolean bv[]) {
-			StringBuilder sb = new StringBuilder();
-			boolean isFirst = true;
-			for(MobFlags sym : MobFlags.values()) {
-				if(bv[sym.ordinal()]) {
-					if(isFirst) {
-						isFirst = false;
-					} else {
-						sb.append(" ");
-					}
-					sb.append(sym);
-				}
-			}
-			return sb.toString();
-		}
-		public String toString() {
-			return symbol;
-		}
+		public String toString()              { return symbol; }
 	}
+
+	Flags<MobFlags> mobFlags = new Flags<MobFlags>(MobFlags.class);
 
 	private enum ObjectFlags {
 		BREAKABLE("breakable"),
 		TRANSPORTABLE("transportable");
-		private String symbol;
-		private static final Map<String, ObjectFlags> map;
-		static {
-			/* populate map */
-			Map<String, ObjectFlags> mod = new HashMap<String, ObjectFlags>();
-			for(ObjectFlags f : values()) mod.put(f.symbol, f);
-			map = Collections.unmodifiableMap(mod);
-		}
+		String symbol;
 		private ObjectFlags(final String symbol) { this.symbol = symbol; }
-		public static void apply(final String line, boolean bv[]) throws Exception {
-			ObjectFlags sym;
-			String toks[] = line.trim().split("\\s++"); /* split on whitespace */
-			for(String tok : toks) {
-				if((sym = map.get(tok)) == null) throw new Exception("unrecongnised " + tok);
-				bv[sym.ordinal()] = true; /* IndexOutOfBounds */
-			}
-		}
-		public static String toLine(boolean bv[]) {
-			StringBuilder sb = new StringBuilder();
-			boolean isFirst = true;
-			for(ObjectFlags sym : ObjectFlags.values()) {
-				if(bv[sym.ordinal()]) {
-					if(isFirst) {
-						isFirst = false;
-					} else {
-						sb.append(" ");
-					}
-					sb.append(sym);
-				}
-			}
-			return sb.toString();
-		}
-		public String toString() {
-			return symbol;
-		}
+		public String toString()                 { return symbol; }
 	}
 
-	class Flags<E extends Enum<E>> {
-
-		private final Field    aField;
-		private final Class<E> aClass;
-
-		private String name;
-
-		private boolean        flags[];
-		private Map<String, E> map = null;
-		//private Enum<E> e;
-
-		/** contstuct a Flags out of a String in an enum.
-		 @param aField
-			String field of an Enum that is unique.
-		 @param aClass
-			aField.getDeclaringClass -- couldn't figure out how to cast "CAP#1
-			cannot be converted to E" but IT IS E; gahhhhhah. class.cast(object)? */
-		public Flags(final Class<E> aClass) throws Exception {
-
-			this.aField = aClass.getDeclaredField("symbol");
-			this.aClass = aClass;
-
-			name = aField.getDeclaringClass().getName();
-
-			flags = new boolean[aClass.getEnumConstants().length];
-			//Class<E> aClass = aField.getDeclaringClass();
-			if(!aClass.isEnum()) throw new Exception("flags only works on enums");
-			/* fixme: check if aField in aClass */
-			System.err.format("Flags: field <%s>; class <%s>\n", aField, aClass);
-			for(E val : aClass.getEnumConstants()) System.err.format("%s : %s\n", val, aField.get(val));
-
-			/* populate a map from aField strings to enum things; make it fast */
-			try {
-				Map<String, E> mod = new HashMap<String, E>();
-				for(E val : aClass.getEnumConstants()) mod.put((String)aField.get(val), val);
-				map = Collections.unmodifiableMap(mod);
-			} catch(IllegalAccessException e) {
-				System.err.format("%s: inconceivable! %s.\n", this, e);
-			}
-		}
-
-		/** apply fixme */
-		public boolean[] fromLine(final String line) throws Exception {
-			E sym;
-			String toks[] = line.trim().split("\\s++"); /* split on whitespace */
-			//System.err.format("bv %b %b %b\n", bv[0], bv[1], bv[2]);
-			//for(boolean v : bv) v = false;
-			for(int i = 0; i < flags.length; i++) flags[i] = false; /* old-school */
-			//for(Iterator b = bv.iterator(); b.hasNext(); b = b.next()) ...
-			//System.err.format("bv %b %b %b\n", bv[0], bv[1], bv[2]);
-			for(String tok : toks) {
-				if((sym = map.get(tok)) == null) throw new Exception("unrecongnised " + tok); // fixme
-				flags[sym.ordinal()] = true; /* IndexOutOfBounds */
-				System.err.format("Got <%s>.\n", sym);
-			}
-			return flags;
-		}
-
-		public String toLine(boolean bv[]) {
-			StringBuilder sb = new StringBuilder();
-			boolean isFirst = true;
-			for(E val : aClass.getEnumConstants()) {
-				if(bv[val.ordinal()]) {
-					if(isFirst) {
-						isFirst = false;
-					} else {
-						sb.append(" ");
-					}
-					try {
-						sb.append(aField.get(val));
-					} catch(IllegalAccessException e) {
-						System.err.format("%s: inconceivable! %s.\n", this, e);
-					}
-				}
-			}
-			return sb.toString();
-		}
-
-		/*public Enum<E> getEnum() {
-			return e;
-		}*/
-
-		public String toString() {
-			return "Flags(" + name + ")";
-		}
-
-		public int size() {
-			return aClass.getEnumConstants().length;
-		}
-
-	}
+	Flags<ObjectFlags> objectFlags = new Flags<ObjectFlags>(ObjectFlags.class);
 
 	private enum Things {
 		ABC("abc"),
@@ -304,6 +143,8 @@ class Area {
 		String symbol;
 		private Things(final String symbol) { this.symbol = symbol; }
 	}
+
+	Flags<Things> thingsFlags = new Flags<Things>(Things.class);
 
 	private String             name;
 	private String             title   = "Untitled";
@@ -332,18 +173,20 @@ class Area {
 			TypeOfStuff what;
 			boolean flags[];
 
-			/* grab the header */
-			this.title = in.nextLine(); /* this.title belongs to Area; title belongs to Stuff */
+			/* grab the header;
+			 this.title belongs to Area; title belongs to Stuff in the Area */
+			this.title = in.nextLine();
 			author     = in.nextLine();
 			recallStr  = in.nextLine();
 
 			in.assertLine("~");
+			System.err.print(" A \n");
 
 			/* grab the Stuff */
 			while("~".compareTo(line = in.nextLine()) != 0) {
 				scan = new Scanner(line);
 				/* Exception -> FileParseException */
-				if((what = TypeOfStuff.find(scan.next())) == null) throw new ParseException(in, "unknown token");
+				if((what = typeOfStuffFlags.find(scan.next())) == null) throw new ParseException(in, "unknown token");
 				id = scan.next();
 				if(scan.hasNext()) throw new ParseException(in, "too many things");
 				name  = in.nextLine();
@@ -354,16 +197,12 @@ class Area {
 						info = String.format("desc <%s>", desc);
 						break;
 					case MOB:
-						flags = new boolean[2];
-						line = in.nextLine();
-						MobFlags.apply(line, flags);
+						flags = mobFlags.fromLine(in.nextLine());
 						stuff.put(id, new Mob(name, title, flags[0], flags[1]));
 						info = String.format("F %b, X %b", flags[0], flags[1]);
 						break;
 					case OBJECT:
-						flags = new boolean[2];
-						line = in.nextLine();
-						ObjectFlags.apply(line, flags);
+						flags = objectFlags.fromLine(in.nextLine());
 						stuff.put(id, new entities.Object(name, title, flags[0], flags[1]));
 						info = String.format("B %b, T %b", flags[0], flags[1]);
 						break;
@@ -377,6 +216,7 @@ class Area {
 
 				if(FourOneFourMud.isVerbose) System.err.format("%s.%s: name <%s>,  title <%s>, %s.\n", this, id, name, title, info);
 			}
+			System.err.print(" B \n");
 
 			/* set the default room now that we've loaded them */
 			if(recallStr == null || (recall = (Room)stuff.get(recallStr)) == null) {
@@ -389,8 +229,8 @@ class Area {
 			Room.Direction dir;
 			while((line = in.readLine()) != null) {
 				scan = new Scanner(line);
-				if((thing  =  stuff.get(scan.next())) == null) throw new ParseException(in, "unknown stuff");
-				if((reset  = Reset.find(scan.next())) == null) throw new ParseException(in, "unknown token");
+				if((thing  =       stuff.get(scan.next())) == null) throw new ParseException(in, "unknown stuff");
+				if((reset  = resetFlags.find(scan.next())) == null) throw new ParseException(in, "unknown token");
 				if(reset == Reset.CONNECT || reset == Reset.SET) {
 					if((dir = Room.Direction.find(scan.next())) == null) throw new ParseException(in, "unknown direction");
 				} else {
@@ -402,10 +242,12 @@ class Area {
 
 				if(FourOneFourMud.isVerbose) System.err.print(this + ": <" + thing + "> <" + reset + "> direction <" + dir + "> to/in <" + target + ">.\n");
 			}
+			System.err.print(" C \n");
 
 		} catch(ParseException e) {
 			System.err.format(" *** %s (syntax error:) %s.\n", file, e.getMessage());
 		} catch(Exception e) {
+			/* fixme: have nested, re-interrupt */
 			System.err.format(" *** %s: %s.\n", file, e);
 		}
 

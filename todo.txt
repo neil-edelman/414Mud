@@ -1,0 +1,9 @@
+Direction<Room>
+Flags->BitVector, ParseExcecption, Orcish, BoundedReader, TestReader, Direction -> common
+assert() instead of Exception where const (ie Flags, etc)
+wrap Area into two levels of exception handling so we could tag line numbers on general Exceptions
+FourOneFourMud: make it static or dynamic, not in between
+wrap Commandset into unchanging, immutable
+anonymous classes in Commandset
+immutable maps in Commandset
+Flags/BitVector of reflection

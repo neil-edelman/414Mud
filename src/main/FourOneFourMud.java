@@ -90,7 +90,9 @@ public class FourOneFourMud implements Iterable<Connection> {
 
 		/* read in areas */
 
+System.err.print(" \\/ \n");
 		Area.loadAreas(areasDir);
+System.err.print(" /\\ \n");
 		homearea = Area.getArea(homeareaStr);
 		try {
 			if(homearea == null) throw new Exception(dataDir + "/" + mudData + " (line 2:) " + homeareaStr + " does not exist");

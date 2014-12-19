@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 
 import java.util.Map;
 import java.util.HashMap;
+
 import java.lang.String;
 
 import java.util.Scanner;
@@ -26,7 +27,7 @@ import java.util.Collections;
 
 import java.lang.reflect.Method;
 
-import main.MoreReader;
+//import main.MoreReader;
 import entities.*;
 
 class Area {
@@ -201,6 +202,21 @@ class Area {
 		public String toString() {
 			return symbol;
 		}
+	}
+
+	class Flags<E extends Enum<E>> {
+
+		private Enum<E> flags;
+		private final Map<String, E> map;
+
+		public Flags(final Enum<E> flags, final Class<E> type) {
+			this.flags = flags;
+			/* populate map */
+			Map<String, E> mod = new HashMap<String, E>();
+			//for(E e : type.getEnumConstants()) mod.put(e.??, e);
+			map = Collections.unmodifiableMap(mod);
+		}
+
 	}
 
 	private String             name;

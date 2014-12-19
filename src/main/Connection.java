@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
 
+import main.BoundedReader;
 import entities.Player;
 
 /** Connections are the people connected to our mud; later we will build a
@@ -32,18 +33,17 @@ import entities.Player;
 
 public class Connection implements Runnable {
 
-	private static final int bufferSize = 80;
 	private static final Commandset newbie   = new Commandset(Commandset.Level.NEWBIE);
 	private static final Commandset common   = new Commandset(Commandset.Level.COMMON);
 	private static final Commandset immortal = new Commandset(Commandset.Level.IMMORTAL);
+	private static final int bufferSize = 80;
 
 	private final Socket socket;
 	private final String name = Orcish.get();
 	private final FourOneFourMud mud;
 	private Commandset commands;
 	private PrintWriter     out;
-	private BufferedReader   in;
-	private char buffer[];
+	private BoundedReader   in;
 	private Player  player = null;
 	private boolean isExit = false;
 	/* fixme: ip */
@@ -55,7 +55,6 @@ public class Connection implements Runnable {
 		this.commands = newbie;
 		this.socket   = socket;
 		this.mud      = mud;
-		this.buffer   = new char[bufferSize];
 		System.err.print(this + " has connected to " + mud + ".\n");
 	}
 
@@ -64,7 +63,7 @@ public class Connection implements Runnable {
 		//System.err.print(this + " up and running, waiting for character creation.\n");
 		try(
 			PrintWriter   out = new PrintWriter(socket.getOutputStream(), true /* autoflush (doesn't work) */);
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			BoundedReader  in = new BoundedReader(new BufferedReader(new InputStreamReader(socket.getInputStream())), bufferSize);
 		) {
 			String input;
 
@@ -77,7 +76,7 @@ public class Connection implements Runnable {
 			this.sendTo(mud.getMotd());
 			this.sendTo(mud + ": you are " + this + "; type 'create <Character>' to start.");
 
-			while(!isExit && (input = this.getFrom()) != null) {
+			while(!isExit && (input = in.readLine()) != null) {
 
 				if(input.length() == 0) continue;
 
@@ -109,32 +108,12 @@ public class Connection implements Runnable {
 	 @param message
 		The message. */
 	public void sendTo(final String message) {
-		/* "telnet newline sequence \r\n" <- or this? */
 		if(out == null) return;
+		/* I guess Java automatically converts strings to telnet newline \r\n?
+		 it works */
 		out.print(message + "\n");
 		out.flush();
 		//System.err.print("Sending " + this + ": " + message + "\n");
-	}
-
-	/** Wait for a message from the connection. Ignores characters beyond
-	 bufferSize.
-	 @return The message.
-	 @throws IOException Passes the underlieing socket's exceptions to the caller. */
-	public String getFrom() throws IOException {
-		int no;
-
-		/* read up to bufferSize */
-		if(in == null || (no = in.read(buffer, 0, bufferSize)) == -1) return null;
-		String input = new String(buffer, 0, no).trim();
-
-		/* skip the rest */
-		while(no >= bufferSize && in.ready()) {
-			if((no = in.read(buffer, 0, bufferSize)) == -1) break;
-		}
-
-		if(FourOneFourMud.isVerbose) System.err.format("%s.getFrom: <%s>.\n", this, input);
-
-		return input;
 	}
 
 	public FourOneFourMud getMud() {

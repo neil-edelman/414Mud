@@ -222,9 +222,9 @@ class Area {
 		 @param aClass
 			aField.getDeclaringClass -- couldn't figure out how to cast "CAP#1
 			cannot be converted to E" but IT IS E; gahhhhhah. class.cast(object)? */
-		public Flags(final Field aField, final Class<E> aClass) throws Exception {
+		public Flags(final Class<E> aClass) throws Exception {
 
-			this.aField = aField;
+			this.aField = aClass.getDeclaredField("symbol");
 			this.aClass = aClass;
 
 			name = aField.getDeclaringClass().getName();
@@ -413,7 +413,7 @@ class Area {
 
 		System.err.print("EXPERIMENT\n");
 		try {
-			Flags<Things> obj = new Flags<Things>(Things.class.getDeclaredField("symbol"), Things.class);
+			Flags<Things> obj = new Flags<Things>(Things.class);
 			boolean a[] = new boolean[obj.size()];
 			a[1] = true;
 			a[2] = true;
@@ -422,7 +422,7 @@ class Area {
 			boolean z[] = obj.fromLine(str);
 			System.err.format("<%s> : %b %b %b\n", str, z[0], z[1], z[2]);
 		} catch (NoSuchFieldException e) {
-			System.err.format("Shoud not get here; %s\n", e);
+			System.err.format("%s: enum has to have variable <%s>.\n", this, e.getMessage());
 		} catch (Exception e) {
 			System.err.format(">>> %s\n", e);
 		}

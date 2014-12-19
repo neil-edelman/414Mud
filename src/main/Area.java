@@ -207,11 +207,14 @@ class Area {
 
 	class Flags<E extends Enum<E>> {
 
-		private String name;
-		private Enum<E> e;
-		private Map<String, E> map = null;
 		private final Field    aField;
 		private final Class<E> aClass;
+
+		private String name;
+
+		private boolean        flags[];
+		private Map<String, E> map = null;
+		//private Enum<E> e;
 
 		/** contstuct a Flags out of a String in an enum.
 		 @param aField
@@ -225,6 +228,8 @@ class Area {
 			this.aClass = aClass;
 
 			name = aField.getDeclaringClass().getName();
+
+			flags = new boolean[aClass.getEnumConstants().length];
 			//Class<E> aClass = aField.getDeclaringClass();
 			if(!aClass.isEnum()) throw new Exception("flags only works on enums");
 			/* fixme: check if aField in aClass */
@@ -242,13 +247,20 @@ class Area {
 		}
 
 		/** apply fixme */
-		public void apply(final String line, boolean bv[]) throws Exception {
+		public boolean[] fromLine(final String line) throws Exception {
 			E sym;
 			String toks[] = line.trim().split("\\s++"); /* split on whitespace */
+			//System.err.format("bv %b %b %b\n", bv[0], bv[1], bv[2]);
+			//for(boolean v : bv) v = false;
+			for(int i = 0; i < flags.length; i++) flags[i] = false; /* old-school */
+			//for(Iterator b = bv.iterator(); b.hasNext(); b = b.next()) ...
+			//System.err.format("bv %b %b %b\n", bv[0], bv[1], bv[2]);
 			for(String tok : toks) {
-				if((sym = map.get(tok)) == null) throw new Exception("unrecongnised " + tok);
-				bv[sym.ordinal()] = true; /* IndexOutOfBounds */
+				if((sym = map.get(tok)) == null) throw new Exception("unrecongnised " + tok); // fixme
+				flags[sym.ordinal()] = true; /* IndexOutOfBounds */
+				System.err.format("Got <%s>.\n", sym);
 			}
+			return flags;
 		}
 
 		public String toLine(boolean bv[]) {
@@ -271,18 +283,22 @@ class Area {
 			return sb.toString();
 		}
 
-		public Enum<E> getEnum() {
+		/*public Enum<E> getEnum() {
 			return e;
-		}
+		}*/
 
 		public String toString() {
 			return "Flags(" + name + ")";
 		}
 
+		public int size() {
+			return aClass.getEnumConstants().length;
+		}
+
 	}
 
 	private enum Things {
-		ACB("acb"),
+		ABC("abc"),
 		DEF("def"),
 		GHI("ghi");
 		String symbol;
@@ -398,10 +414,13 @@ class Area {
 		System.err.print("EXPERIMENT\n");
 		try {
 			Flags<Things> obj = new Flags<Things>(Things.class.getDeclaredField("symbol"), Things.class);
-			boolean a[] = new boolean[3];
+			boolean a[] = new boolean[obj.size()];
 			a[1] = true;
 			a[2] = true;
-			System.err.format("%b %b %b : %s\n", a[0], a[1], a[2], obj.toLine(a));
+			System.err.format("%b %b %b : %s %d\n", a[0], a[1], a[2], obj.toLine(a), obj.size());
+			String str = new String("abc def");
+			boolean z[] = obj.fromLine(str);
+			System.err.format("<%s> : %b %b %b\n", str, z[0], z[1], z[2]);
 		} catch (NoSuchFieldException e) {
 			System.err.format("Shoud not get here; %s\n", e);
 		} catch (Exception e) {

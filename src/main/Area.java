@@ -26,8 +26,9 @@ import java.util.Scanner;
 import java.util.Collections;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 
-//import main.MoreReader;
+import main.TextReader;
 import entities.*;
 
 class Area {
@@ -206,17 +207,86 @@ class Area {
 
 	class Flags<E extends Enum<E>> {
 
-		private Enum<E> flags;
-		private final Map<String, E> map;
+		private String name;
+		private Enum<E> e;
+		private Map<String, E> map = null;
+		private final Field    aField;
+		private final Class<E> aClass;
 
-		public Flags(final Enum<E> flags, final Class<E> type) {
-			this.flags = flags;
-			/* populate map */
-			Map<String, E> mod = new HashMap<String, E>();
-			//for(E e : type.getEnumConstants()) mod.put(e.??, e);
-			map = Collections.unmodifiableMap(mod);
+		/** contstuct a Flags out of a String in an enum.
+		 @param aField
+			String field of an Enum that is unique.
+		 @param aClass
+			aField.getDeclaringClass -- couldn't figure out how to cast "CAP#1
+			cannot be converted to E" but IT IS E; gahhhhhah. class.cast(object)? */
+		public Flags(final Field aField, final Class<E> aClass) throws Exception {
+
+			this.aField = aField;
+			this.aClass = aClass;
+
+			name = aField.getDeclaringClass().getName();
+			//Class<E> aClass = aField.getDeclaringClass();
+			if(!aClass.isEnum()) throw new Exception("flags only works on enums");
+			/* fixme: check if aField in aClass */
+			System.err.format("Flags: field <%s>; class <%s>\n", aField, aClass);
+			for(E val : aClass.getEnumConstants()) System.err.format("%s : %s\n", val, aField.get(val));
+
+			/* populate a map from aField strings to enum things; make it fast */
+			try {
+				Map<String, E> mod = new HashMap<String, E>();
+				for(E val : aClass.getEnumConstants()) mod.put((String)aField.get(val), val);
+				map = Collections.unmodifiableMap(mod);
+			} catch(IllegalAccessException e) {
+				System.err.format("%s: inconceivable! %s.\n", this, e);
+			}
 		}
 
+		/** apply fixme */
+		public void apply(final String line, boolean bv[]) throws Exception {
+			E sym;
+			String toks[] = line.trim().split("\\s++"); /* split on whitespace */
+			for(String tok : toks) {
+				if((sym = map.get(tok)) == null) throw new Exception("unrecongnised " + tok);
+				bv[sym.ordinal()] = true; /* IndexOutOfBounds */
+			}
+		}
+
+		public String toLine(boolean bv[]) {
+			StringBuilder sb = new StringBuilder();
+			boolean isFirst = true;
+			for(E val : aClass.getEnumConstants()) {
+				if(bv[val.ordinal()]) {
+					if(isFirst) {
+						isFirst = false;
+					} else {
+						sb.append(" ");
+					}
+					try {
+						sb.append(aField.get(val));
+					} catch(IllegalAccessException e) {
+						System.err.format("%s: inconceivable! %s.\n", this, e);
+					}
+				}
+			}
+			return sb.toString();
+		}
+
+		public Enum<E> getEnum() {
+			return e;
+		}
+
+		public String toString() {
+			return "Flags(" + name + ")";
+		}
+
+	}
+
+	private enum Things {
+		ACB("acb"),
+		DEF("def"),
+		GHI("ghi");
+		String symbol;
+		private Things(final String symbol) { this.symbol = symbol; }
 	}
 
 	private String             name;
@@ -238,7 +308,7 @@ class Area {
 
 		/* load the files contents */
 		try(
-			MoreReader in = new MoreReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
+			TextReader in = new TextReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
 		) {
 			Scanner scan;
 			String word, line;
@@ -324,6 +394,20 @@ class Area {
 		}
 
 		System.err.format("%s: loaded %s, default room %s.\n", file, this, recall);
+
+		System.err.print("EXPERIMENT\n");
+		try {
+			Flags<Things> obj = new Flags<Things>(Things.class.getDeclaredField("symbol"), Things.class);
+			boolean a[] = new boolean[3];
+			a[1] = true;
+			a[2] = true;
+			System.err.format("%b %b %b : %s\n", a[0], a[1], a[2], obj.toLine(a));
+		} catch (NoSuchFieldException e) {
+			System.err.format("Shoud not get here; %s\n", e);
+		} catch (Exception e) {
+			System.err.format(">>> %s\n", e);
+		}
+		System.err.print("EXPERIMENT DONE\n");
 	}
 
 	public Room getRecall() {

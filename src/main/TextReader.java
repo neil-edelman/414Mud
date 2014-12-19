@@ -15,11 +15,11 @@ import java.lang.StringBuilder;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
-public class MoreReader extends LineNumberReader {
+public class TextReader extends LineNumberReader {
 	/** Creates a new MudReader wrapping around BufferedReader.
 	 @param in
 		The BufferedReader. */
-	public MoreReader(BufferedReader in) {
+	public TextReader(BufferedReader in) {
 		super(in);
 		setLineNumber(1);
 	}
@@ -75,7 +75,7 @@ class ParseException extends Exception {
 		The MoreReader that caused the exception.
 	 @param why
 		Guess why it happened. */
-	ParseException(final MoreReader in, final String why) {
+	ParseException(final TextReader in, final String why) {
 		super(why + "; line " + in.getLineNumber());
 	}
 }

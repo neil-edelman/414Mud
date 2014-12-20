@@ -1,14 +1,13 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
- 
- NPC.
- 
- @author Sid, Neil
- @version 1
- @since 2014 */
+/* Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt */
 
 package entities;
 
+/** NPC.
+
+@author	Sid, Neil
+@version	1.0, 11-2014
+@since		1.0, 11-2014 */
 public class Mob extends Character {
 
 	public boolean isFriendly;

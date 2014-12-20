@@ -9,7 +9,7 @@ import java.lang.StringBuilder;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
-/** {@see LineNumberReader} (extends {@see BufferedReader}) that has special
+/** {@link LineNumberReader} (extends {@link BufferedReader}) that has special
  features for reading text settings painlessly.
  
  @author	Neil
@@ -17,40 +17,33 @@ import java.util.NoSuchElementException;
  @since		1.1, 12-2014 */
 public class TextReader extends LineNumberReader {
 	/** Creates a new MudReader wrapping around BufferedReader.
-	 @param in
-		The BufferedReader. */
+	 @param in	The BufferedReader. */
 	public TextReader(BufferedReader in) {
 		super(in);
 		setLineNumber(1);
 	}
-	/** Like {@see BufferedReader#readLine}, but throws an exception when
+	/** Like {@link BufferedReader#readLine}, but throws an exception when
 	 the line isn't there.
-	 @throws ParseException
-		The file has ended.
-	 @throws IOException
-		Underlying readLine.
-	 @return A string minus the newline. */
+	 @return A string minus the newline.
+	 @throws ParseException	The file has ended.
+	 @throws IOException	Underlying readLine. */
 	public String nextLine() throws ParseException, IOException {
 		String line = this.readLine(); /* IOException */
 		if(line == null) throw new ParseException(this, "unexpected eof");
 		return line;
 	}
-	/** Like {@see #nextLine}, but throws an exception when asrt is not
+	/** Like {@link #nextLine}, but throws an exception when asrt is not
 	 exactly like the file.
-	 @throws ParseException
-		The file has ended.
-	 @throws IOException
-		Underlying nextLine. */
+	 @throws ParseException	The file has ended.
+	 @throws IOException	Underlying nextLine. */
 	public void assertLine(final String asrt) throws ParseException, IOException {
 		String line = nextLine();
 		if(asrt.compareTo(line) != 0) throw new ParseException(this, "expected " + asrt);
 	}
-	/** Like {@see #nextLine}, but reads all paragraph.
-	 @throws ParseException
-		The file has ended before the paragraph was complete.
-	 @throws IOException
-		Underlying nextLine.
-	 @return The whole paragraph, minus newlines, as a string. */
+	/** Like {@link #nextLine}, but reads all paragraph.
+	 @return				The whole paragraph, minus newlines, as a string.
+	 @throws ParseException	The file has ended before the paragraph was complete.
+	 @throws IOException	Underlying nextLine. */
 	public String nextParagraph() throws ParseException, IOException {
 		boolean       isFirst = true;
 		StringBuilder sb = new StringBuilder(256);

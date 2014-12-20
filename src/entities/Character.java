@@ -1,14 +1,13 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
- 
- An abstract character.
- 
- @author Sid, Neil
- @version 1
- @since 2014 */
+/* Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt */
 
 package entities;
 
+/** An abstract character.
+ 
+ @author	Sid, Neil
+ @version	1.0, 11-2014
+ @since		1.0, 11-2014 */
 public class Character extends Stuff {
 
 	/* fixme: have alignment, aggresive, plug into formula */

@@ -1,14 +1,13 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
- 
- An object, for when the children aren't what you're looking.
- 
- @author Sid, Neil
- @version 1
- @since 2014 */
+/* Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt */
 
 package entities;
 
+/** An general object.
+
+ @author	Sid, Neil
+ @version	1.0, 11-2014
+ @since		1.0, 11-2014 */
 public class Object extends Stuff {
 
 	boolean isBreakable;

@@ -1,11 +1,5 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
- 
- A room.
- 
- @author Sid, Neil
- @version 1
- @since 2014 */
+/* Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt */
 
 package entities;
 
@@ -18,6 +12,11 @@ import java.util.LinkedList;
 import java.lang.reflect.Field;
 import java.lang.NoSuchFieldException;
 
+/** A room.
+
+ @author	Sid, Neil
+ @version	1.0, 11-2014
+ @since		1.0, 11-2014 */
 public class Room extends Stuff {
 
 	protected String description;

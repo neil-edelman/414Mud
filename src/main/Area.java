@@ -178,12 +178,10 @@ class Area {
 			recallStr  = in.nextLine();
 
 			in.assertLine("~");
-			System.err.print(" A \n");
 
 			/* grab the Stuff */
 			while("~".compareTo(line = in.nextLine()) != 0) {
 				scan = new Scanner(line);
-				/* Exception -> FileParseException */
 				if((what = typeOfStuffFlags.find(scan.next())) == null) throw new ParseException(in, "unknown token");
 				id = scan.next();
 				if(scan.hasNext()) throw new ParseException(in, "too many things");
@@ -214,7 +212,6 @@ class Area {
 
 				if(FourOneFourMud.isVerbose) System.err.format("%s.%s: name <%s>,  title <%s>, %s.\n", this, id, name, title, info);
 			}
-			System.err.print(" B \n");
 
 			/* set the default room now that we've loaded them */
 			if(recallStr == null || (recall = (Room)stuff.get(recallStr)) == null) {
@@ -240,7 +237,6 @@ class Area {
 
 				if(FourOneFourMud.isVerbose) System.err.print(this + ": <" + thing + "> <" + reset + "> direction <" + dir + "> to/in <" + target + ">.\n");
 			}
-			System.err.print(" C \n");
 
 		} catch(ParseException e) {
 			System.err.format(" *** %s (syntax error:) %s.\n", file, e.getMessage());

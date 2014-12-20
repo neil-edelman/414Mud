@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 
-/* Meta-binary/bitvector flags.
+/** Meta-binary/bitvector flags.
  
  @author	Neil
  @version	1.1, 12-2014
@@ -50,7 +50,6 @@ public class BitVector<E extends Enum<E>> {
 		flags = new boolean[aClass.getEnumConstants().length];
 		//for(E val : aClass.getEnumConstants()) System.err.format("%s : %s\n", val, aField.get(val));
 
-		System.err.print("mid\n");
 		/* populate a map from aField strings to enum things; make it fast */
 		try {
 			Map<String, E> mod = new HashMap<String, E>();

@@ -9,10 +9,8 @@ package common;
  @version	1.1, 12-2014
  @since		1.1, 12-2014 */
 public class ParseException extends Exception {
-	/** @param in
-		The TextReader that caused the exception.
-	 @param why
-		Guess why it happened. */
+	/** @param in	The TextReader that caused the exception.
+	 @param why		Guess why it happened. */
 	public ParseException(final TextReader in, final String why) {
 		super(why + "; line " + in.getLineNumber());
 	}

@@ -1,11 +1,5 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
- 
- The most general sort of stuff.
- 
- @author Sid, Neil
- @version 1
- @since 2014 */
+/* Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt */
 
 package entities;
 
@@ -21,7 +15,11 @@ import java.util.Iterator;
 import main.Connection;
 import entities.Room.Direction;
 
-/* Serializ is for binary file mostly, I think */
+/** The most general sort of stuff.
+
+ @author	Sid, Neil
+ @version	1.0, 11-2014
+ @since		1.0, 11-2014 */
 public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 
 	//private static int vnumCounter = 0;

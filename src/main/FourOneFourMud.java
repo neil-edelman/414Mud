@@ -1,12 +1,5 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
- 
- This is the entry-point for starting the mud and listening for connections;
- connnections are handled by a fixed socket pool.
- 
- @author Neil
- @version 1.1
- @since 2014 */
+/* Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt */
 
 package main;
 
@@ -35,6 +28,12 @@ import entities.Mob;
 import main.Connection;
 import main.Area;
 
+/** This is the entry-point for starting the mud and listening for connections;
+ connnections are handled by a fixed socket pool.
+
+ @author	Neil
+ @version	1.1, 12-2014
+ @since		1.0, 11-2014 */
 public class FourOneFourMud implements Iterable<Connection> {
 
 	private static final int fibonacci20    = 6765;
@@ -63,8 +62,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 	private static Room   homeroom;
 
 	/** Starts up the mud and listens for connections.
-	 @param args
-		for future use */
+	 @param args	Ignored. */
 	public static void main(String args[]) {
 		int port = fibonacci20, maxConnections = 256;
 
@@ -90,9 +88,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 
 		/* read in areas */
 
-System.err.print(" \\/ \n");
 		Area.loadAreas(areasDir);
-System.err.print(" /\\ \n");
 		homearea = Area.getArea(homeareaStr);
 		try {
 			if(homearea == null) throw new Exception(dataDir + "/" + mudData + " (line 2:) " + homeareaStr + " does not exist");
@@ -149,12 +145,9 @@ System.err.print(" /\\ \n");
 	private List<Connection> clients = new LinkedList<Connection>();
 
 	/** The entire mud constructor.
-	 @param port
-		the mud port
-	 @param poolSize
-		how many simultaneous connections should we allow
-	 @throws IOException
-		Passes the IOException from the underlyieng sockets. */
+	 @param port			The mud port.
+	 @param poolSize		How many simultaneous connections should we allow.
+	 @throws IOException	Passes the IOException from the underlyieng sockets. */
 	public FourOneFourMud(int port, int poolSize) throws IOException {
 		System.err.print("414Mud starting up on port " + port
 						 + "; FixedThreadPool size " + poolSize + ".\n");
@@ -211,7 +204,7 @@ System.err.print(" /\\ \n");
 		clients.remove(c);
 	}
 
-	/** closes the server; it will detect this, and shutdown */
+	/** Closes the server; it will detect this, and shutdown. */
 	public void shutdown() {
 		try {
 			serverSocket.close();
@@ -220,7 +213,7 @@ System.err.print(" /\\ \n");
 		}
 	}
 
-	/** prints out the mud info */
+	/** Prints out the mud info. */
 	public String toString() {
 		return name;
 	}
@@ -230,19 +223,18 @@ System.err.print(" /\\ \n");
 		return homeroom;
 	}
 
-	/** @param p
-		The test password.
-	 @return True is the password matches the one when the mud started up. */
+	/** @param p	The test password.
+	 @return		True is the password matches the one when the mud started up. */
 	public boolean comparePassword(final String p) {
 		return p.compareTo(password) == 0;
 	}
 
-	/** @return Gets the iterator of all the connections. */
+	/** @return	Gets the iterator of all the connections. */
 	public Iterator<Connection> iterator() {
 		return clients.iterator();
 	}
 
-	/** @return Gets the Message of the Day. */
+	/** @return	Gets the Message of the Day. */
 	public String getMotd() {
 		return motd;
 	}

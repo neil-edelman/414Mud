@@ -1,13 +1,5 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
- 
- Connections are Runnable things; the FixedThreadPool socket pool assigns
- serverSocket.accept() which is passed to the constructor. Boolean isExit is
- checked at every line, or we could force exit though a SocketException.
- 
- @author Neil
- @version 1.1
- @since 2014 */
+/* Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt */
 
 package main;
 
@@ -24,13 +16,20 @@ import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
 
-import main.BoundedReader;
+import common.BoundedReader;
+import common.Orcish;
 import entities.Player;
 
 /** Connections are the people connected to our mud; later we will build a
  character around them and put them in the game.
- @author Neil */
-
+ <p>
+ Connections are Runnable things; the FixedThreadPool socket pool assigns
+ serverSocket.accept() which is passed to the constructor. Boolean isExit is
+ checked at every line, or we could force exit though a SocketException.
+ 
+ @author	Neil
+ @version	1.1, 12-2014
+ @since		1.0, 11-2014 */
 public class Connection implements Runnable {
 
 	private static final Commandset newbie   = new Commandset(Commandset.Level.NEWBIE);
@@ -49,8 +48,7 @@ public class Connection implements Runnable {
 	/* fixme: ip */
 
 	/** Initalize the connection.
-	 @param socket
-		the client socket */
+	 @param socket	The client socket. */
 	Connection(final Socket socket, final FourOneFourMud mud) {
 		this.commands = newbie;
 		this.socket   = socket;
@@ -105,8 +103,7 @@ public class Connection implements Runnable {
 	}
 
 	/** Send a message to the connection.
-	 @param message
-		The message. */
+	 @param message		The message. */
 	public void sendTo(final String message) {
 		if(out == null) return;
 		/* I guess Java automatically converts strings to telnet newline \r\n?
@@ -155,7 +152,7 @@ public class Connection implements Runnable {
 		isExit = true;
 	}
 
-	/* not used */
+	/* @depreciated	Not used. */
 	public void sendToRoom(final String s) {
 		if(player == null) return;
 		player.sendToRoom(s);

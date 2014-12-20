@@ -1,11 +1,5 @@
 /** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
-
- Loading/storing of areas.
- 
- @author Neil
- @version 1.1
- @since 2014 */
+ the GNU General Public License, see copying.txt */
 
 package main;
 
@@ -28,10 +22,15 @@ import java.util.Collections;
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 
-import main.TextReader;
-import main.Flags;
+import common.TextReader;
+import common.BitVector;
+import common.ParseException;
 import entities.*;
 
+/** Loading/storing of areas. 
+ @author	Neil
+ @version	1.1, 12-2014
+ @since		1.1, 12-2014 */
 class Area {
 
 	private static final String areaExt = ".area";
@@ -39,8 +38,7 @@ class Area {
 	private static Map<String, Area> areas = new HashMap<String, Area>();
 
 	/** Load all areas in specified directory.
-	 @param strdir
-		Where the areas are stored. */
+	 @param strdir	Where the areas are stored. */
 	public static void loadAreas(final String strdir) {
 		File dir = new File(strdir);
 		if(!dir.exists() || !dir.isDirectory()) {
@@ -59,16 +57,14 @@ class Area {
 		}
 	}
 
-	/** @return areas */
+	/**
+	 @param area	String name (same as filename without .area.)
+	 @return		Area or null. */
 	public static Area getArea(String area) {
 		return areas.get(area);
 	}
 
-	/* this is a glaring error in Java8; I must pay the price in repeated code */
-	/*private interface Flags { static int lookup(final String tok); }*/
-	/*public static int lookup(final String tok) { return map.get(tok).ordinal();  }*/
-
-	private enum TypeOfStuff {
+	public enum TypeOfStuff {
 		CHARACTER("Character"),
 		CONTAINER("Container"),
 		MONEY("Money"),
@@ -77,18 +73,18 @@ class Area {
 		PLAYER("Player"),
 		ROOM("Room"),
 		STUFF("Stuff");
-		String symbol;
+		public String symbol;
 		private TypeOfStuff(final String symbol) { this.symbol = symbol; }
 		public String toString()                 { return symbol; }
 	}
 
-	Flags<TypeOfStuff> typeOfStuffFlags = new Flags<TypeOfStuff>(TypeOfStuff.class);
+	BitVector<TypeOfStuff> typeOfStuffFlags = new BitVector<TypeOfStuff>(TypeOfStuff.class);
 
-	private enum Reset {
+	public enum Reset {
 		IN("in"),
 		CONNECT("connect"),
 		SET("set");
-		String symbol;
+		public String symbol;
 		private Reset(final String symbol)         { this.symbol = symbol; }
 		public String toString()                   { return symbol; }
 		public void invoke(final Stuff thing, final Stuff arg, final Room.Direction dir) throws Exception {
@@ -114,37 +110,37 @@ class Area {
 		}
 	}
 
-	Flags<Reset> resetFlags = new Flags<Reset>(Reset.class);
+	BitVector<Reset> resetFlags = new BitVector<Reset>(Reset.class);
 
-	private enum MobFlags {
+	public enum MobFlags {
 		FRIENDLY("friendly"),
 		XENO("xeno");
-		String symbol;
+		public String symbol;
 		private MobFlags(final String symbol) { this.symbol = symbol; }
 		public String toString()              { return symbol; }
 	}
 
-	Flags<MobFlags> mobFlags = new Flags<MobFlags>(MobFlags.class);
+	BitVector<MobFlags> mobFlags = new BitVector<MobFlags>(MobFlags.class);
 
-	private enum ObjectFlags {
+	public enum ObjectFlags {
 		BREAKABLE("breakable"),
 		TRANSPORTABLE("transportable");
-		String symbol;
+		public String symbol;
 		private ObjectFlags(final String symbol) { this.symbol = symbol; }
 		public String toString()                 { return symbol; }
 	}
 
-	Flags<ObjectFlags> objectFlags = new Flags<ObjectFlags>(ObjectFlags.class);
+	BitVector<ObjectFlags> objectFlags = new BitVector<ObjectFlags>(ObjectFlags.class);
 
-	private enum Things {
+	public enum Things {
 		ABC("abc"),
 		DEF("def"),
 		GHI("ghi");
-		String symbol;
+		public String symbol;
 		private Things(final String symbol) { this.symbol = symbol; }
 	}
 
-	Flags<Things> thingsFlags = new Flags<Things>(Things.class);
+	BitVector<Things> thingsFlags = new BitVector<Things>(Things.class);
 
 	private String             name;
 	private String             title   = "Untitled";
@@ -152,6 +148,8 @@ class Area {
 	private Map<String, Stuff> stuff   = new HashMap<String, Stuff>();
 	private Room               recall;
 
+	/** @param file	Filename that the area is read from.
+	 @fixme			Throws something, don't just make an empty area. */
 	public Area(final File file) {
 		String recallStr = null;
 
@@ -255,7 +253,7 @@ class Area {
 
 		System.err.print("EXPERIMENT\n");
 		try {
-			Flags<Things> obj = new Flags<Things>(Things.class);
+			BitVector<Things> obj = new BitVector<Things>(Things.class);
 			boolean a[] = new boolean[obj.size()];
 			a[1] = true;
 			a[2] = true;
@@ -271,10 +269,12 @@ class Area {
 		System.err.print("EXPERIMENT DONE\n");
 	}
 
+	/** @return	Default room. */
 	public Room getRecall() {
 		return recall;
 	}
 
+	/** @return	A synecdochical {@link String}. */
 	public String toString() {
 		//return "" + title + " by " + author;
 		return name;

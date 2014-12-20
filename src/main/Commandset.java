@@ -1,14 +1,5 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
- 
- Commands you can enact; different commands may be given to you in the same
- Connection (controlled by Level.) Eg, when you start, you have limited options
- (Newbie,) but once you have a body, you can do much more (Common) but some
- players are able to shutdown the mud, create things, etc (Immortal.)
- 
- @author Neil
- @version 1.1
- @since 2014 */
+/* Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
+ the GNU General Public License, see copying.txt */
 
 package main;
 
@@ -22,17 +13,21 @@ import entities.Stuff;
 import entities.Player;
 import entities.Room;
 
-/** Commands. 
-
- @author Neil */
-
+/** Commands you can enact; different commands may be given to you in the same
+ Connection (controlled by Level.) Eg, when you start, you have limited options
+ (Newbie,) but once you have a body, you can do much more (Common) but some
+ players are able to shutdown the mud, create things, etc (Immortal.)
+ 
+ @author	Neil
+ @version	1.1, 12-2014
+ @since		1.0, 11-2014 */
 public class Commandset {
 
 	private static final int minName  = 3;
 	private static final int maxName  = 8;
 	private static final int maxUpper = 2;
 
-	/* these are the commands! */
+	/* these are the commands! fixme: anonymous f'n */
 	
 	private static void help(final Connection c, final String arg) {
 		Commandset set = c.getCommandset();
@@ -272,8 +267,7 @@ public class Commandset {
 	private final Map<String, Method> commands = new HashMap<String, Method>();
 
 	/** Gets a Commandset appropriate to level.
-	 @param level
-		The level, Commandset.Level.{ NEWBIE, COMMON, IMMORTAL }. */
+	 @param level	The level, Commandset.Level.{ NEWBIE, COMMON, IMMORTAL }. */
 	public Commandset(Level level) {
 		this.level = level;
 
@@ -323,10 +317,8 @@ public class Commandset {
 	}
 
 	/** This parses the string and runs it.
-	 @param c
-		The connection that's attributed the command.
-	 @param command
-		A command to parse. */
+	 @param c		The connection that's attributed the command.
+	 @param command	A command to parse. */
 	public void interpret(final Connection c, final String command) {
 		String cmd, arg;
 

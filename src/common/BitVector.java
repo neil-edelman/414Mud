@@ -1,13 +1,7 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
+/** Copyright 2014 Neil Edelman, distributed under the terms of the GNU General
+ Public License, see copying.txt */
 
- Meta-binary/bitvector flags.
-
- @author Neil
- @version 1.1
- @since 2014 */
-
-package main;
+package common;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -17,7 +11,12 @@ import java.util.Collections;
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 
-public class Flags<E extends Enum<E>> {
+/* Meta-binary/bitvector flags.
+ 
+ @author	Neil
+ @version	1.1, 12-2014
+ @since		1.1, 12-2014 */
+public class BitVector<E extends Enum<E>> {
 
 	private /*final <- there is no way to assign a final in a try*/ Field    aField;
 	private final Class<E> aClass;
@@ -28,14 +27,14 @@ public class Flags<E extends Enum<E>> {
 	private Map<String, E> map = null;
 	//private Enum<E> e;
 
-	/** contstuct a Flags out of a String in an enum.
-	 @param aClass
-		An Enum having the varible "symbol" that is unique. */
-	public Flags(final Class<E> aClass) {
+	/** Contstuct a BitVector out of a {@link Class}.
+	 @param aClass					An Enum having a unique varible "symbol."
+	 @throws NoSuchFieldException	When the aClass is not Enum or doesn't have
+	 the field symbol. */
+	public BitVector(final Class<E> aClass) {
 
-		System.err.print("start\n");
-		if(!aClass.isEnum()) { //throw new Exception("flags only works on enums");
-			System.err.print("Flags only work on enums.\n");
+		if(!aClass.isEnum()) { //throw new NoSuchFieldException("flags only works on enums");
+			System.err.print("BitVector only work on enums.\n");
 		}
 
 		try {
@@ -60,23 +59,19 @@ public class Flags<E extends Enum<E>> {
 		} catch(IllegalAccessException e) {
 			System.err.format("%s: inconceivable! %s.\n", this, e);
 		}
-		System.err.print("end\n");
 	}
 
-	/** @param find
-		String.
-	 @return
-		Enum value (can be null.) */
+	/** Find.
+	 @param find	String.
+	 @return		Enum value (can be null.) */
 	public E find(final String f) {
 		return map.get(f);
 	}
 
-	/** @param line
-		The line with only the strings from the enum.
-	 @return
-		The values arranged by incresing order.
-	 @throws Exception
-		On any tokens not in the enum. */
+	/** Reads the line and sets boolean array appropriately.
+	 @param line		The line with only the strings from the enum.
+	 @return			The values arranged by incresing order.
+	 @throws Exception	On any tokens not in the enum. */
 	public boolean[] fromLine(final String line) throws Exception {
 		E sym;
 		/* split on whitespace */
@@ -91,11 +86,10 @@ public class Flags<E extends Enum<E>> {
 		return flags;
 	}
 
-	/** Returns a string with the representations of the true bit values
-	 set.
-	 @param bv
-		Must have size() elements (at least -- the values above size() are
-		superflous.) */
+	/**
+	 @param bv	Must have size() elements (at least -- the values above size()
+	 are superflous.)
+	 @return	A string with the representations of the true bit values set. */
 	public String toLine(boolean bv[]) {
 		StringBuilder sb = new StringBuilder();
 		boolean isFirst = true;
@@ -120,12 +114,15 @@ public class Flags<E extends Enum<E>> {
 		return e;
 	}*/
 
-	public String toString() {
-		return "Flags(" + name + ")";
-	}
-
+	/** Eg, { boolean b[] = new boolean[f.size()]; }.
+	 @return	The number of constants. */
 	public int size() {
 		return aClass.getEnumConstants().length;
+	}
+
+	/** @return	A synecdochical {@link String}. */
+	public String toString() {
+		return "BitVector(" + name + ")";
 	}
 
 }

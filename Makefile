@@ -5,7 +5,8 @@ VA    := 1
 VB    := 1
 E     := entities
 M     := main
-FILES := $(M)/FourOneFourMud $(M)/Area $(M)/Connection $(M)/Commandset $(M)/Orcish $(M)/BoundedReader $(M)/TextReader $(M)/Flags $(E)/Stuff $(E)/Character $(E)/Player $(E)/Mob $(E)/Object $(E)/Container $(E)/Money $(E)/Room
+C     := common
+FILES := $(C)/Orcish $(C)/ParseException $(C)/BoundedReader $(C)/TextReader $(C)/BitVector $(M)/FourOneFourMud $(M)/Area $(M)/Connection $(M)/Commandset $(E)/Stuff $(E)/Character $(E)/Player $(E)/Mob $(E)/Object $(E)/Container $(E)/Money $(E)/Room
 SDIR  := src
 BDIR  := bin
 BACK  := backup
@@ -17,8 +18,20 @@ SRCS  := $(patsubst %,$(SDIR)/%.java,$(FILES))
 #H     := $(patsubst %,$(SDIR)/%.h,$(FILES))
 
 CC   := javac
-CF   := -g:none -O -d $(BDIR) $(SDIR)/main/*.java $(SDIR)/$(E)/*.java -Xlint:unchecked -Xlint:deprecation #-verbose $(SDIR)/gamelogic/*.java
+CF   := -g:none -O -d $(BDIR) $(SDIR)/main/*.java $(SDIR)/$(C)/*.java $(SDIR)/$(E)/*.java -Xlint:unchecked -Xlint:deprecation #-verbose
 OF   := # -framework OpenGL -framework GLUT
+
+# props Jakob Borg and Eldar Abusalimov
+EMPTY :=
+SPACE := $(EMPTY) $(EMPTY)
+ifeq (backup, $(firstword $(MAKECMDGOALS)))
+  ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  $(eval $(ARGS):;@:)
+  ARGS := $(subst $(SPACE),_,$(ARGS))
+  ifneq (,$(ARGS))
+    ARGS := -$(ARGS)
+  endif
+endif
 
 default: $(OBJS)
 #default: $(BDIR)/$(PROJ)
@@ -47,4 +60,4 @@ clean:
 
 backup:
 	@mkdir -p $(BACK)
-	zip $(BACK)/$(INST)-`date +%Y-%m-%dT%H%M%S`.zip readme.txt Makefile $(SRCS) $(EXTRA)
+	zip $(BACK)/$(INST)-`date +%Y-%m-%dT%H%M%S`$(ARGS).zip readme.txt Makefile $(SRCS) $(EXTRA)

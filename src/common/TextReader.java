@@ -1,13 +1,7 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
- 
- I was lazy, LineNumberReader always checking for error conditions; made my own.
- 
- @author Neil
- @version 1.1
- @since 2014 */
+/* Copyright 2014 Neil Edelman, distributed under the terms of the GNU General
+ Public License, see copying.txt */
 
-package main;
+package common;
 
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
@@ -15,6 +9,12 @@ import java.lang.StringBuilder;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
+/** {@see LineNumberReader} (extends {@see BufferedReader}) that has special
+ features for reading text settings painlessly.
+ 
+ @author	Neil
+ @version	1.1, 12-2014
+ @since		1.1, 12-2014 */
 public class TextReader extends LineNumberReader {
 	/** Creates a new MudReader wrapping around BufferedReader.
 	 @param in
@@ -67,15 +67,4 @@ public class TextReader extends LineNumberReader {
 		return sb.toString();
 	}
 
-}
-
-/** We are very stict about this. */
-class ParseException extends Exception {
-	/** @param in
-		The MoreReader that caused the exception.
-	 @param why
-		Guess why it happened. */
-	ParseException(final TextReader in, final String why) {
-		super(why + "; line " + in.getLineNumber());
-	}
 }

@@ -1,17 +1,16 @@
-/** Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
- the GNU General Public License, see copying.txt
- 
- Tolkienised random words are useful:
- @link{http://en.wikipedia.org/wiki/Languages_constructed_by_J._R._R._Tolkien}.
- 
- @author Neil
- @version 1.1
- @since 2014 */
+/* Copyright 2014 Neil Edelman, distributed under the terms of the GNU General
+ Public License, see copying.txt */
 
-package main;
+package common;
 
 import java.util.Random;
 
+/** Tolkienised random words are useful:
+ {@link http://en.wikipedia.org/wiki/Languages_constructed_by_J._R._R._Tolkien}.
+ 
+ @author	Neil
+ @version	1.1, 12-2014
+ @since		1.0, 11-2014 */
 public class Orcish {
 
 	private static final String sylables[] = {

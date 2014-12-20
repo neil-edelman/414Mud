@@ -26,11 +26,11 @@ EMPTY :=
 SPACE := $(EMPTY) $(EMPTY)
 ifeq (backup, $(firstword $(MAKECMDGOALS)))
   ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  $(eval $(ARGS):;@:)
-  ARGS := $(subst $(SPACE),_,$(ARGS))
-  ifneq (,$(ARGS))
-    ARGS := -$(ARGS)
+  BRGS := $(subst $(SPACE),_,$(ARGS))
+  ifneq (,$(BRGS))
+    BRGS := -$(BRGS)
   endif
+  $(eval $(ARGS):;@:)
 endif
 
 default: $(OBJS)
@@ -60,4 +60,5 @@ clean:
 
 backup:
 	@mkdir -p $(BACK)
-	zip $(BACK)/$(INST)-`date +%Y-%m-%dT%H%M%S`$(ARGS).zip readme.txt Makefile $(SRCS) $(EXTRA)
+	zip $(BACK)/$(INST)-`date +%Y-%m-%dT%H%M%S`$(BRGS).zip readme.txt Makefile $(SRCS) $(EXTRA)
+	git commit -am "$(ARGS)"

@@ -247,22 +247,6 @@ class Area {
 
 		System.err.format("%s: loaded %s, default room %s.\n", file, this, recall);
 
-		System.err.print("EXPERIMENT\n");
-		try {
-			BitVector<Things> obj = new BitVector<Things>(Things.class);
-			boolean a[] = new boolean[obj.size()];
-			a[1] = true;
-			a[2] = true;
-			System.err.format("%b %b %b : %s %d\n", a[0], a[1], a[2], obj.toLine(a), obj.size());
-			String str = new String("abc def");
-			boolean z[] = obj.fromLine(str);
-			System.err.format("<%s> : %b %b %b\n", str, z[0], z[1], z[2]);
-		} catch (NoSuchFieldException e) {
-			System.err.format("%s: enum has to have variable <%s>.\n", this, e.getMessage());
-		} catch (Exception e) {
-			System.err.format(">>> %s\n", e);
-		}
-		System.err.print("EXPERIMENT DONE\n");
 	}
 
 	/** @return	Default room. */

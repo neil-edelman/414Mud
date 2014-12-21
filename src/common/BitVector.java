@@ -3,6 +3,8 @@
 
 package common;
 
+//import java.io.LineNumberReader;
+
 import java.util.Map;
 import java.util.HashMap;
 
@@ -11,6 +13,8 @@ import java.util.Collections;
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 
+import common.UnrecognisedTokenException;
+
 /** Meta-binary/bitvector flags.
  
  @author	Neil
@@ -18,12 +22,12 @@ import java.lang.reflect.Field;
  @since		1.1, 12-2014 */
 public class BitVector<E extends Enum<E>> {
 
-	private /*final <- there is no way to assign a final in a try*/ Field    aField;
+	private final Field    aField;
 	private final Class<E> aClass;
 
 	private String name;
 
-	private boolean        flags[];
+	private boolean flags[];
 	private Map<String, E> map = null;
 	//private Enum<E> e;
 
@@ -33,16 +37,19 @@ public class BitVector<E extends Enum<E>> {
 	 the field symbol. */
 	public BitVector(final Class<E> aClass) {
 
-		if(!aClass.isEnum()) { //throw new NoSuchFieldException("flags only works on enums");
-			System.err.print("BitVector only work on enums.\n");
+		if(!aClass.isEnum()) {
+			assert(true): "BitVector called not on enum";
+			System.err.format("%s: inconceivable! BitVector must be an enum.\n", this);
 		}
 
+		Field aField = null;
 		try {
-			this.aField = aClass.getDeclaredField("symbol");
+			aField = aClass.getDeclaredField("symbol");
 		} catch(NoSuchFieldException e) {
-			this.aField = null;
-			System.err.format("%n.\n", e);
+			assert(true): "BitVector must have <public symbol>; " + e;
+			System.err.format("%s: inconceivable! %s.\n", this, e);
 		}
+		this.aField = aField;
 		this.aClass = aClass;
 
 		name = aClass.getName();
@@ -56,6 +63,7 @@ public class BitVector<E extends Enum<E>> {
 			for(E val : aClass.getEnumConstants()) mod.put((String)aField.get(val), val);
 			map = Collections.unmodifiableMap(mod);
 		} catch(IllegalAccessException e) {
+			assert(true): "inconceivable! " + e;
 			System.err.format("%s: inconceivable! %s.\n", this, e);
 		}
 	}
@@ -68,10 +76,10 @@ public class BitVector<E extends Enum<E>> {
 	}
 
 	/** Reads the line and sets boolean array appropriately.
-	 @param line		The line with only the strings from the enum.
-	 @return			The values arranged by incresing order.
-	 @throws Exception	On any tokens not in the enum. */
-	public boolean[] fromLine(final String line) throws Exception {
+	 @param line			The line with only the strings from the enum.
+	 @return				The values arranged by incresing order.
+	 @throws ParseException	On any tokens not in the enum. */
+	public boolean[] fromLine(final String line) throws UnrecognisedTokenException {
 		E sym;
 		/* split on whitespace */
 		String toks[] = line.trim().split("\\s++");
@@ -79,8 +87,8 @@ public class BitVector<E extends Enum<E>> {
 		for(int i = 0; i < flags.length; i++) flags[i] = false;
 		/* set */
 		for(String tok : toks) {
-			if((sym = map.get(tok)) == null) throw new Exception("unrecongnised " + tok); // fixme
-			flags[sym.ordinal()] = true; /* IndexOutOfBounds */
+			if((sym = map.get(tok)) == null) throw new UnrecognisedTokenException(tok);
+			flags[sym.ordinal()] = true;
 		}
 		return flags;
 	}
@@ -102,6 +110,7 @@ public class BitVector<E extends Enum<E>> {
 				try {
 					sb.append(aField.get(val));
 				} catch(IllegalAccessException e) {
+					assert(true): "inconceivable! " + e;
 					System.err.format("%s: inconceivable! %s.\n", this, e);
 				}
 			}

@@ -8,6 +8,7 @@ import java.io.LineNumberReader;
 import java.lang.StringBuilder;
 import java.io.IOException;
 import java.util.NoSuchElementException;
+import java.text.ParseException;
 
 /** {@link LineNumberReader} (extends {@link BufferedReader}) that has special
  features for reading text settings painlessly.
@@ -29,7 +30,7 @@ public class TextReader extends LineNumberReader {
 	 @throws IOException	Underlying readLine. */
 	public String nextLine() throws ParseException, IOException {
 		String line = this.readLine(); /* IOException */
-		if(line == null) throw new ParseException(this, "unexpected eof");
+		if(line == null) throw new ParseException("unexpected eof", getLineNumber());
 		return line;
 	}
 	/** Like {@link #nextLine}, but throws an exception when asrt is not
@@ -38,7 +39,7 @@ public class TextReader extends LineNumberReader {
 	 @throws IOException	Underlying nextLine. */
 	public void assertLine(final String asrt) throws ParseException, IOException {
 		String line = nextLine();
-		if(asrt.compareTo(line) != 0) throw new ParseException(this, "expected " + asrt);
+		if(asrt.compareTo(line) != 0) throw new ParseException("expected " + asrt, getLineNumber());
 	}
 	/** Like {@link #nextLine}, but reads all paragraph.
 	 @return				The whole paragraph, minus newlines, as a string.

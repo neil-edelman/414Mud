@@ -48,7 +48,8 @@ public class Room extends Stuff {
 			} catch(NoSuchFieldException e) {
 				System.err.format("Direction: inconceivable! %s.\n", e);
 			}
-			/* map for turning strings into Directions */
+			/* map for turning strings into Directions
+			 fixme: code duplication in BitVector */
 			Map<String, Direction> mod = new HashMap<String, Direction>();
 			for(Direction d : values()) mod.put(d.name(), d);
 			map = Collections.unmodifiableMap(mod);
@@ -56,14 +57,15 @@ public class Room extends Stuff {
 		private Direction(final String name)           { this.name = name; }
 		public  Direction getBack()                    { return back; }
 		private Room      getRoom(Room r)              {
-			/* so so so sad! why won't it work? :[ */
-			/*try {
+			/* so so so sad! it's specific to the actual room, not the class in
+			 general */
+			try {
 				Room d = (Room)room.get(r);
-				System.err.print("getRoom: '" + r + "' accessing " + room + " = " + d + " (always null :[.)\n");
+				System.err.format("getRoom: '%s' accessing %s = %s\n", r, this, d);
 			} catch(IllegalAccessException e) {
-				System.err.print("Direction: illegal; " + e + ".\n");
+				System.err.format("Direction: illegal; %s.\n", e);
 				return null;
-			}*/
+			}
 			/* this is a hack :[ */
 			switch(this) {
 				case N: return r.n;

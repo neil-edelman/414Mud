@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 
-import java.io.BufferedReader;
+//import java.io.BufferedReader;
+import java.io.LineNumberReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -68,11 +69,13 @@ public class FourOneFourMud implements Iterable<Connection> {
 
 		/* read in settings */
 
+		int homeareaLine = 0;
 		Path path = FileSystems.getDefault().getPath(dataDir, mudData);
-		try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+		try(LineNumberReader reader = new LineNumberReader(Files.newBufferedReader(path, StandardCharsets.UTF_8))) {
 			String line;
 			if((line = reader.readLine()) != null) name        = line;
 			if((line = reader.readLine()) != null) homeareaStr = line;
+			homeareaLine = reader.getLineNumber();
 			if((line = reader.readLine()) != null) port        = Integer.parseInt(line);
 			if((line = reader.readLine()) != null) maxConnections = Integer.parseInt(line);
 			if((line = reader.readLine()) != null) password    = line;
@@ -89,13 +92,18 @@ public class FourOneFourMud implements Iterable<Connection> {
 		/* read in areas */
 
 		Area.loadAreas(areasDir);
+
+		/* set the [defaut] recall spot */
+
 		homearea = Area.getArea(homeareaStr);
 		try {
-			if(homearea == null) throw new Exception(dataDir + "/" + mudData + " (line 2:) " + homeareaStr + " does not exist");
+			if(homearea == null) throw new Exception("area <" + homeareaStr + "> (line " + homeareaLine + ") does not exist; connections will be sent to the null room");
 			homeroom = homearea.getRecall();
 			System.err.format("Set home room: <%s.%s>.\n", homearea, homeroom);
 		} catch(Exception e) {
-			System.err.format("%s.\n", e.getMessage());
+			System.err.format("%s/%s: %s.\n", dataDir, mudData, e.getMessage());
+			/* we let is start anyway; it's a chat server at least */
+			//return;
 		}
 
 		/* run mud */

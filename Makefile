@@ -6,7 +6,7 @@ VB    := 1
 E     := entities
 M     := main
 C     := common
-FILES := $(C)/Orcish $(C)/ParseException $(C)/BoundedReader $(C)/TextReader $(C)/BitVector $(M)/FourOneFourMud $(M)/Area $(M)/Connection $(M)/Commandset $(E)/Stuff $(E)/Character $(E)/Player $(E)/Mob $(E)/Object $(E)/Container $(E)/Money $(E)/Room
+FILES := $(C)/Orcish $(C)/BoundedReader $(C)/TextReader $(C)/BitVector $(C)/UnrecognisedTokenException $(M)/FourOneFourMud $(M)/Area $(M)/Connection $(M)/Commandset $(E)/Stuff $(E)/Character $(E)/Player $(E)/Mob $(E)/Object $(E)/Container $(E)/Money $(E)/Room
 SDIR  := src
 BDIR  := bin
 BACK  := backup
@@ -58,7 +58,11 @@ setup: default
 clean:
 	-rm -f $(OBJS)
 
+gitback: backup git
+
 backup:
 	@mkdir -p $(BACK)
 	zip $(BACK)/$(INST)-`date +%Y-%m-%dT%H%M%S`$(BRGS).zip readme.txt Makefile $(SRCS) $(EXTRA)
+
+git:
 	git commit -am "$(ARGS)"

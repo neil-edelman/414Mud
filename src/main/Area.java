@@ -21,10 +21,14 @@ import java.util.Collections;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 import common.TextReader;
 import common.BitVector;
-import common.ParseException;
+import common.UnrecognisedTokenException;
+import java.text.ParseException;
+import javax.naming.NamingException;
+
 import entities.*;
 
 /** Loading/storing of areas. 
@@ -40,20 +44,27 @@ class Area {
 	/** Load all areas in specified directory.
 	 @param strdir	Where the areas are stored. */
 	public static void loadAreas(final String strdir) {
+		Area area;
 		File dir = new File(strdir);
 		if(!dir.exists() || !dir.isDirectory()) {
-			System.err.format("loadArea: '%s' is not a thing.\n", strdir);
+			System.err.format("loadArea: <%s> is not a thing.\n", strdir);
 			return;
 		}
 		File files[] = dir.listFiles(new FilenameFilter() {
 			public boolean accept(File current, String name) {
-				/* fixme: isFile(), canRead() */
 				return name.endsWith(areaExt);
 			}
 		});
 		for(File f : files) {
-			System.err.print("Loading area <" + f + ">.\n");
-			areas.put(f.getName(), new Area(f));
+			try {
+				System.err.format("Loading area <%s>.\n", f);
+				area = new Area(f);
+				areas.put("" + area, area);
+			} catch(ParseException e) {
+				System.err.format("%s; syntax error: %s, line %d.\n", f, e.getMessage(), e.getErrorOffset());
+			} catch(IOException | NamingException e) {
+				System.err.format("%s; %s.\n", f, e);
+			}
 		}
 	}
 
@@ -87,23 +98,28 @@ class Area {
 		public String symbol;
 		private Reset(final String symbol)         { this.symbol = symbol; }
 		public String toString()                   { return symbol; }
-		public void invoke(final Stuff thing, final Stuff arg, final Room.Direction dir) throws Exception {
+		public void invoke(final Stuff thing, final Stuff arg, final Room.Direction dir) {
 			//System.err.format("%s.invoke(%s, %s, %s);\n", this, thing, arg, dir);
-			Reset.class.getDeclaredMethod(symbol, Stuff.class, Stuff.class,
-										  Room.Direction.class).invoke(this, thing, arg, dir);
+			try {
+				Reset.class.getDeclaredMethod(symbol, Stuff.class, Stuff.class, Room.Direction.class).invoke(this, thing, arg, dir);
+			} catch(NoSuchElementException | NoSuchMethodException
+					| IllegalAccessException | InvocationTargetException e) {
+				assert(true): "something's terribly wrong with resets";
+				System.err.format("%s: could not call on %s, %s, %s.\n", thing, arg, dir);
+			}
 		}
 		public void in(final Stuff thing, final Stuff container, final Room.Direction dir) {
 			//System.out.format("!!!refl in in %s %s %s\n", thing, container, dir);
 			thing.transportTo(container);
 		}
-		public void connect(final Stuff room, final Stuff target, final Room.Direction dir) throws Exception {
+		public void connect(final Stuff room, final Stuff target, final Room.Direction dir) {
 			//System.out.format("!!!refl connect in %s %s %s\n", room, target, dir);
 			//if(!(room   instanceof Room)) throw new Exception(room   + " not Room");
 			//if(!(target instanceof Room)) throw new Exception(target + " not Room");
 			Room r = (Room)room;
 			r.connectDirection(dir, (Room)target);
 		}
-		public void set(final Stuff room, final Stuff target, final Room.Direction dir) throws Exception {
+		public void set(final Stuff room, final Stuff target, final Room.Direction dir) {
 			//System.out.format("!!!refl set in %s %s %s\n", room, target, dir);
 			Room r = (Room)room;
 			r.setDirection(dir, (Room)target);
@@ -143,106 +159,107 @@ class Area {
 	BitVector<Things> thingsFlags = new BitVector<Things>(Things.class);
 
 	private String             name;
-	private String             title   = "Untitled";
-	private String             author  = "Unauthored";
-	private Map<String, Stuff> stuff   = new HashMap<String, Stuff>();
+	private String             title;
+	private String             author;
+	private Map<String, Stuff> stuff = new HashMap<String, Stuff>();
 	private Room               recall;
 
 	/** @param file	Filename that the area is read from.
 	 @fixme			Throws something, don't just make an empty area. */
-	public Area(final File file) {
-		String recallStr = null;
+	public Area(final File file) throws ParseException, IOException, NamingException {
 
 		/* determine the name by the (file - areaExt) */
 		name = file.getName();
-		if(name.endsWith(areaExt)) {
-			name = name.substring(0, name.length() - areaExt.length());
-		} else {
-			System.err.format("%s: area file didn't end in %s.\n", name, areaExt);
-		}
+		if(!name.endsWith(areaExt)) throw new NamingException(name + " suffix " + areaExt);
+		name = name.substring(0, name.length() - areaExt.length());
 
 		/* load the files contents */
 		try(
 			TextReader in = new TextReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
 		) {
-			Scanner scan;
-			String word, line;
-			String id, name, title, desc, info = "no info";
-			TypeOfStuff what;
-			boolean flags[];
+			/* for exceptions requiring access to 'in' */
+			try {
+				Scanner scan;
+				String recallStr;
+				String word, line;
+				String id, name, title, desc, info = "no info";
+				TypeOfStuff what;
+				boolean flags[];
 
-			/* grab the header;
-			 this.title belongs to Area; title belongs to Stuff in the Area */
-			this.title = in.nextLine();
-			author     = in.nextLine();
-			recallStr  = in.nextLine();
+				/* grab the header;
+				 this.title belongs to Area; title belongs to Stuff in the Area */
+				this.title  = in.nextLine();
+				this.author = in.nextLine();
+				recallStr   = in.nextLine();
 
-			in.assertLine("~");
+				in.assertLine("~");
 
-			/* grab the Stuff */
-			while("~".compareTo(line = in.nextLine()) != 0) {
-				scan = new Scanner(line);
-				if((what = typeOfStuffFlags.find(scan.next())) == null) throw new ParseException(in, "unknown token");
-				id = scan.next();
-				if(scan.hasNext()) throw new ParseException(in, "too many things");
-				name  = in.nextLine();
-				title = in.nextLine();
-				switch(what) {
-					case ROOM:
-						stuff.put(id, new Room(name, title, desc = in.nextParagraph()));
-						info = String.format("desc <%s>", desc);
-						break;
-					case MOB:
-						flags = mobFlags.fromLine(in.nextLine());
-						stuff.put(id, new Mob(name, title, flags[0], flags[1]));
-						info = String.format("F %b, X %b", flags[0], flags[1]);
-						break;
-					case OBJECT:
-						flags = objectFlags.fromLine(in.nextLine());
-						stuff.put(id, new entities.Object(name, title, flags[0], flags[1]));
-						info = String.format("B %b, T %b", flags[0], flags[1]);
-						break;
-					case CHARACTER:
-					case CONTAINER:
-					case MONEY:
-					case PLAYER:
-					case STUFF:
-						throw new ParseException(in, what + " not implemented");
+				/* grab the Stuff */
+				while("~".compareTo(line = in.nextLine()) != 0) {
+					scan = new Scanner(line);
+					if((what = typeOfStuffFlags.find(scan.next())) == null) throw new ParseException("unknown token", in.getLineNumber());
+					id = scan.next();
+					if(scan.hasNext()) throw new ParseException("too many things", in.getLineNumber());
+					name  = in.nextLine();
+					title = in.nextLine();
+					switch(what) {
+						case ROOM:
+							stuff.put(id, new Room(name, title, desc = in.nextParagraph()));
+							info = String.format("desc <%s>", desc);
+							break;
+						case MOB:
+							flags = mobFlags.fromLine(in.nextLine());
+							stuff.put(id, new Mob(name, title, flags[0], flags[1]));
+							info = String.format("F %b, X %b", flags[0], flags[1]);
+							break;
+						case OBJECT:
+							flags = objectFlags.fromLine(in.nextLine());
+							stuff.put(id, new entities.Object(name, title, flags[0], flags[1]));
+							info = String.format("B %b, T %b", flags[0], flags[1]);
+							break;
+						case CHARACTER:
+						case CONTAINER:
+						case MONEY:
+						case PLAYER:
+						case STUFF:
+							throw new ParseException(what + " not implemented", in.getLineNumber());
+					}
+
+					if(FourOneFourMud.isVerbose) System.err.format("%s.%s: name <%s>,  title <%s>, %s.\n", this, id, name, title, info);
 				}
 
-				if(FourOneFourMud.isVerbose) System.err.format("%s.%s: name <%s>,  title <%s>, %s.\n", this, id, name, title, info);
-			}
+				/* set the default room now that we've loaded it (hopefully) */
+				if((recall = (Room)stuff.get(recallStr)) == null) throw new ParseException(recallStr + " not found", in.getLineNumber());
 
-			/* set the default room now that we've loaded them */
-			if(recallStr == null || (recall = (Room)stuff.get(recallStr)) == null) {
-				System.err.format("%s: default room %s not found.\n", file, recallStr);
-			}
+				/* resets/connections to the end of the file */
+				Stuff thing, target;
+				Reset reset;
+				Room.Direction dir;
+				while((line = in.readLine()) != null) {
+					scan = new Scanner(line);
+					if((thing  =       stuff.get(scan.next())) == null) throw new ParseException("unknown stuff", in.getLineNumber());
+					if((reset  = resetFlags.find(scan.next())) == null) throw new ParseException("unknown token", in.getLineNumber());
+					if(reset == Reset.CONNECT || reset == Reset.SET) {
+						if((dir = Room.Direction.find(scan.next())) == null) throw new ParseException("unknown direction", in.getLineNumber());
+					} else {
+						dir = null;
+					}
+					if((target =  stuff.get(scan.next())) == null) throw new ParseException("unknown argument", in.getLineNumber());
+					if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
+					reset.invoke(thing, target, dir);
 
-			/* resets to the end */
-			Stuff thing, target;
-			Reset reset;
-			Room.Direction dir;
-			while((line = in.readLine()) != null) {
-				scan = new Scanner(line);
-				if((thing  =       stuff.get(scan.next())) == null) throw new ParseException(in, "unknown stuff");
-				if((reset  = resetFlags.find(scan.next())) == null) throw new ParseException(in, "unknown token");
-				if(reset == Reset.CONNECT || reset == Reset.SET) {
-					if((dir = Room.Direction.find(scan.next())) == null) throw new ParseException(in, "unknown direction");
-				} else {
-					dir = null;
+					if(FourOneFourMud.isVerbose) System.err.print(this + ": <" + thing + "> <" + reset + "> direction <" + dir + "> to/in <" + target + ">.\n");
 				}
-				if((target =  stuff.get(scan.next())) == null) throw new ParseException(in, "unknown argument");
-				if(scan.hasNext()) throw new ParseException(in, "too much stuff");
-				reset.invoke(thing, target, dir);
 
-				if(FourOneFourMud.isVerbose) System.err.print(this + ": <" + thing + "> <" + reset + "> direction <" + dir + "> to/in <" + target + ">.\n");
+			} catch(UnrecognisedTokenException e) {
+				/* transform it into ParseException with the line number which
+				 we now have */
+				throw new ParseException("unrecognised " + e.getMessage(), in.getLineNumber());
 			}
-
 		} catch(ParseException e) {
-			System.err.format(" *** %s (syntax error:) %s.\n", file, e.getMessage());
-		} catch(Exception e) {
-			/* fixme: have nested, re-interrupt */
-			System.err.format(" *** %s: %s.\n", file, e);
+			/* re-throw it: the area is not parseable; harsh, but otherwise
+			 [most] area designers would get sloppy */
+			throw new ParseException(e.getMessage(), e.getErrorOffset());
 		}
 
 		System.err.format("%s: loaded %s, default room %s.\n", file, this, recall);

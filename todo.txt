@@ -1,5 +1,5 @@
-Direction<Room> <-- ? internet
 FourOneFourMud: make it static or dynamic, not in between
 wrap Commandset into unchanging, immutable
 anonymous classes in Commandset
 add a reflection field to BitVector
+BFS for hearing Mobs

@@ -19,16 +19,18 @@ import java.lang.NoSuchFieldException;
  @since		1.0, 11-2014 */
 public class Room extends Stuff {
 
-	protected String description;
-	protected Room n, e, s, w, u, d;
-
-	/* I love and hate Java. -Neil */
 	public enum Direction {
-		N("north"), E("east"), S("south"), W("west"), U("up"), D("down");
-		private String       name;
+		N("n", "north"),
+		E("e", "east"),
+		S("s", "south"),
+		W("w", "west"),
+		U("u", "up"),
+		D("d", "down");
+
+		private String       name, var;
 		private Direction    back;
-		private static Field room;
 		private static final Map<String, Direction> map;
+
 		static {
 			/* reverse direction */
 			N.back = S;
@@ -37,49 +39,37 @@ public class Room extends Stuff {
 			W.back = E;
 			U.back = D;
 			D.back = U;
-			/* the actual rooms */
-			try {
-				N.room = Room.class.getDeclaredField("n");
-				E.room = Room.class.getDeclaredField("e");
-				S.room = Room.class.getDeclaredField("s");
-				W.room = Room.class.getDeclaredField("w");
-				U.room = Room.class.getDeclaredField("u");
-				D.room = Room.class.getDeclaredField("d");
-			} catch(NoSuchFieldException e) {
-				System.err.format("Direction: inconceivable! %s.\n", e);
-			}
 			/* map for turning strings into Directions
 			 fixme: code duplication in BitVector */
 			Map<String, Direction> mod = new HashMap<String, Direction>();
 			for(Direction d : values()) mod.put(d.name(), d);
 			map = Collections.unmodifiableMap(mod);
 		}
-		private Direction(final String name)           { this.name = name; }
-		public  Direction getBack()                    { return back; }
+
+		private Direction(final String var, final String name) {
+			this.var  = var;  /* must match Field names in Room! */
+			this.name = name;
+		}
+		private Field     getRoomField(Room r) throws NoSuchFieldException {
+			/* fixme: I would really like to chache this */
+			return r.getClass().getDeclaredField(this.var);
+		}
 		private Room      getRoom(Room r)              {
-			/* so so so sad! it's specific to the actual room, not the class in
-			 general */
 			try {
-				Room d = (Room)room.get(r);
-				System.err.format("getRoom: '%s' accessing %s = %s\n", r, this, d);
-			} catch(IllegalAccessException e) {
-				System.err.format("Direction: illegal; %s.\n", e);
+				return (Room)getRoomField(r).get(r);
+			} catch(NoSuchFieldException | IllegalAccessException e) {
+				System.err.format("%s.%s: %s.\n", r, this, e);
 				return null;
 			}
-			/* this is a hack :[ */
-			switch(this) {
-				case N: return r.n;
-				case E: return r.e;
-				case S: return r.s;
-				case W: return r.w;
-				case U: return r.u;
-				case D: return r.d;
-			}
-			return null;
 		}
-		public String toString()                       { return name; }
+		public Direction getBack()                     { return back; }
+		public String    toString()                    { return name; }
 		public static Direction find(final String str) { return map.get(str); }
 	};
+
+	/* the members of Room; the directions are essential to the above */
+	protected Room n, e, s, w, u, d;
+	protected String description;
 
 	@Override
 	protected Room getRoom(Direction dir) { return dir.getRoom(this); }
@@ -99,20 +89,18 @@ public class Room extends Stuff {
 	}
 
 	public void setDirection(Direction dir, Room target) {
-		/* also a hack :[ */
-		switch(dir) {
-			case N: n = target; break;
-			case E: e = target; break;
-			case S: s = target; break;
-			case W: w = target; break;
-			case U: u = target; break;
-			case D: d = target; break;
+		try {
+			dir.getRoomField(this).set(this, target);
+		} catch(NoSuchFieldException | IllegalAccessException e) {
+			System.err.format("%s: trying to setDirection %s to %s; %s.\n", this, dir, target, e);
 		}
 	}
+
 	public void connectDirection(Direction dir, Room target) {
 		this.setDirection(dir, target);
 		target.setDirection(dir.getBack(), this);
 	}
+
 	public void setDescription(String description) {
 		this.description = description;
 	}

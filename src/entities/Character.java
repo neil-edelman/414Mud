@@ -11,14 +11,14 @@ package entities;
 public class Character extends Stuff {
 
 	/* fixme: have alignment, aggresive, plug into formula */
-	public int totalhp;
-	public int hp;
+	public int hpTotal;
+	public int hpCurrent;
 	public int level; /* fixme: not used */
 	public int money;
 
 	public Character() {
 		super();
-		totalhp = hp = 50;
+		hpTotal = hpCurrent = 50;
 		level = 1;
 		money = 50;
 		name = "someone";
@@ -28,7 +28,7 @@ public class Character extends Stuff {
 	public Character(common.TextReader in) throws java.text.ParseException, java.io.IOException {
 		super(in);
 		/* fixme: stuff here */
-		totalhp = hp = 50;
+		hpTotal = hpCurrent = 50;
 		level = 1;
 		money = 50;
 		name = "someone";

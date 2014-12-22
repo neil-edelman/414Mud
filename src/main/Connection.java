@@ -76,10 +76,9 @@ public class Connection implements Runnable {
 
 			while(!isExit && (input = in.readLine()) != null) {
 
-				if(input.length() == 0) continue;
+				if(input.length() != 0) commands.interpret(this, input);
 
-				//this.sendTo(this + " sent \"" + input + ".\"");
-				commands.interpret(this, input);
+				if(player != null) sendToWoNl(player.prompt());
 
 			}
 
@@ -105,12 +104,16 @@ public class Connection implements Runnable {
 	/** Send a message to the connection.
 	 @param message		The message. */
 	public void sendTo(final String message) {
-		if(out == null) return;
 		/* I guess Java automatically converts strings to telnet newline \r\n?
 		 it works */
-		out.print(message + "\n");
-		out.flush();
+		sendToWoNl(message + "\n");
 		//System.err.print("Sending " + this + ": " + message + "\n");
+	}
+
+	private void sendToWoNl(final String message) {
+		if(out == null) return;
+		out.print(message);
+		out.flush();
 	}
 
 	public FourOneFourMud getMud() {

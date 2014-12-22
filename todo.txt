@@ -1,4 +1,4 @@
-exits->prompt var
+think about exits, where should they be printed?
 FourOneFourMud: make it static or dynamic, not in between
 wrap Commandset into unchanging, immutable
 anonymous classes in Commandset

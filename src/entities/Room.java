@@ -122,15 +122,25 @@ public class Room extends Stuff {
 	}
 
 	@Override
+	public String look() {
+		return "(Room " + name + ") "+ title + "\n" + exits();
+	}
+
+	@Override
 	public String lookDetailed() {
-		return "(" + name + ") " + title + "\n" + description + "\nexits [ "
-		+ (n != null ? "n " : "")
-		+ (e != null ? "e " : "")
-		+ (s != null ? "s " : "")
-		+ (w != null ? "w " : "")
-		+ (u != null ? "u " : "")
-		+ (d != null ? "d " : "")
-		+ "]";
+		return "(Room " + name + ") " + title + "\n" + description + "\n" + exits();
+	}
+
+	private String exits() {
+		StringBuilder sb = new StringBuilder("exits [ ");
+		if(n != null) sb.append("n ");
+		if(e != null) sb.append("e ");
+		if(s != null) sb.append("s ");
+		if(w != null) sb.append("w ");
+		if(u != null) sb.append("u ");
+		if(d != null) sb.append("d ");
+		sb.append("]");
+		return sb.toString();
 	}
 
 }

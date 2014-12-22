@@ -56,6 +56,7 @@ public class Commandset {
 	private static void chat(final Connection c, final String arg) {
 		Player p = c.getPlayer();
 		if(p == null) return;
+		// fixme: this is kind of tricky
 		String s = "[chat] " + p + ": " + arg;
 		for(Connection everyone : c.getMud()) {
 			//if(c == everyone) continue; <- echo to ones self is useful
@@ -251,10 +252,6 @@ public class Commandset {
 		Player p = c.getPlayer();
 		if(p == null) return;
 		p.go(Room.Direction.N);
-		//c.sendTo(p.look());
-		if((in = p.getIn()) == null) return;
-		c.sendTo(in.look());
-		p.lookAtStuff();
 	}
 
 	private static void east(final Connection c, final String arg) {
@@ -262,9 +259,6 @@ public class Commandset {
 		Player p = c.getPlayer();
 		if(p == null) return;
 		p.go(Room.Direction.E);
-		if((in = p.getIn()) == null) return;
-		c.sendTo(in.look());
-		p.lookAtStuff();
 	}
 
 	private static void south(final Connection c, final String arg) {
@@ -272,9 +266,6 @@ public class Commandset {
 		Player p = c.getPlayer();
 		if(p == null) return;
 		p.go(Room.Direction.S);
-		if((in = p.getIn()) == null) return;
-		c.sendTo(in.look());
-		p.lookAtStuff();
 	}
 
 	private static void west(final Connection c, final String arg) {
@@ -282,9 +273,6 @@ public class Commandset {
 		Player p = c.getPlayer();
 		if(p == null) return;
 		p.go(Room.Direction.W);
-		if((in = p.getIn()) == null) return;
-		c.sendTo(in.look());
-		p.lookAtStuff();
 	}
 
 	private static void up(final Connection c, final String arg) {
@@ -292,9 +280,6 @@ public class Commandset {
 		Player p = c.getPlayer();
 		if(p == null) return;
 		p.go(Room.Direction.U);
-		if((in = p.getIn()) == null) return;
-		c.sendTo(in.look());
-		p.lookAtStuff();
 	}
 
 	private static void down(final Connection c, final String arg) {
@@ -302,9 +287,6 @@ public class Commandset {
 		Player p = c.getPlayer();
 		if(p == null) return;
 		p.go(Room.Direction.D);
-		if((in = p.getIn()) == null) return;
-		c.sendTo(in.look());
-		p.lookAtStuff();
 	}
 
 	private static void who(final Connection c, final String arg) {

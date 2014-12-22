@@ -30,12 +30,15 @@ public class Player extends Character {
 		Room target = in.getRoom(where);
 		if(target == null) {
 			sendTo("You can't go that way.");
+			sendToRoom(this + " searches for a way " + where + ".");
 			return;
 		}
-		sendToRoom(this + " walks " + where + ".");
 		sendTo("You walk " + where + ".");
+		sendToRoom(this + " walks " + where + ".");
 		placeIn(target);
-		sendToRoom(this + " walks in from " + where.getBack() + ".");
+		sendToRoom(this + " walks in from the " + where.getBack() + ".");
+		sendTo(target.lookDetailed());
+		lookAtStuff();
 	}
 
 	@Override
@@ -81,6 +84,11 @@ public class Player extends Character {
 	@Override
 	protected Connection getConnection() {
 		return connection;
+	}
+
+	/** fixme! */
+	public String prompt() {
+		return hpCurrent + "/" + hpTotal + " > ";
 	}
 
 }

@@ -28,6 +28,7 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 	protected String name;  /* lower case */
 	protected String title; /* sentence case */
 
+	/* fixme: have TreeMap or something */
 	protected List<Stuff> contents = new LinkedList<Stuff>();
 	protected Stuff in;
 
@@ -69,6 +70,11 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 		placeIn(container);
 		sendTo("You disapparate and instantly travel to '" + container.title + "'");
 		sendToRoom(this + " suddenly re-apparates.");
+		/* players will want to look around immediatly */
+		Connection c = this.getConnection();
+		if(c == null) return;
+		c.sendTo(container.lookDetailed());
+		lookAtStuff();
 	}
 
 	/** Silent (only if you know what you're doing.) */

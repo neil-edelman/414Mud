@@ -1,5 +1,6 @@
 FourOneFourMud: make it static or dynamic, not in between
 wrap Commandset into unchanging, immutable
 anonymous classes in Commandset
-add a reflection field to BitVector
+add a reflection field to BitVector <- almost done
 BFS for hearing Mobs
+make sure the lines are right

@@ -3,6 +3,8 @@
 
 package entities;
 
+import common.BitVector;
+
 /** An general object.
 
  @author	Sid, Neil
@@ -10,9 +12,18 @@ package entities;
  @since		1.0, 11-2014 */
 public class Object extends Stuff {
 
-	boolean isBreakable;
-	boolean isTransportable;
-	int     mass;
+	public enum ObjectFlags {
+		BREAKABLE("breakable"),
+		TRANSPORTABLE("transportable");
+		public String symbol;
+		private ObjectFlags(final String symbol) { this.symbol = symbol; }
+		public String toString()                 { return symbol; }
+	}
+	BitVector<ObjectFlags> objectFlags = new BitVector<ObjectFlags>(ObjectFlags.class);
+
+	public boolean isBreakable;
+	public boolean isTransportable;
+	private int    mass;
 
 	public Object() {
 		super();
@@ -23,6 +34,11 @@ public class Object extends Stuff {
 		title = "Some sort of object is here.";
 		/* name.clear() ? */
 		//name.add("object");
+	}
+
+	public Object(common.TextReader in) throws java.text.ParseException, java.io.IOException, common.UnrecognisedTokenException {
+		super(in);
+		objectFlags.fromLine(this, in.nextLine());
 	}
 
 	public Object(final String name, final String title, final boolean isB, final boolean isT) {

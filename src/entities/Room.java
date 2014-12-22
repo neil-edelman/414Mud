@@ -81,6 +81,12 @@ public class Room extends Stuff {
 		description = "This is an entrely bland room.";
 	}
 
+	/** Read it from a file. */
+	public Room(common.TextReader in) throws java.text.ParseException, java.io.IOException {
+		super(in);
+		description = in.nextParagraph();
+	}
+
 	public Room(final String name, final String title, final String desc) {
 		super();
 		this.name        = name;
@@ -103,6 +109,10 @@ public class Room extends Stuff {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getDescription() {
+		return description;
 	}
 
 	@Override

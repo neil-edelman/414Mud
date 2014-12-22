@@ -37,6 +37,8 @@ import entities.*;
  @since		1.1, 12-2014 */
 class Area {
 
+	/**** all areas ****/
+
 	private static final String areaExt = ".area";
 
 	private static Map<String, Area> areas = new HashMap<String, Area>();
@@ -75,6 +77,8 @@ class Area {
 		return areas.get(area);
 	}
 
+	/**** enums ****/
+
 	public enum TypeOfStuff {
 		CHARACTER("Character"),
 		CONTAINER("Container"),
@@ -88,8 +92,6 @@ class Area {
 		private TypeOfStuff(final String symbol) { this.symbol = symbol; }
 		public String toString()                 { return symbol; }
 	}
-
-	BitVector<TypeOfStuff> typeOfStuffFlags = new BitVector<TypeOfStuff>(TypeOfStuff.class);
 
 	public enum Reset {
 		IN("in"),
@@ -126,28 +128,6 @@ class Area {
 		}
 	}
 
-	BitVector<Reset> resetFlags = new BitVector<Reset>(Reset.class);
-
-	public enum MobFlags {
-		FRIENDLY("friendly"),
-		XENO("xeno");
-		public String symbol;
-		private MobFlags(final String symbol) { this.symbol = symbol; }
-		public String toString()              { return symbol; }
-	}
-
-	BitVector<MobFlags> mobFlags = new BitVector<MobFlags>(MobFlags.class);
-
-	public enum ObjectFlags {
-		BREAKABLE("breakable"),
-		TRANSPORTABLE("transportable");
-		public String symbol;
-		private ObjectFlags(final String symbol) { this.symbol = symbol; }
-		public String toString()                 { return symbol; }
-	}
-
-	BitVector<ObjectFlags> objectFlags = new BitVector<ObjectFlags>(ObjectFlags.class);
-
 	public enum Things {
 		ABC("abc"),
 		DEF("def"),
@@ -156,7 +136,11 @@ class Area {
 		private Things(final String symbol) { this.symbol = symbol; }
 	}
 
-	BitVector<Things> thingsFlags = new BitVector<Things>(Things.class);
+	BitVector<TypeOfStuff> typeOfStuffFlags = new BitVector<TypeOfStuff>(TypeOfStuff.class);
+	BitVector<Reset> resetFlags = new BitVector<Reset>(Reset.class);
+	BitVector<Things> thingsFlags;
+
+	/**** area loading ****/
 
 	private String             name;
 	private String             title;
@@ -182,7 +166,7 @@ class Area {
 				Scanner scan;
 				String recallStr;
 				String word, line;
-				String id, name, title, desc, info = "no info";
+				String id, name = "", title = "", info = "";
 				TypeOfStuff what;
 				boolean flags[];
 
@@ -196,26 +180,36 @@ class Area {
 
 				/* grab the Stuff */
 				while("~".compareTo(line = in.nextLine()) != 0) {
+					/* Scanner is overkill; just use split */
 					scan = new Scanner(line);
 					if((what = typeOfStuffFlags.find(scan.next())) == null) throw new ParseException("unknown token", in.getLineNumber());
 					id = scan.next();
 					if(scan.hasNext()) throw new ParseException("too many things", in.getLineNumber());
-					name  = in.nextLine();
-					title = in.nextLine();
+					
+					//name  = in.nextLine();
+					//title = in.nextLine();
+
 					switch(what) {
 						case ROOM:
-							stuff.put(id, new Room(name, title, desc = in.nextParagraph()));
-							info = String.format("desc <%s>", desc);
+							Room room = new Room(in);
+							stuff.put(id, room);
+							name = room.getName();
+							title = room.getTitle();
+							info = String.format("desc <%s>", room.getDescription());
 							break;
 						case MOB:
-							flags = mobFlags.fromLine(in.nextLine());
-							stuff.put(id, new Mob(name, title, flags[0], flags[1]));
-							info = String.format("F %b, X %b", flags[0], flags[1]);
+							Mob mob = new Mob(in);
+							stuff.put(id, mob);
+							name = mob.getName();
+							title = mob.getTitle();
+							info = String.format("F %b, X %b", mob.isFriendly, mob.isXeno);
 							break;
 						case OBJECT:
-							flags = objectFlags.fromLine(in.nextLine());
-							stuff.put(id, new entities.Object(name, title, flags[0], flags[1]));
-							info = String.format("B %b, T %b", flags[0], flags[1]);
+							entities.Object obj = new entities.Object(in);
+							stuff.put(id, obj);
+							name = obj.getName();
+							title = obj.getTitle();
+							info = String.format("B %b, T %b", obj.isBreakable, obj.isTransportable);
 							break;
 						case CHARACTER:
 						case CONTAINER:
@@ -264,6 +258,20 @@ class Area {
 
 		System.err.format("%s: loaded %s, default room %s.\n", file, this, recall);
 
+		Field vector[] = new Field[Things.values().length];
+		Class<?> c = Things.class;
+		try {
+			int i = 0;
+			for(Things thing : Things.values()) {
+				vector[i++] = Things.class.getDeclaredField("" + thing);
+			}
+			System.err.format("%d: %s %s %s\n", Things.values().length, vector[0], vector[1], vector[2]);
+			/*vector[0] = c.getDeclaredField("ABC");
+			vector[1] = c.getDeclaredField("DEF");
+			vector[2] = c.getDeclaredField("GHI");*/
+		} catch(NoSuchFieldException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/** @return	Default room. */

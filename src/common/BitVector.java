@@ -13,7 +13,11 @@ import java.util.Collections;
 import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 
+import java.lang.RuntimeException;
+
 import common.UnrecognisedTokenException;
+
+import entities.Stuff;
 
 /** Meta-binary/bitvector flags.
  
@@ -22,14 +26,18 @@ import common.UnrecognisedTokenException;
  @since		1.1, 12-2014 */
 public class BitVector<E extends Enum<E>> {
 
-	private final Field    aField;
-	private final Class<E> aClass;
+	private static final String symbol = "symbol";
 
-	private String name;
+	// FIXME: don't need all of these fields
+
+	private final Class<E> aClass;
+	private final Field    aField;
 
 	private boolean flags[];
 	private Map<String, E> map = null;
 	//private Enum<E> e;
+
+	private Field vector[];
 
 	/** Contstuct a BitVector out of a {@link Class}.
 	 @param aClass					An Enum having a unique varible "symbol."
@@ -37,35 +45,32 @@ public class BitVector<E extends Enum<E>> {
 	 the field symbol. */
 	public BitVector(final Class<E> aClass) {
 
-		if(!aClass.isEnum()) {
-			assert(true): "BitVector called not on enum";
-			System.err.format("%s: inconceivable! BitVector must be an enum.\n", this);
-		}
+		if(!aClass.isEnum()) throw new RuntimeException("" + aClass + " not an enum");
 
-		Field aField = null;
+		E   set[]  = aClass.getEnumConstants();
+		int length = set.length;
+
 		try {
-			aField = aClass.getDeclaredField("symbol");
-		} catch(NoSuchFieldException e) {
-			assert(true): "BitVector must have <public symbol>; " + e;
-			System.err.format("%s: inconceivable! %s.\n", this, e);
-		}
-		this.aField = aField;
-		this.aClass = aClass;
 
-		name = aClass.getName();
+			/* fill in the BitVector; flags is pre-allocate for returning */
+			this.aClass = aClass;
+			this.aField = aClass.getDeclaredField(symbol);
+			this.flags  = new boolean[length];
 
-		flags = new boolean[aClass.getEnumConstants().length];
-		//for(E val : aClass.getEnumConstants()) System.err.format("%s : %s\n", val, aField.get(val));
+			/* refected values */
+			vector = new Field[length];
+			int i  = 0;
+			for(E thing : set) vector[i++] = aClass.getDeclaredField(thing.name());
 
-		/* populate a map from aField strings to enum things; make it fast */
-		try {
+			/* a mapping of Strings */
 			Map<String, E> mod = new HashMap<String, E>();
-			for(E val : aClass.getEnumConstants()) mod.put((String)aField.get(val), val);
+			for(E val : set) mod.put((String)aField.get(val), val);
 			map = Collections.unmodifiableMap(mod);
-		} catch(IllegalAccessException e) {
-			assert(true): "inconceivable! " + e;
-			System.err.format("%s: inconceivable! %s.\n", this, e);
+
+		} catch(NoSuchFieldException | IllegalAccessException e) {
+			throw new RuntimeException("inconceivable! " + e);
 		}
+
 	}
 
 	/** Find.
@@ -75,11 +80,8 @@ public class BitVector<E extends Enum<E>> {
 		return map.get(f);
 	}
 
-	/** Reads the line and sets boolean array appropriately.
-	 @param line			The line with only the strings from the enum.
-	 @return				The values arranged by incresing order.
-	 @throws ParseException	On any tokens not in the enum. */
-	public boolean[] fromLine(final String line) throws UnrecognisedTokenException {
+	public void fromLine(final Stuff stuff, final String line) throws UnrecognisedTokenException {
+		//fixme: if( extends Stuff)
 		E sym;
 		/* split on whitespace */
 		String toks[] = line.trim().split("\\s++");
@@ -89,15 +91,47 @@ public class BitVector<E extends Enum<E>> {
 		for(String tok : toks) {
 			if((sym = map.get(tok)) == null) throw new UnrecognisedTokenException(tok);
 			flags[sym.ordinal()] = true;
+			try {
+				/* something -> isSomething = true */
+				String var = sym.toString();
+				var = "is" + var.substring(0, 1).toUpperCase() + var.substring(1);
+				stuff.getClass().getField(var).setBoolean(stuff, true);
+				//System.err.format("> %s true! %s\n", var, stuff.getClass().getField(var));
+			} catch(NoSuchFieldException | IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
 		}
-		return flags;
+		/* set fields */
+//		for(Field field : stuff.getFields()) {
+//			System.err.format("> <%s> <%s> %b\n", field, field.getGenericType(), field.getGenericType() == boolean.class);
+//			if(field.getGenericType() != boolean.class) continue;
+			/* it's a public boolean variable, assume */
+//		}
 	}
 
+	/** Reads the line and sets boolean array appropriately.
+	 @param line			The line with only the strings from the enum.
+	 @return				The values arranged by incresing order.
+	 @throws ParseException	On any tokens not in the enum. */
+//	public boolean[] fromLine(final String line) throws UnrecognisedTokenException {
+//		E sym;
+//		/* split on whitespace */
+//		String toks[] = line.trim().split("\\s++");
+//		/* clear */
+//		for(int i = 0; i < flags.length; i++) flags[i] = false;
+//		/* set */
+//		for(String tok : toks) {
+//			if((sym = map.get(tok)) == null) throw new UnrecognisedTokenException(tok);
+//			flags[sym.ordinal()] = true;
+//		}
+//		return flags;
+//	}
+
 	/**
-	 @param bv	Must have size() elements (at least -- the values above size()
-	 are superflous.)
+	 @param bv	Must have size() elements
 	 @return	A string with the representations of the true bit values set. */
-	public String toLine(boolean bv[]) {
+	public String toLine(boolean bv[]) throws Exception {
+		if(bv.length != vector.length) throw new Exception("" + bv + " has to have " + vector.length + " elements");
 		StringBuilder sb = new StringBuilder();
 		boolean isFirst = true;
 		for(E val : aClass.getEnumConstants()) {
@@ -130,7 +164,7 @@ public class BitVector<E extends Enum<E>> {
 
 	/** @return	A synecdochical {@link String}. */
 	public String toString() {
-		return "BitVector(" + name + ")";
+		return "BitVector(" + aClass.getName() + ")";
 	}
 
 }

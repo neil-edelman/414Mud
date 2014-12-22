@@ -17,12 +17,14 @@ import java.text.ParseException;
  @version	1.1, 12-2014
  @since		1.1, 12-2014 */
 public class TextReader extends LineNumberReader {
+
 	/** Creates a new MudReader wrapping around BufferedReader.
 	 @param in	The BufferedReader. */
 	public TextReader(BufferedReader in) {
 		super(in);
-		setLineNumber(1);
+		/*setLineNumber(1); <- that's weird */
 	}
+
 	/** Like {@link BufferedReader#readLine}, but throws an exception when
 	 the line isn't there.
 	 @return A string minus the newline.
@@ -33,6 +35,7 @@ public class TextReader extends LineNumberReader {
 		if(line == null) throw new ParseException("unexpected eof", getLineNumber());
 		return line;
 	}
+
 	/** Like {@link #nextLine}, but throws an exception when asrt is not
 	 exactly like the file.
 	 @throws ParseException	The file has ended.
@@ -41,6 +44,7 @@ public class TextReader extends LineNumberReader {
 		String line = nextLine();
 		if(asrt.compareTo(line) != 0) throw new ParseException("expected " + asrt, getLineNumber());
 	}
+
 	/** Like {@link #nextLine}, but reads all paragraph.
 	 @return				The whole paragraph, minus newlines, as a string.
 	 @throws ParseException	The file has ended before the paragraph was complete.

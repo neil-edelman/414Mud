@@ -22,9 +22,8 @@ import entities.Room.Direction;
  @since		1.0, 11-2014 */
 public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 
-	//private static int vnumCounter = 0;
+	// fixme: the [ exits ] should always be visible
 
-	//public int vnum;
 	/*public List<String> name = new LinkedList<String>(); <- only one name is fine */
 	protected String name;  /* lower case */
 	protected String title; /* sentence case */
@@ -32,11 +31,17 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 	protected List<Stuff> contents = new LinkedList<Stuff>();
 	protected Stuff in;
 
-	Stuff() {
-		//vnum = ++vnumCounter;
-		//name.add("stuff");
+	public Stuff() {
 		name  = "stuff";
 		title = "Some stuff is here.";
+	}
+
+	/** Read it from a file. */
+	public Stuff(common.TextReader in) throws java.text.ParseException, java.io.IOException {
+		name  = in.nextLine();
+		System.err.format("name = %s\n", name);
+		title = in.nextLine();
+		System.err.format("title = %s\n", title);
 	}
 
 	public void setName(final String name) {
@@ -54,6 +59,10 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getTitle() {
+		return title;
 	}
 
 	public void transportTo(final Stuff container) {
@@ -134,6 +143,11 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 
 	/* @return Null since there is no directions (overwriten in Room.) */
 	protected Room getRoom(Direction dir) { return null; }
+
+	/** Sets the flags from a line
+	 @param line	The line. */
+	public void setFlags(final String line) {
+	}
 
 	/** Prints all the data so it will be serialisable (but in text, not binary.)
 	 @return Blank string; fixme: the serialised version. */

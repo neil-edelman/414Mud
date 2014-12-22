@@ -25,6 +25,16 @@ public class Character extends Stuff {
 		title= "Someone is chilling.";
 	}
 
+	public Character(common.TextReader in) throws java.text.ParseException, java.io.IOException {
+		super(in);
+		/* fixme: stuff here */
+		totalhp = hp = 50;
+		level = 1;
+		money = 50;
+		name = "someone";
+		title= "Someone is chilling.";
+	}
+
 	/* fixme; put in Stuff.class */
 	public void kill(Stuff murderer) {
 		murderer.sendTo("You have slain " + this + "!");

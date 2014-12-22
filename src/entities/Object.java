@@ -49,4 +49,8 @@ public class Object extends Stuff {
 		isTransportable = isT;
 	}
 
+	@Override
+	public boolean isTransportable() {
+		return isTransportable;
+	}
 }

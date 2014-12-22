@@ -63,12 +63,46 @@ public class Commandset {
 		}
 	}
 
+	private static void take(final Connection c, final String arg) {
+		Player p = c.getPlayer();
+		if(p == null) return;
+		Stuff r = p.getIn();
+		if(r == null) return;
+		/* fixme: have them be in order, 1.obj 2.obj, this is hacked */
+		Stuff target = null;
+		for(Stuff s : r) {
+			if(arg.compareTo("" + s) != 0) continue;
+			target = s;
+			break;
+		}
+		if(!target.isTransportable()) {
+			p.sendTo("You can't pick " + target + " up.");
+			p.sendToRoomExcept(target, p + " tries to pick up " + target + " and fails.");
+			target.sendTo(p + " tries to pick you up off the ground and fails.");
+			return;
+		}
+		/* fixme: mass */
+		target.placeIn(p);
+		p.sendTo("You pick up " + target + ".");
+		p.sendToRoomExcept(target, p + " picks up " + target + ".");
+		target.sendTo(p + " picks you up.");
+	}
+
+	private static void inventory(final Connection c, final String arg) {
+		Player p = c.getPlayer();
+		if(p == null) return;
+		for(Stuff i : p) {
+			c.sendTo("" + i);
+		}
+	}
+
 	private static void cant(final Connection c, final String arg) {
 		c.sendTo("You can't do that, yet. Use create <name> to create your character.");
 	}
 
 	private static void create(final Connection c, final String arg) {
 		/* this is where int, wis, are calculated; not that we have them */
+		/* fixme: you can't have two names the same? */
 
 		int len = arg.length();
 		if(len < minName) {
@@ -122,27 +156,50 @@ public class Commandset {
 			return;
 		}
 
-		/* look at the room (Stuff in) */
 		Stuff surround = p.getIn();
-		if(surround == null) {
-			c.sendTo("You are floating in space.");
-			return;
-		}
+
+		/* look at the room (Stuff in) */
 		if(arg.length() > 0) {
 			int count = 0;
-			/* look at things */
-			for(Stuff stuff : surround) {
-				if(arg.equals(stuff.getName())) {
-					c.sendTo(stuff.look());
+			if(surround != null) {
+				/* look at things in the room */
+				for(Stuff stuff : surround) {
+					if(arg.equals(stuff.getName())) {
+						c.sendTo(stuff.lookDetailed());
+						count++;
+					}
+				}
+				/* look at exits */
+				Room.Direction  dir = Room.Direction.find(arg);
+				if(dir != null) {
+					Room room = surround.getRoom(dir);
+					if(room != null) {
+						c.sendTo(room.look());
+						for(Stuff in : room) c.sendTo(in.look());
+					} else {
+						c.sendTo("You can't go that way.");
+					}
 					count++;
 				}
 			}
-			/* fixme: look at exits */
+			/* look at inventory */
+			for(Stuff stuff : p) {
+				if(arg.equals(stuff.getName())) {
+					c.sendTo(stuff.lookDetailed());
+					count++;
+				}
+			}
+			/* fixme: look at eq't */
+
 			if(count == 0) c.sendTo("There is no '" + arg + "' here.");
 		} else {
-			c.sendTo(surround.lookDetailed());
-			/* look at the Stuff */
-			p.lookAtStuff();
+			if(surround != null) {
+				c.sendTo(surround.lookDetailed());
+				/* look at the Stuff */
+				p.lookAtStuff();
+			} else {
+				c.sendTo("You are floating in space.");
+			}
 		}
 	}
 
@@ -301,6 +358,10 @@ public class Commandset {
 				add("west", "west");
 				add("up",   "up");
 				add("down", "down");
+				add("take", "take");
+				add("put",  "cant");
+				add("i",    "inventory");
+				add("inventory", "inventory");
 				break;
 			case NEWBIE:
 				add("create", "create");

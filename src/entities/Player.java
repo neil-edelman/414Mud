@@ -47,6 +47,13 @@ public class Player extends Character {
 		}
 	}
 
+	/** Gives more info.
+	 @return More info on the object. */
+	@Override
+	public String lookDetailed() {
+		return name + " is connected on socket " + connection + "\nThey are wearing . . . <not implemented>";
+	}
+
 /*	public void kill(Stuff murderer) {
 		ReceiveMessage("You have been attacked and killed by " + murderer + "\n");
 		

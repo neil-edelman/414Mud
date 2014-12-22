@@ -39,9 +39,7 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 	/** Read it from a file. */
 	public Stuff(common.TextReader in) throws java.text.ParseException, java.io.IOException {
 		name  = in.nextLine();
-		System.err.format("name = %s\n", name);
 		title = in.nextLine();
-		System.err.format("title = %s\n", title);
 	}
 
 	public void setName(final String name) {
@@ -65,6 +63,7 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 		return title;
 	}
 
+	/** Noisy (mostly use this.) */
 	public void transportTo(final Stuff container) {
 		if(in != null) sendToRoom(this + " disapparates.");
 		placeIn(container);
@@ -72,7 +71,8 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 		sendToRoom(this + " suddenly re-apparates.");
 	}
 
-	protected void placeIn(Stuff container) {
+	/** Silent (only if you know what you're doing.) */
+	public void placeIn(Stuff container) {
 		/* it's already in something */
 		if(in != null) {
 			in.contents.remove(this);
@@ -95,7 +95,7 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 	/** Overwrote on things that have a connection.
 	 @param message
 		The string to send; no newline. */
-	protected void sendTo(final String message) {
+	public void sendTo(final String message) {
 	}
 
 	public void sendToRoom(final String message) {
@@ -103,9 +103,22 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 		this.in.sendToContentsExcept(this, message);
 	}
 
+	public void sendToRoomExcept(final Stuff except, final String message) {
+		if(this.in == null) return;
+		this.in.sendToContentsExcept(this, except, message);
+	}
+
 	private void sendToContentsExcept(final Stuff except, final String message) {
 		for(Stuff s : this) {
 			if(s == except) continue;
+			s.sendTo(message);
+		}
+	}
+
+	/** fixme: could be more optimised */
+	private void sendToContentsExcept(final Stuff except1, final Stuff except2, final String message) {
+		for(Stuff s : this) {
+			if(s == except1 || s == except2) continue;
 			s.sendTo(message);
 		}
 	}
@@ -142,11 +155,15 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 	}
 
 	/* @return Null since there is no directions (overwriten in Room.) */
-	protected Room getRoom(Direction dir) { return null; }
+	public Room getRoom(Direction dir) { return null; }
 
 	/** Sets the flags from a line
 	 @param line	The line. */
 	public void setFlags(final String line) {
+	}
+
+	public boolean isTransportable() {
+		return false;
 	}
 
 	/** Prints all the data so it will be serialisable (but in text, not binary.)

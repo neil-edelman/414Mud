@@ -32,6 +32,7 @@ public class Room extends Stuff {
 		private static final Map<String, Direction> map;
 
 		static {
+
 			/* reverse direction */
 			N.back = S;
 			S.back = N;
@@ -39,10 +40,15 @@ public class Room extends Stuff {
 			W.back = E;
 			U.back = D;
 			D.back = U;
+
 			/* map for turning strings into Directions
 			 fixme: code duplication in BitVector */
 			Map<String, Direction> mod = new HashMap<String, Direction>();
-			for(Direction d : values()) mod.put(d.name(), d);
+			for(Direction d : values()) {
+				mod.put(d.name(), d);
+				mod.put(d.var, d);
+				mod.put(d.name, d);
+			}
 			map = Collections.unmodifiableMap(mod);
 		}
 
@@ -72,7 +78,7 @@ public class Room extends Stuff {
 	protected String description;
 
 	@Override
-	protected Room getRoom(Direction dir) { return dir.getRoom(this); }
+	public Room getRoom(Direction dir) { return dir.getRoom(this); }
 
 	public Room() {
 		super();

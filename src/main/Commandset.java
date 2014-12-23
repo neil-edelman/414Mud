@@ -323,6 +323,7 @@ public class Commandset {
 			case COMMON:
 				add("look", "look");
 				add("l",    "look");
+				add("",     "look"); /* <-- this */
 				add("say",  "say");
 				add("'",    "say");
 				add("chat", "chat");
@@ -383,7 +384,7 @@ public class Commandset {
 
 		/* run */
 		if(run == null) {
-			c.sendTo("Huh? " + cmd + " (use help for a list)");
+			c.sendTo("Huh? \"" + cmd + "\" (use help for a list)");
 		} else {
 			try {
 				run.invoke(null, c, arg);

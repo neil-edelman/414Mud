@@ -15,6 +15,7 @@ public class BoundedReader extends BufferedReader {
 
 	private final int  bufferSize;
 	private       char buffer[];
+	//boolean            isNewLine;
 
 	/**
 	 @param in			The {@link BufferedReader} that this is wrapped around.
@@ -40,7 +41,17 @@ public class BoundedReader extends BufferedReader {
 			if((no = read(buffer, 0, bufferSize)) == -1) break;
 		}
 
+		//isNewLine = true;
 		return input;
 	}
+
+	/**
+	 @return Whether the enter from a readLine has been pressed since the last
+	 time */
+	/*public boolean checkNewLine() {
+		boolean is = isNewLine;
+		isNewLine = false;
+		return is;
+	}*/
 
 }

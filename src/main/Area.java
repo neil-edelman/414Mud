@@ -41,16 +41,14 @@ class Area {
 
 	private static final String areaExt = ".area";
 
-	private static Map<String, Area> areas = new HashMap<String, Area>();
-
 	/** Load all areas in specified directory.
 	 @param strdir	Where the areas are stored. */
-	public static void loadAreas(final String strdir) {
+	public static Map<String, Area> loadAreas(final String strdir) throws IOException {
+		Map<String, Area> areas = new HashMap<String, Area>();
 		Area area;
 		File dir = new File(strdir);
 		if(!dir.exists() || !dir.isDirectory()) {
-			System.err.format("loadArea: <%s> is not a thing.\n", strdir);
-			return;
+			throw new IOException("loadArea: <" + strdir + "> is not a thing");
 		}
 		File files[] = dir.listFiles(new FilenameFilter() {
 			public boolean accept(File current, String name) {
@@ -68,13 +66,7 @@ class Area {
 				System.err.format("%s; %s.\n", f, e);
 			}
 		}
-	}
-
-	/**
-	 @param area	String name (same as filename without .area.)
-	 @return		Area or null. */
-	public static Area getArea(String area) {
-		return areas.get(area);
+		return areas;
 	}
 
 	/**** enums ****/

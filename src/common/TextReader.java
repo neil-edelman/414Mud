@@ -65,4 +65,16 @@ public class TextReader extends LineNumberReader {
 		return sb.toString();
 	}
 
+	/** There's just an integer on the {@link #nextLine) */
+	public int nextInt() throws ParseException, IOException {
+		int i;
+		try {
+			i = Integer.parseInt(readLine());
+		} catch(NumberFormatException e) {
+			/* NumberFormatException on TextReader is a ParseException */
+			throw new ParseException("parsing integer; " + e.getMessage(), getLineNumber());
+		}
+		return i;
+	}
+
 }

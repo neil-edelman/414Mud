@@ -14,7 +14,7 @@ import java.util.LinkedList;
 import java.util.Iterator;
 
 //import java.io.BufferedReader;
-import java.io.LineNumberReader;
+//import java.io.LineNumberReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,6 +22,12 @@ import java.nio.file.FileSystems;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+
+import java.text.ParseException;
+import common.TextReader;
+
+import java.util.Map;
+import java.util.HashMap;
 
 import entities.Room;
 import entities.Object;
@@ -37,146 +43,135 @@ import main.Area;
  @since		1.0, 11-2014 */
 public class FourOneFourMud implements Iterable<Connection> {
 
+	/* debug mode; everyone can read this */
+	public static boolean isVerbose = true;
+
+	/* constants */
 	private static final int fibonacci20    = 6765;
-	private static final int sStartupDelay  = 2;
+	private static final int sStartupDelay  = 20;
 	private static final int sShutdownTime  = 10;
-	private static final int sPeriod        = 3;
+	private static final int sPeriod        = 10;
 	private static final String dataDir     = "data";
 	private static final String areasDir    = dataDir + "/areas";
 	private static final String mudData     = "mud";
 
-	private static final Runnable chonos = new Runnable() {
-		/* one time step */
-		public void run() {
-			System.out.print("<Bump>\n");
-		}
-	};
-
-	/* everyone can read this */
-	public static boolean isVerbose = true;
-
-	private static String name        = "414Mud";
-	private static String homeareaStr = "";
-	private static String password    = "";
-	private static String motd        = "Hello.";
-	private static Area   homearea;
-	private static Room   homeroom;
-
 	/** Starts up the mud and listens for connections.
 	 @param args	Ignored. */
 	public static void main(String args[]) {
-		int port = fibonacci20, maxConnections = 256;
-
-		/* read in settings */
-
-		int homeareaLine = 0;
-		Path path = FileSystems.getDefault().getPath(dataDir, mudData);
-		try(LineNumberReader reader = new LineNumberReader(Files.newBufferedReader(path, StandardCharsets.UTF_8))) {
-			String line;
-			if((line = reader.readLine()) != null) name        = line;
-			if((line = reader.readLine()) != null) homeareaStr = line;
-			homeareaLine = reader.getLineNumber();
-			if((line = reader.readLine()) != null) port        = Integer.parseInt(line);
-			if((line = reader.readLine()) != null) maxConnections = Integer.parseInt(line);
-			if((line = reader.readLine()) != null) password    = line;
-			if((line = reader.readLine()) != null) motd        = line;
-		} catch(IOException e) {
-			System.err.format("IOException: %s.\n", e);
-		}
-
-		System.err.print("Set MUD: <" + name + " : " + port + ">.\n");
-		System.err.print("Set max connections: " + maxConnections + ".\n");
-		System.err.print("Set the secret password for becoming an Immortal: <" + password + ">.\n");
-		System.err.print("Set MOTD: <" + motd + ">.\n");
-
-		/* read in areas */
-
-		Area.loadAreas(areasDir);
-
-		/* set the [defaut] recall spot */
-
-		homearea = Area.getArea(homeareaStr);
-		try {
-			if(homearea == null) throw new Exception("area <" + homeareaStr + "> (line " + homeareaLine + ") does not exist; connections will be sent to the null room");
-			homeroom = homearea.getRecall();
-			System.err.format("Set home room: <%s.%s>.\n", homearea, homeroom);
-		} catch(Exception e) {
-			System.err.format("%s/%s: %s.\n", dataDir, mudData, e.getMessage());
-			/* we let is start anyway; it's a chat server at least */
-			//return;
-		}
-
-		/* run mud */
 
 		FourOneFourMud mud;
 
+		/* run mud */
+
 		try {
-			mud = new FourOneFourMud(port, maxConnections);
+			mud = new FourOneFourMud(dataDir, mudData);
 		} catch(IOException e) {
 			System.err.format("Connection wouldn't complete: %s.\n", e);
 			/* deal-breaker */
 			return;
 		}
 
-		/* start the timer */
-		System.err.print("Starting timer.\n");
-		ScheduledFuture<?> future = mud.timer.scheduleAtFixedRate(chonos, sStartupDelay, sPeriod, TimeUnit.SECONDS);
-
 		mud.run();
 
-		System.err.print("Stopping timer.\n");
-		future.cancel(false);
-		mud.timer.shutdown();
-		try {
-			if(!mud.timer.awaitTermination(sShutdownTime, TimeUnit.SECONDS)) {
-				mud.timer.shutdownNow();
-				if(!mud.timer.awaitTermination(sShutdownTime, TimeUnit.SECONDS)) {
-					System.err.print("The timer would not terminate.\n");
-				}
-			}
-		} catch (InterruptedException e) {
-			System.err.print("Terminating timer.");
-			mud.timer.shutdownNow();
-			Thread.currentThread().interrupt();
-		}
-
 		mud.shutdown();
-		System.err.format("%s is shutdown.\n", name);
 
 	}
 
-	private ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
+	/* the thread that is scheduleAtFixedRate */
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	private final ScheduledFuture<?> chonosFuture;
+	private final Runnable chonos = new Runnable() {
+		/* one time step */
+		public void run() {
+			System.out.print("<Bump>\n");
+		}
+	};
 
+	/* the clients of the mud */
 	private final ServerSocket    serverSocket;
+	private final int             poolSize;
 	private final ExecutorService pool;
+	private List<Connection>      clients = new LinkedList<Connection>();
 
-	private List<Connection> clients = new LinkedList<Connection>();
+	/* the mud data */
+	private String name     = "414Mud";
+	private int    port     = fibonacci20;
+	private String password = "";
+	private String motd     = "Hello.";
+	private Map<String, Area> areas = new HashMap<String, Area>();
+	private Area   homearea;
+	private Room   homeroom;
 
 	/** The entire mud constructor.
-	 @param port			The mud port.
-	 @param poolSize		How many simultaneous connections should we allow.
+	 @param dataDir			The subdirectory where the data file is located.
+	 @param mudData			The data file name.
 	 @throws IOException	Passes the IOException from the underlyieng sockets. */
-	public FourOneFourMud(int port, int poolSize) throws IOException {
-		System.err.print("414Mud starting up on port " + port
-						 + "; FixedThreadPool size " + poolSize + ".\n");
+	public FourOneFourMud(final String dataDir, final String mudData) throws IOException {
+		String homeareaStr  = "";
+		int    homeareaLine = -1;
+		int    poolSize     = 256;
+
+		/* read in settings */
+
+		Path path = FileSystems.getDefault().getPath(dataDir, mudData);
+		try(TextReader text = new TextReader(Files.newBufferedReader(path, StandardCharsets.UTF_8))) {
+			name         = text.nextLine();
+			port         = text.nextInt();
+			poolSize     = text.nextInt();
+			homeareaStr  = text.readLine();
+			homeareaLine = text.getLineNumber();
+			password     = text.nextLine();
+			motd         = text.nextParagraph();
+		} catch(ParseException e) {
+			System.err.format("%s/%s; syntax error: %s, line %d.\n", dataDir, mudData, e.getMessage(), e.getErrorOffset());
+			throw new IOException(dataDir + "/" + mudData);
+		}
+		/* final = rewritable */
+		this.poolSize = poolSize;
+		System.err.format("%s: port %d, max connections %d, home area <%s>.\n", this, port, poolSize, homeareaStr);
+		System.err.format("%s: set the ascent password: <%s>.\n", this, password);
+		System.err.format("%s: set MOTD: <%s>.\n", this, motd);
+
+		/* read in areas */
+
+		areas = Area.loadAreas(areasDir);
+
+		/* set the [defaut] recall spot */
+
+		homearea = areas.get(homeareaStr);
+		try {
+			if(homearea == null) throw new Exception("area <" + homeareaStr + "> (line " + homeareaLine + ") does not exist; connections will be sent to the null room");
+			homeroom = homearea.getRecall();
+			System.err.format("%s: set home room: <%s.%s>.\n", this, homearea, homeroom);
+		} catch(Exception e) {
+			System.err.format("%s/%s: %s.\n", dataDir, mudData, e.getMessage());
+			/* we let is start anyway; it's a chat server at least */
+		}
+
+		/* start the networking */
+
 		serverSocket = new ServerSocket(port);
 		pool         = Executors.newFixedThreadPool(poolSize);
+
+		/* start the timer */
+
+		System.err.format("%s: starting timer.\n", this);
+		chonosFuture = scheduler.scheduleAtFixedRate(chonos, sStartupDelay, sPeriod, TimeUnit.SECONDS);
+
 	}
 
 	/** Run the mud. */
 	private void run() {
-		/* fixme: how to get try-with-resorces to work? */
 		try {
+			/* wait for incoming connections */
 			for( ; ; ) {
-				/* fixme! immortal -> newbie (makes testing difficult) */
 				Connection client = new Connection(serverSocket.accept(), this);
 				clients.add(client);
 				pool.execute(client);
 			}
 		} catch(SocketException e) {
-			/* this occurs if the serverSocket is closed; yes, this is how we
-			 shut it down :[ */
-			System.err.format("%s shutting down.\n", this);
+			/* this occurs if the serverSocket is closed */
+			System.err.format("%s: shutting down.\n", this);
 		} catch(IOException e) {
 			System.err.format("Shutting down: %s.\n", e);
 		} finally {
@@ -212,13 +207,32 @@ public class FourOneFourMud implements Iterable<Connection> {
 		clients.remove(c);
 	}
 
-	/** Closes the server; it will detect this, and shutdown. */
+	/** Closes the server; it will detect this through an exception, and shutdown. */
 	public void shutdown() {
+		System.err.format("%s: stopping timer.\n", this);
+		chonosFuture.cancel(false);
+		scheduler.shutdown();
+		try {
+			if(!scheduler.awaitTermination(sShutdownTime, TimeUnit.SECONDS)) {
+				scheduler.shutdownNow();
+				if(!scheduler.awaitTermination(sShutdownTime, TimeUnit.SECONDS)) {
+					System.err.print("The timer would not terminate.\n");
+				}
+			}
+		} catch (InterruptedException e) {
+			System.err.print(this + ": terminating timer.");
+			scheduler.shutdownNow();
+			Thread.currentThread().interrupt();
+		}
+		System.err.format("%s: shutting down server socket.\n", name);
 		try {
 			serverSocket.close();
 		} catch(IOException e) {
-			System.err.format("%s::shutdown: badness. %s.\n", name, e);
+			System.err.format("%s: badness. %s.\n", name, e);
 		}
+
+		System.err.format("%s is shutdown.\n", name);
+
 	}
 
 	/** Prints out the mud info. */

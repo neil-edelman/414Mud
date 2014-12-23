@@ -1,5 +1,5 @@
+mob 'Someone'
 safety: clean input from players
-FourOneFourMud: make it static or dynamic, not in between
 different hit: fall, blunt, sharp, fire, ice, explosion, gun, magic, radiation, poison, chemical
 wrap Commandset into unchanging, immutable
 anonymous classes in Commandset

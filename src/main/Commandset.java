@@ -147,7 +147,6 @@ public class Commandset {
 
 		Room r = c.getMud().getUniverse();
 		p.transportTo(r);
-		p.lookAtStuff();
 	}
 	
 	private static void look(final Connection c, final String arg) {

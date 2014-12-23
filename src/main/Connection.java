@@ -95,7 +95,7 @@ public class Connection implements Runnable {
 				isWaiting = true;
 				if((input = in.readLine()) == null) break;
 				isWaiting = false;
-				if input has bad chars
+				//if input has bad chars
 				////// fixme: check input!
 				commands.interpret(this, input);
 				if(player != null) sendToWoNl(player.prompt());

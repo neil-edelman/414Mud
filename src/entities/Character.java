@@ -31,8 +31,6 @@ public class Character extends Stuff {
 		hpTotal = hpCurrent = 50;
 		level = 1;
 		money = 50;
-		name = "someone";
-		title= "Someone is chilling.";
 	}
 
 	/* fixme; put in Stuff.class */

@@ -69,7 +69,7 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 		if(in != null) sendToRoom(this + " disapparates.");
 		placeIn(container);
 		sendTo("You disapparate and instantly travel to '" + container.title + "'");
-		sendToRoom(this + " suddenly re-apparates.");
+		sendToRoom(this + " suddenly apparates.");
 		/* players will want to look around immediatly */
 		Connection c = this.getConnection();
 		if(c == null) return;

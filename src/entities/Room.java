@@ -128,18 +128,18 @@ public class Room extends Stuff {
 
 	@Override
 	public String lookDetailed() {
-		return "(Room " + name + ") " + title + "\n" + description + "\n" + exits();
+		return "(Room " + name + ") \33[4m" + title + "\33[0m\n" + description + "\n" + exits();
 	}
 
 	private String exits() {
-		StringBuilder sb = new StringBuilder("exits [ ");
+		StringBuilder sb = new StringBuilder("exits \33[7m[ ");
 		if(n != null) sb.append("n ");
 		if(e != null) sb.append("e ");
 		if(s != null) sb.append("s ");
 		if(w != null) sb.append("w ");
 		if(u != null) sb.append("u ");
 		if(d != null) sb.append("d ");
-		sb.append("]");
+		sb.append("]\33[0m");
 		return sb.toString();
 	}
 

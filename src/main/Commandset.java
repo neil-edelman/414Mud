@@ -98,7 +98,7 @@ public class Commandset {
 	}
 
 	private static void cant(final Connection c, final String arg) {
-		c.sendTo("You can't do that, yet. Use create <name> to create your character.");
+		c.sendTo("You can't do that, [yet.]");
 	}
 
 	private static void create(final Connection c, final String arg) {

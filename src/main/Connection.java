@@ -73,6 +73,44 @@ public class Connection implements Runnable {
 			System.err.print("Sending MOTD to " + this + ".\n");
 			this.sendTo(mud.getMotd());
 			this.sendTo(mud + ": you are " + this + "; type 'create <Character>' to start.");
+			this.sendTo("0123456789");
+			this.sendTo("0123456789");
+			this.sendTo("0123456789");
+			this.sendToWoNl("prompt > ");
+			//this.sendTo("\33[Fcool");
+			//this.sendTo("\33[Fwoo");
+
+			//this.sendTo("\13hello?"); // vt - goes the other way
+			//this.sendTo("\u001B[2J"); // erases screen?
+			//this.sendTo("\33[7mBelold\33[0m?"); /* reverse screen! great for headings */
+			/* 0 black
+			 * 1 red
+			 * 2 green
+			 * 3 yellow
+			 * 4 blue
+			 * 5 magenta
+			 * 6 cyan
+			 * 7 white */
+			//this.sendTo("\33[31mBelold\33[0m?");
+
+			// s - Saves the cursor position. <- doesn't work
+			// u - Restores the cursor position. <- doesn't work
+			// "The latter two codes are NOT honoured by many terminal emulators." great
+
+			//this.sendToWoNl("\33[s\33[F\33[LMaybe??\33[u\33[B"); <- 1 1 maybe 1
+			//this.sendToWoNl("\33[F\33[LMaybe??\33[B"); <- 1 1 maybe 1
+
+			// (n)F - Moves cursor to beginning of the line n (default 1) lines up.
+			// (n)L - Insert Line, current line moves down.
+			// (n)S - Scroll up, entire display is moved up, new lines at bottom
+			// (n)E - Cursor to Next Line. If the active position is at the bottom margin, a scroll up is performed.
+
+			this.sendTo("");
+			this.sendToWoNl("\33[F\33[LMaybe??\33[2E");
+
+			// this.sendToWoNl("\33[3S"); <- this doesn't work
+			//this.sendToWoNl("\33#5");
+			//this.sendToWoNl("\33[P1;P3");
 
 			while(!isExit && (input = in.readLine()) != null) {
 
@@ -106,6 +144,13 @@ public class Connection implements Runnable {
 	public void sendTo(final String message) {
 		/* I guess Java automatically converts strings to telnet newline \r\n?
 		 it works */
+		/* (n)F - Moves cursor to beginning of the line n (default 1) lines up.
+		 * (n)L - Insert Line, current line moves down.
+		 * (n)S - Scroll up, entire display is moved up, new lines at bottom
+		 * (n)E - Cursor to Next Line */
+		/* filter out !!! */
+
+		//sendToWoNl("\33[L" + message + "\33[2E\n");
 		sendToWoNl(message + "\n");
 		//System.err.print("Sending " + this + ": " + message + "\n");
 	}

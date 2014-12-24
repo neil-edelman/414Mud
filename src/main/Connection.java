@@ -49,7 +49,7 @@ import entities.Player;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class Connection implements Runnable {
+public class Connection extends Commandset implements Runnable {
 
 	enum Telnet {
 		NAWS(31),	// Negotiate About Window Size
@@ -87,6 +87,7 @@ public class Connection implements Runnable {
 	private final String name = Orcish.get();
 	private final FourOneFourMud mud;
 
+	private Map<String, Command> commandset;
 	private Commandset commands;
 	private boolean         isWaiting;
 	private PrintWriter     out;
@@ -100,9 +101,10 @@ public class Connection implements Runnable {
 	/** Initalize the connection.
 	 @param socket	The client socket. */
 	Connection(final Socket socket, final FourOneFourMud mud) {
-		this.commands = newbie;
-		this.socket   = socket;
-		this.mud      = mud;
+		this.commandset = newbie2;
+		this.commands   = newbie;
+		this.socket     = socket;
+		this.mud        = mud;
 		System.err.print(this + " has connected to " + mud + ".\n");
 	}
 
@@ -281,11 +283,16 @@ public class Connection implements Runnable {
 	}
 
 	public void setImmortal() {
+		commandset = immortal2;
 		commands = immortal;
 	}
 
 	public Commandset getCommandset() {
 		return commands;
+	}
+
+	public Map<String, Command> getC() {
+		return commandset;
 	}
 
 	public Player getPlayer() {
@@ -294,6 +301,7 @@ public class Connection implements Runnable {
 
 	public void setPlayer(Player p) {
 		player = p;
+		commandset = common2;
 		commands = common;
 	}
 

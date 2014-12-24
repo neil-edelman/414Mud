@@ -261,4 +261,6 @@ public class FourOneFourMud implements Iterable<Connection> {
 		return motd;
 	}
 
+	
+
 }

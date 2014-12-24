@@ -29,6 +29,8 @@ public class Commandset {
 	private static final int maxName  = 8;
 	private static final int maxUpper = 2;
 
+	private static final String cancelCommand = "~";
+
 	/* sorry, I use a US keyboard and it's difficult to type in accents, etc,
 	 in real time */
 	private static final Pattern namePattern = Pattern.compile("([A-Z][a-z]+('[a-z]+)*){1,3}");
@@ -120,7 +122,7 @@ public class Commandset {
 			c.sendTo("Your name must match " + namePattern + "; ie, appropriate capitalisation, please.");
 			return;
 		}
-		/* fixme: compare file of bad names (like ***k and such) */
+		/* fixme: compare file of bad names */
 		/* fixme: compare with other players (maybe?) */
 		/* fixme: this is where int, wis, are calculated; not that we have them */
 
@@ -307,7 +309,7 @@ public class Commandset {
 			case COMMON:
 				add("look", "look");
 				add("l",    "look");
-				add("",     "look"); /* <-- this */
+				add("",     "look"); /* <-- this? */
 				add("say",  "say");
 				add("'",    "say");
 				add("chat", "chat");
@@ -352,6 +354,11 @@ public class Commandset {
 
 		//System.err.print(c + " running Command::interpret: " + command + ".\n");
 
+		/* break it off if ~ is at the end */
+		if(command.endsWith(cancelCommand)) {
+			c.sendTo("Cancelled.");
+			return;
+		}
 		/* break the string up (fixme: I suppose would could be pedantic and
 		 make it any white space; more difficult) */
 		int space = command.indexOf(' ');

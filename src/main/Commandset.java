@@ -9,6 +9,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.io.IOException;
 
+import java.util.regex.Pattern;
+
 import entities.Stuff;
 import entities.Player;
 import entities.Room;
@@ -27,8 +29,12 @@ public class Commandset {
 	private static final int maxName  = 8;
 	private static final int maxUpper = 2;
 
+	/* sorry, I use a US keyboard and it's difficult to type in accents, etc,
+	 in real time */
+	private static final Pattern namePattern = Pattern.compile("([A-Z][a-z]+('[a-z]+)*){1,3}");
+
 	/* these are the commands! fixme: anonymous f'n */
-	
+
 	private static void help(final Connection c, final String arg) {
 		Commandset set = c.getCommandset();
 		c.sendTo("These are the commands which you are authorised to use right now:");
@@ -102,42 +108,21 @@ public class Commandset {
 	}
 
 	private static void create(final Connection c, final String arg) {
-		/* this is where int, wis, are calculated; not that we have them */
-		/* fixme: you can't have two names the same? */
 
 		int len = arg.length();
 		if(len < minName) {
 			c.sendTo("Your name must be at least " + minName + " characters.");
 			return;
-		}
-		if(len > maxName) {
+		} else if(len > maxName) {
 			c.sendTo("Your name must be bounded by " + maxName + " characters.");
 			return;
-		}
-
-		boolean isUpper, isLastUpper = false;
-		boolean isFirst     = true;
-		int     upper       = 0;
-
-		for(char ch : arg.toCharArray()) {
-			/*Character.isAlphabetic(), isTitleCase; <- sorry the rest of the world */
-			if(!Character.isLetter(ch)) {
-				c.sendTo("Your name can only be letters.");
-				return;
-			}
-			isUpper = !Character.isLowerCase(ch);
-			if(isUpper) upper++;
-			if(isFirst && !isUpper
-			   || isLastUpper && isUpper
-			   || upper > maxUpper) {
-				c.sendTo("Appropriate capitalisation please.");
-				return;
-			}
-			isFirst = false;
-			isLastUpper = isUpper;
+		} else if(!namePattern.matcher(arg).matches()) {
+			c.sendTo("Your name must match " + namePattern + "; ie, appropriate capitalisation, please.");
+			return;
 		}
 		/* fixme: compare file of bad names (like ***k and such) */
-		/* fixme: compare with other players! */
+		/* fixme: compare with other players (maybe?) */
+		/* fixme: this is where int, wis, are calculated; not that we have them */
 
 		/* passed the grammar police */
 		Player p = new Player(c, arg);
@@ -145,7 +130,7 @@ public class Commandset {
 		System.err.print(c + " has created " + arg + ".\n");
 		c.sendTo("You create a character named " + arg + "!");
 
-		Room r = c.getMud().getUniverse();
+		Room r = c.getMud().getHome();
 		p.transportTo(r);
 	}
 	

@@ -241,7 +241,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 	}
 
 	/** @return The place you start. */
-	public Room getUniverse() {
+	public Room getHome() {
 		return homeroom;
 	}
 

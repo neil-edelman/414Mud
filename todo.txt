@@ -1,7 +1,10 @@
-safety: clean input from players
+tab completion
+command history
+<something>~: discard
 different hit: fall, blunt, sharp, fire, ice, explosion, gun, magic, radiation, poison, chemical
 wrap Commandset into unchanging, immutable
 anonymous classes in Commandset
 BFS for hearing Mobs
 jetpack, dinosaurs, robots, vampires, zombies
 Telnet negotiate line width, word-wrap
+HelpMap extends HashMap { put(key, value, help) { super.put(key, new Help(value, help)); } ...

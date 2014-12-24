@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
 
+import java.util.regex.Pattern;
+
 import common.BoundedReader;
 import common.Orcish;
 import entities.Player;
@@ -51,6 +53,9 @@ public class Connection implements Runnable {
 	private static final Commandset common   = new Commandset(Commandset.Level.COMMON);
 	private static final Commandset immortal = new Commandset(Commandset.Level.IMMORTAL);
 	private static final int bufferSize = 80;
+
+	/* ^[\x00-\x1F\x7F] */
+	private static final Pattern invalidPattern = Pattern.compile("\\p{Cntrl}");
 
 	private final Socket socket;
 	private final String name = Orcish.get();
@@ -92,13 +97,22 @@ public class Connection implements Runnable {
 			this.sendTo(mud + ": you are " + this + "; type 'create <Character>' to start.");
 
 			while(!isExit) {
+
+				/* wait for next line */
 				isWaiting = true;
 				if((input = in.readLine()) == null) break;
 				isWaiting = false;
-				//if input has bad chars
-				////// fixme: check input!
-				commands.interpret(this, input);
+
+				/* if the string is sanitary, interpret it */
+				if(!invalidPattern.matcher(input).find()) {
+					commands.interpret(this, input);
+				} else {
+					this.sendTo("Weird stuff in your input; ignoring.");
+				}
+
+				/* do the prompt again */
 				if(player != null) sendToWoNl(player.prompt());
+
 			}
 
 			this.sendTo("Closing " + this + ".");

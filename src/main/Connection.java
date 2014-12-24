@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+/*import java.io.InputStream;
+import java.io.OutputStream;*/
 import java.io.OutputStreamWriter;
 import java.io.BufferedWriter;
 import java.io.PrintWriter;
@@ -49,6 +51,30 @@ import entities.Player;
  @since		1.0, 11-2014 */
 public class Connection implements Runnable {
 
+	enum Telnet {
+		NAWS(31),	// Negotiate About Window Size
+		SE(240),	// End of subnegotiation parameters.
+		NOP(241),	// No operation
+		DM(242),	// Data mark. Should TCP Urgent.
+		BRK(243),	// Indicates that the "break" key was hit.
+		IP(244),	// Suspend, interrupt or abort.
+		AO(245),	// Abort output.
+		AYT(246),	// Are you there?
+		EC(247),	// Erase character.
+		EL(248),	// Erase line.
+		GA(249),	// Go ahead.
+		SB(250),	// Subnegotiation of the indicated option follows.
+		WILL(251),	// Indicates the desire to begin performing, or confirmation that you are now performing.
+		WONT(252),	// Indicates the refusal to perform, or continue performing
+		DO(253),	// Indicates the request that the other party perform, or confirmation expecting
+		DONT(254),	// Indicates the demand that the other party stop performing.
+		IAC(255);	// Interpret as command
+		private int command;
+		Telnet(final int command)	{ this.command = command; }
+		int val()					{ return command; }
+		byte bval()                 { return (byte)command; }
+	}
+
 	private static final Commandset newbie   = new Commandset(Commandset.Level.NEWBIE);
 	private static final Commandset common   = new Commandset(Commandset.Level.COMMON);
 	private static final Commandset immortal = new Commandset(Commandset.Level.IMMORTAL);
@@ -65,6 +91,8 @@ public class Connection implements Runnable {
 	private boolean         isWaiting;
 	private PrintWriter     out;
 	private BoundedReader   in;
+	/*private OutputStream    outRaw = null;
+	private InputStream     inRaw = null;*/
 	private Player  player = null;
 	private boolean isExit = false;
 	/* fixme: ip */
@@ -82,8 +110,8 @@ public class Connection implements Runnable {
 	public void run() {
 		//System.err.print(this + " up and running, waiting for character creation.\n");
 		try(
-			PrintWriter   out = new PrintWriter(socket.getOutputStream(), true /* autoflush (doesn't work) */);
-			BoundedReader  in = new BoundedReader(new BufferedReader(new InputStreamReader(socket.getInputStream())), bufferSize);
+			PrintWriter   out = new PrintWriter(/*outRaw = */socket.getOutputStream(), true /* autoflush (doesn't work?) */);
+			BoundedReader  in = new BoundedReader(new BufferedReader(new InputStreamReader(/*inRaw = */socket.getInputStream())), bufferSize);
 		) {
 			String input;
 
@@ -91,6 +119,14 @@ public class Connection implements Runnable {
 			 sentTo(), getFrom() */
 			this.out = out;
 			this.in  = in;
+
+			/* first thing -- get the screen width */
+			/*System.err.format("%s: sending request for screen width.\n", this);
+			try{
+				doNaws();
+			} catch(IOException e) {
+				System.err.format("%s: %s.\n", this, e);
+			}*/
 
 			System.err.print("Sending MOTD to " + this + ".\n");
 			this.sendTo(mud.getMotd());
@@ -107,11 +143,11 @@ public class Connection implements Runnable {
 				if(!invalidPattern.matcher(input).find()) {
 					commands.interpret(this, input);
 				} else {
-					this.sendTo("Weird stuff in your input; ignoring.");
+					this.sendTo("Weird characters within your input; ignoring.");
 				}
 
 				/* do the prompt again */
-				if(player != null) sendToWoNl(player.prompt());
+				if(player != null) sendToRaw(player.prompt());
 
 			}
 
@@ -128,8 +164,10 @@ public class Connection implements Runnable {
 		} catch(IOException e) {
 			System.err.format("%s: %s.\n", this, e);
 		} finally {
-			this.out = null;
-			this.in  = null;
+			this.out    = null;
+			this.in     = null;
+			/*this.outRaw = null;
+			this.inRaw  = null;*/
 		}
 
 	}
@@ -149,20 +187,80 @@ public class Connection implements Runnable {
 
 		//sendToWoNl("\33[L" + message + "\33[2E\n");
 		StringBuilder sb = new StringBuilder();
-		if(isWaiting) sb.append("\n");
+		if(isWaiting) sb.append("\n"); // fixme: it works, but should really be newLine()
 		sb.append(message);
 		sb.append("\n");
 		if(isWaiting && player != null) sb.append(player.prompt());
 		//if(player != null) sb.append(player.prompt());
 		//System.err.print("Sending " + this + ": " + message + "\n");
-		sendToWoNl(sb.toString());
+		sendToRaw(sb.toString());
 	}
 
-	private void sendToWoNl(final String message) {
+	private void sendToRaw(final String message) {
 		if(out == null) return;
 		out.print(message);
 		out.flush();
 	}
+
+/*	private boolean expectIn(final byte[] data) throws IOException {
+		if(inRaw == null) return false;
+		boolean dont = false;
+		int     b;
+		for(byte d : data) {
+			b = inRaw.read();
+			if(b != (int)(d & 0xff)) dont = true;
+		}
+		return !dont;
+	}
+
+	private boolean doNaws() throws IOException {
+		int iac, sb, naws, b1, b2;
+
+		if(outRaw == null || inRaw == null) return false;
+
+		* IAC DO NAWS
+		 Sent by the Telnet server to suggest that NAWS be used. *
+		byte[] yo = new byte[] { Telnet.IAC.bval(), Telnet.DO.bval(), Telnet.NAWS.bval() };
+		* IAC WILL NAWS
+		Sent by the Telnet client to suggest that NAWS be used.*
+		byte[] ok = new byte[] { Telnet.IAC.bval(), Telnet.WILL.bval(), Telnet.NAWS.bval() };
+
+		outRaw.write(yo);
+		outRaw.flush();
+		
+		return expectIn(ok);
+	}
+
+		iac = inRaw.read();
+		if(iac != Telnet.IAC.val()) throw new IOException("read " + iac + " expecting IAC");
+
+		sb = inRaw.read();
+		if(sb != Telnet.DONT.val() &&
+		   sb != Telnet.SB.val()) throw new IOException("read " + sb + " when expecting SB");
+
+		naws = inRaw.read();
+		if(naws != Telnet.NAWS.val()) throw new IOException("read " + naws + " when expecting NAWS");
+
+		if(sb == Telnet.DONT.val()
+		   && naws == Telnet.NAWS.val()) throw new IOException("client refuses to send window size");
+
+		b2 = inRaw.read();
+		b1 = inRaw.read();
+		if(b2 == -1 || b1 == -1) throw new IOException("dubious window size");
+		int width = (b2 << 8) | b1;
+		b2 = inRaw.read();
+		b1 = inRaw.read();
+		if(b2 == -1 || b1 == -1) throw new IOException("dubious window size");
+		int height = (b2 << 8) | b1;
+		System.err.format("Width %d Height %d?\n", width, height);
+		//....
+	}
+*/
+		/* IAC DON'T NAWS
+		 Sent by the Telnet server to refuse to use NAWS. */
+		/* IAC SB NAWS <16-bit value> <16-bit value> IAC SE
+		 Sent by the Telnet client to inform the Telnet server of the
+		 window width and height. */
 
 	public FourOneFourMud getMud() {
 		return mud;

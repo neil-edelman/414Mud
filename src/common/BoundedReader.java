@@ -13,9 +13,11 @@ import java.io.IOException;
  @since		1.1, 12-2014 */
 public class BoundedReader extends BufferedReader {
 
+	private static final int IAC = 255;
+
 	private final int  bufferSize;
 	private       char buffer[];
-	//boolean            isNewLine;
+	/*boolean            isLastIac;*/
 
 	/**
 	 @param in			The {@link BufferedReader} that this is wrapped around.
@@ -35,10 +37,17 @@ public class BoundedReader extends BufferedReader {
 		/* read up to bufferSize */
 		if((no = this.read(buffer, 0, bufferSize)) == -1) return null;
 		String input = new String(buffer, 0, no).trim();
+		/*if(no > 0 && buffer[0] == IAC) {
+			isLastIac = true;
+		} else {
+			isLastIac = false;
+			input.trim();
+		}*/
 
 		/* skip the rest */
 		while(no >= bufferSize && ready()) {
 			if((no = read(buffer, 0, bufferSize)) == -1) break;
+			// no = skip(bufferSize); ??
 		}
 
 		//isNewLine = true;
@@ -46,12 +55,8 @@ public class BoundedReader extends BufferedReader {
 	}
 
 	/**
-	 @return Whether the enter from a readLine has been pressed since the last
-	 time */
-	/*public boolean checkNewLine() {
-		boolean is = isNewLine;
-		isNewLine = false;
-		return is;
-	}*/
+	 @return Whether the last input should be "Interpret as command" per
+	 Telnet. */
+	/*public boolean isIac() { return isLastIac; }*/
 
 }

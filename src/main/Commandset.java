@@ -125,9 +125,9 @@ public class Commandset {
 		Player p = new Player(c, arg);
 		c.setPlayer(p);
 		try {
-			setCommandset("common");
+			c.setCommandset("common");
 		} catch(NoSuchFieldException e) {
-			System.err.format("%s: %s.\n", this, e);
+			System.err.format("%s: %s.\n", c, e);
 			c.sendTo("There is no command set 'common;' sorry!");
 		}
 		System.err.print(c + " has created " + arg + ".\n");

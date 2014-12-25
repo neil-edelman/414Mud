@@ -25,12 +25,13 @@ import entities.Stuff;
 import entities.Player;
 import entities.Room;
 
-/** Commands you can enact.
+/** Commands you can enact; actually part of Connection, but imagine the file
+ size! Connection extends Commandset.
  
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class Commandset {
+public abstract class Commandset {
 
 	private static final String csetDir = "data/commandsets";
 	private static final String csetExt = ".cset";

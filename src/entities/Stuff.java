@@ -127,7 +127,7 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 		this.in.sendToContentsExcept(this, except, message);
 	}
 
-	private void sendToContentsExcept(final Stuff except, final String message) {
+	public void sendToContentsExcept(final Stuff except, final String message) {
 		for(Stuff s : this) {
 			if(s == except) continue;
 			s.sendTo(message);

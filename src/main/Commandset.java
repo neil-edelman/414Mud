@@ -43,6 +43,8 @@ public abstract class Commandset {
 	private static final int minName  = 3;
 	private static final int maxName  = 8;
 
+	private static final int yellDistance = 2;
+
 	/* this is so meta */
 	protected static final Map<String, Map<String, Command>> commandsets;
 
@@ -75,6 +77,18 @@ public abstract class Commandset {
 		for(Connection everyone : c.getMud()) {
 			everyone.sendTo(s);
 		}
+	}, yell = (c, arg) -> {
+		Player p = c.getPlayer();
+		if(p == null) return;
+		Stuff r = p.getIn();
+		if(r == null || !(r instanceof Room)) {
+			c.sendTo("You yell, but no one can hear you.");
+			return;
+		}
+		c.sendTo("You yell \"" + arg + "\"");
+		c.getMapper().map((Room)r, yellDistance, (room, d) -> {
+			room.sendToContentsExcept(p, p + " yells \"" + arg + "\"");
+		});
 	}, take = (c, arg) -> {
 		Player p = c.getPlayer();
 		if(p == null) return;
@@ -88,14 +102,14 @@ public abstract class Commandset {
 			break;
 		}
 		if(!target.isTransportable()) {
-			p.sendTo("You can't pick " + target + " up.");
+			c.sendTo("You can't pick " + target + " up.");
 			p.sendToRoomExcept(target, p + " tries to pick up " + target + " and fails.");
 			target.sendTo(p + " tries to pick you up off the ground and fails.");
 			return;
 		}
 		/* fixme: mass */
 		target.placeIn(p);
-		p.sendTo("You pick up " + target + ".");
+		c.sendTo("You pick up " + target + ".");
 		p.sendToRoomExcept(target, p + " picks up " + target + ".");
 		target.sendTo(p + " picks you up.");
 	}, inventory = (c, arg) -> {

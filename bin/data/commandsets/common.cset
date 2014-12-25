@@ -7,6 +7,8 @@ look	look
 l	look
 say	say
 '	say
+yell	yell
+`	yell
 chat	chat
 .	chat
 n	north

@@ -7,8 +7,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-/*import java.io.InputStream;
-import java.io.OutputStream;*/
 import java.io.OutputStreamWriter;
 import java.io.BufferedWriter;
 import java.io.PrintWriter;
@@ -178,24 +176,15 @@ public class Connection extends Commandset implements Runnable {
 	/** Send a message to the connection.
 	 @param message		The message. */
 	public void sendTo(final String message) {
-		/* I guess Java automatically converts strings to telnet newline \r\n?
-		 it works */
-		/* (n)F - Moves cursor to beginning of the line n (default 1) lines up.
-		 * (n)L - Insert Line, current line moves down.
-		 * (n)S - Scroll up, entire display is moved up, new lines at bottom
-		 * (n)E - Cursor to Next Line */
-		/* filter out !!! */
 
+		//System.err.print("Sending " + this + ": " + message + "\n");
 		if(in == null) return;
 
-		//sendToWoNl("\33[L" + message + "\33[2E\n");
 		StringBuilder sb = new StringBuilder();
-		if(isWaiting) sb.append("\n"); // fixme: it works, but should really be newLine()
+		if(isWaiting) sb.append("\n"); // fixme: it works, but should really be newLine(), \r\n
 		sb.append(message);
 		sb.append("\n");
 		if(isWaiting && player != null) sb.append(player.prompt());
-		//if(player != null) sb.append(player.prompt());
-		//System.err.print("Sending " + this + ": " + message + "\n");
 		sendToRaw(sb.toString());
 	}
 

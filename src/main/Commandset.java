@@ -51,7 +51,7 @@ public class Commandset {
 
 	private static final Command help = (c, arg) -> {
 		Map<String, Command> commandset = c.getCommandset();
-		c.sendTo("yes->These are the commands which you are authorised to use right now:");
+		c.sendTo("These are the commands which you are authorised to use right now:");
 		for(Map.Entry<String, Command> entry : commandset.entrySet()) {
 			c.sendTo(entry.getKey()/* + ":" + entry.getValue()*/);
 		}
@@ -124,12 +124,17 @@ public class Commandset {
 		/* passed the grammar police */
 		Player p = new Player(c, arg);
 		c.setPlayer(p);
+		try {
+			setCommandset("common");
+		} catch(NoSuchFieldException e) {
+			System.err.format("%s: %s.\n", this, e);
+			c.sendTo("There is no command set 'common;' sorry!");
+		}
 		System.err.print(c + " has created " + arg + ".\n");
 		c.sendTo("You create a character named " + arg + "!");
 
 		Room r = c.getMud().getHome();
 		p.transportTo(r);
-		/******************************* setCommandset("common"); *************/
 	}, look = (c, arg) -> {
 		Player p = c.getPlayer();
 		if(p == null) {

@@ -288,11 +288,6 @@ public class Connection extends Commandset implements Runnable {
 
 	public void setPlayer(Player p) {
 		player = p;
-		try {
-			setCommandset("common");
-		} catch(NoSuchFieldException e) {
-			System.err.format("%s: %s.\n", this, e);
-		}
 	}
 
 	public void setExit() {

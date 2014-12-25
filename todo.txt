@@ -1,5 +1,3 @@
-wrap Commandset into unchanging, immutable
-anonymous classes in Commandset
 BFS for hearing Mobs
 different hit: fall, blunt, sharp, fire, ice, explosion, gun, magic, radiation, poison, chemical
 jetpack, dinosaurs, robots, vampires, zombies

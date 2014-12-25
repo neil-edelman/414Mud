@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
+import java.lang.NoSuchFieldException;
 
 import java.util.regex.Pattern;
 
@@ -75,10 +76,8 @@ public class Connection extends Commandset implements Runnable {
 		byte bval()                 { return (byte)command; }
 	}
 
-	private static final Commandset newbie   = new Commandset(Commandset.Level.NEWBIE);
-	private static final Commandset common   = new Commandset(Commandset.Level.COMMON);
-	private static final Commandset immortal = new Commandset(Commandset.Level.IMMORTAL);
-	private static final int bufferSize = 80;
+	private static final int bufferSize       = 80;
+	private static final String cancelCommand = "~";	
 
 	/* ^[\x00-\x1F\x7F] */
 	private static final Pattern invalidPattern = Pattern.compile("\\p{Cntrl}");
@@ -87,8 +86,7 @@ public class Connection extends Commandset implements Runnable {
 	private final String name = Orcish.get();
 	private final FourOneFourMud mud;
 
-	private Map<String, Command> commandset;
-	private Commandset commands;
+	private Map<String, Command> commandset = null;
 	private boolean         isWaiting;
 	private PrintWriter     out;
 	private BoundedReader   in;
@@ -101,10 +99,13 @@ public class Connection extends Commandset implements Runnable {
 	/** Initalize the connection.
 	 @param socket	The client socket. */
 	Connection(final Socket socket, final FourOneFourMud mud) {
-		this.commandset = newbie2;
-		this.commands   = newbie;
 		this.socket     = socket;
 		this.mud        = mud;
+		try {
+			setCommandset("newbie");
+		} catch(NoSuchFieldException e) {
+			System.err.format("%s: %s.\n", this, e);
+		}
 		System.err.print(this + " has connected to " + mud + ".\n");
 	}
 
@@ -143,7 +144,7 @@ public class Connection extends Commandset implements Runnable {
 
 				/* if the string is sanitary, interpret it */
 				if(!invalidPattern.matcher(input).find()) {
-					commands.interpret(this, input);
+					interpret(input);
 				} else {
 					this.sendTo("Weird characters within your input; ignoring.");
 				}
@@ -282,17 +283,14 @@ public class Connection extends Commandset implements Runnable {
 		return socket;
 	}
 
-	public void setImmortal() {
-		commandset = immortal2;
-		commands = immortal;
-	}
-
-	public Commandset getCommandset() {
-		return commands;
-	}
-
-	public Map<String, Command> getC() {
+	public Map<String, Command> getCommandset() {
 		return commandset;
+	}
+
+	public void setCommandset(final String commandsetStr) throws NoSuchFieldException {
+		Map<String, Command> c = commandsets.get(commandsetStr);
+		if(c == null) throw new NoSuchFieldException(commandsetStr + " not found");
+		commandset = c;
 	}
 
 	public Player getPlayer() {
@@ -301,8 +299,11 @@ public class Connection extends Commandset implements Runnable {
 
 	public void setPlayer(Player p) {
 		player = p;
-		commandset = common2;
-		commands = common;
+		try {
+			setCommandset("common");
+		} catch(NoSuchFieldException e) {
+			System.err.format("%s: %s.\n", this, e);
+		}
 	}
 
 	public void setExit() {
@@ -313,6 +314,38 @@ public class Connection extends Commandset implements Runnable {
 	public void sendToRoom(final String s) {
 		if(player == null) return;
 		player.sendToRoom(s);
+	}
+
+	/** This parses the string and runs it.
+	 @param c		The connection that's attributed the command.
+	 @param command	A command to parse. */
+	public void interpret(final String commandStr) {
+		String cmd, arg;
+
+		/* break it off if ~ is at the end */
+		if(commandStr.endsWith(cancelCommand)) {
+			sendTo("Cancelled.");
+			return;
+		}
+		/* break the string up */
+		/* fixme: any white space */
+		int space = commandStr.indexOf(' ');
+		if(space != -1) {
+			cmd = commandStr.substring(0, space);
+			arg = commandStr.substring(space).trim();
+		} else {
+			cmd = commandStr;
+			arg = "";
+		}
+
+		/* parse */
+		Command command = commandset.get(cmd);
+
+		if(command != null) {
+			command.command(this, arg);
+		} else {
+			sendTo("Huh? \"" + cmd + "\" (use help for a list)");
+		}
 	}
 
 }

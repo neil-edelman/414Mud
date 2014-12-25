@@ -35,8 +35,6 @@ import entities.Mob;
 import main.Connection;
 import main.Area;
 
-import main.Tests;
-
 /** This is the entry-point for starting the mud and listening for connections;
  connnections are handled by a fixed socket pool.
 
@@ -60,13 +58,6 @@ public class FourOneFourMud implements Iterable<Connection> {
 	/** Starts up the mud and listens for connections.
 	 @param args	Ignored. */
 	public static void main(String args[]) {
-
-		try {
-			Tests t = new Tests();
-			System.err.format("%s\n\n\n", t);
-		} catch(IOException e) {
-			System.err.format("%s\n", e);
-		}
 
 		FourOneFourMud mud;
 

@@ -13,6 +13,7 @@ import java.io.ObjectStreamException;
 import java.util.Iterator;
 
 import main.Connection;
+import main.Mapper;
 import entities.Room.Direction;
 
 /** The most general sort of stuff.
@@ -22,9 +23,10 @@ import entities.Room.Direction;
  @since		1.0, 11-2014 */
 public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 
-	// fixme: the [ exits ] should always be visible
+	private static final int searchDepth = 3;
 
 	/*public List<String> name = new LinkedList<String>(); <- only one name is fine */
+	/* fixme: but have a hash for when there's the same name */
 	protected String name;  /* lower case */
 	protected String title; /* sentence case */
 
@@ -68,7 +70,7 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 	public void transportTo(final Stuff container) {
 		if(in != null) sendToRoom(this + " disapparates.");
 		placeIn(container);
-		sendTo("You disapparate and instantly travel to '" + container.title + "'");
+		sendTo("You disapparate and instantly travel to '" + container.title + "'\n"); /* newline! we are going somewhere else */
 		sendToRoom(this + " apparates suddenly.");
 		/* players will want to look around immediatly */
 		Connection c = this.getConnection();
@@ -79,6 +81,8 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 
 	/** Silent (only if you know what you're doing.) */
 	public void placeIn(Stuff container) {
+		Connection connection;
+
 		/* it's already in something */
 		if(in != null) {
 			in.contents.remove(this);
@@ -88,6 +92,15 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 		/* appear somewhere else */
 		in = container;
 		container.contents.add(this);
+
+		/* update players' bfs */
+		/*if(this instanceof Player) ((Player)this).updateWhere();*/
+		if((connection = getConnection()) == null) return;
+		// fixme: clear bfs
+		if(container instanceof Player) return;
+		connection.getMapper().map((Room)container, searchDepth, (node, d) -> {
+			System.err.format("%s: %s\t%d\n", this, node, d);
+		});
 
 		//System.err.print(this + " in " + container + ".\n");
 	}

@@ -84,6 +84,10 @@ public class Connection extends Commandset implements Runnable {
 	private final String name = Orcish.get();
 	private final FourOneFourMud mud;
 
+	/* so we don't have to worry about synconisation, we'll assign each
+	 Thread/Socket/Connection one and operate them in parallel */
+	private Mapper          mapper = new Mapper();
+
 	private Map<String, Command> commandset = null;
 	private boolean         isWaiting;
 	private PrintWriter     out;
@@ -330,6 +334,10 @@ public class Connection extends Commandset implements Runnable {
 		} else {
 			sendTo("Huh? \"" + cmd + "\" (use help for a list)");
 		}
+	}
+
+	public Mapper getMapper() {
+		return mapper;
 	}
 
 }

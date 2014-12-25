@@ -50,6 +50,7 @@ public class Room extends Stuff {
 				mod.put(d.name, d);
 			}
 			map = Collections.unmodifiableMap(mod);
+
 		}
 
 		private Direction(final String var, final String name) {
@@ -128,7 +129,7 @@ public class Room extends Stuff {
 
 	@Override
 	public String lookDetailed() {
-		return "(Room " + name + ") \33[4m" + title + "\33[0m\n" + description + "\nexits \33[7m" + exits() + "\33[0m";
+		return "\33[4m" + title + "\33[0m (" + name + ")\n" + description + "\nexits \33[7m" + exits() + "\33[0m";
 	}
 
 	private String exits() {

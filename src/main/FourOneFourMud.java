@@ -44,7 +44,7 @@ import main.Area;
 public class FourOneFourMud implements Iterable<Connection> {
 
 	/* debug mode; everyone can read this */
-	public static boolean isVerbose = true;
+	public static boolean isVerbose = false;
 
 	/* constants */
 	private static final int fibonacci20    = 6765;

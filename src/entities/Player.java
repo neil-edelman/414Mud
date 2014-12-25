@@ -3,6 +3,9 @@
 
 package entities;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import main.Connection;
 import entities.Room;
 
@@ -14,6 +17,9 @@ import entities.Room;
 public class Player extends Character {
 
 	protected Connection connection;
+
+	private Map<Integer, Room> where = new HashMap<Integer, Room>();
+	private boolean          map[][] = new boolean[7][7];
 
 	public Player(Connection connection, String name) {
 		super();
@@ -33,7 +39,7 @@ public class Player extends Character {
 			sendToRoom(this + " searches for a way " + where + ".");
 			return;
 		}
-		sendTo("You walk " + where + ".");
+		sendTo("You walk " + where + ".\n"); /* newline! helps keep room seperate */
 		sendToRoom(this + " walks " + where + ".");
 		placeIn(target);
 		sendToRoom(this + " walks in from the " + where.getBack() + ".");
@@ -90,5 +96,42 @@ public class Player extends Character {
 	public String prompt() {
 		return hpCurrent + "/" + hpTotal + " > ";
 	}
+
+	/** Does bfs to map out the rooms n hops away, where n is a constant,
+	 {@link searchDepth}. Re-computed every time (it would be wasteful if n is
+	 big, but the simplicity of it greatly outweights the un-optimisation.) */
+/*	public void updateWhere() {
+		Room node, near;
+		int dist = 0, thisIncrease = 1, nextIncrease = 0;
+
+		where.clear();
+		if(in == null || !(in instanceof Room)) return;
+		queue.clear();
+		visited.clear();
+		for(boolean isolong[] : map) { for(boolean spot : isolong) { spot = false; } }
+		queue.add((Room)in);
+		while(!queue.isEmpty()) {
+			node = queue.remove();
+			where.put(dist, node);
+			visited.add(node);
+			System.err.format("%d/%d where+=(%d, %s) ", thisIncrease, nextIncrease, dist, node);
+			System.err.format("queue{ ");
+			for(Room r : queue) System.err.format("%s ", r);
+			System.err.print("}\n");
+			if(dist < searchDepth) {
+				for(Room.Direction dir : Room.Direction.values()) {
+					if((near = node.getRoom(dir)) == null || visited.contains(near)) continue;
+					queue.add(near);
+					visited.add(near);
+					nextIncrease++;
+				}
+			}
+			if(--thisIncrease <= 0) {
+				thisIncrease = nextIncrease;
+				nextIncrease = 0;
+				dist++;
+			}
+		}
+	}*/
 
 }

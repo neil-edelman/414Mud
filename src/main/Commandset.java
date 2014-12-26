@@ -43,7 +43,7 @@ public abstract class Commandset {
 	private static final int minName  = 3;
 	private static final int maxName  = 8;
 
-	private static final int yellDistance = 2;
+	private static final int yellDistance = 3;
 
 	/* this is so meta */
 	protected static final Map<String, Map<String, Command>> commandsets;
@@ -88,7 +88,7 @@ public abstract class Commandset {
 		c.sendTo("You yell \"" + arg + "\"");
 		String str = p + " yells from %s-ish, \"%s\" (%d room(s) away.)";
 		c.getMapper().map((Room)r, yellDistance, (room, dist, dir) -> {
-			room.sendToContentsExcept(p, String.format(str, dir, arg, dist));
+			room.sendToContentsExcept(p, String.format(str, dir.getBack(), arg, dist));
 			return true;
 		});
 	}, take = (c, arg) -> {

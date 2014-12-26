@@ -93,16 +93,14 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 		in = container;
 		container.contents.add(this);
 
-		/* update players' bfs */
-		/*if(this instanceof Player) ((Player)this).updateWhere();*/
-		if((connection = getConnection()) == null) return;
-		// fixme: clear bfs
-		if(container instanceof Player) return;
-		connection.getMapper().map((Room)container, searchDepth, (node, dis, dir) -> {
-			System.err.format("%s: %s\t%d\t%s\n", this, node, dis, dir);
-		});
+		reorient();
 
 		//System.err.print(this + " in " + container + ".\n");
+	}
+
+	/** Called by {@link placeIn} to do stuff. */
+	protected void reorient() {
+		/* do nothing */
 	}
 
 	public void lookAtStuff() { }
@@ -183,6 +181,25 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 
 	public boolean isTransportable() {
 		return false;
+	}
+
+	public void go(Room.Direction where) {
+		if(in == null) {
+			sendTo("Can't do that; you are floating in space.");
+			return;
+		}
+		Room target = in.getRoom(where);
+		if(target == null) {
+			sendTo("You can't go that way.");
+			sendToRoom(this + " searches for a way " + where + ".");
+			return;
+		}
+		sendTo("You walk " + where + ".\n"); /* newline! helps keep room seperate */
+		sendToRoom(this + " walks " + where + ".");
+		placeIn(target);
+		sendToRoom(this + " walks in from the " + where.getBack() + ".");
+		sendTo(target.lookDetailed());
+		lookAtStuff();
 	}
 
 	/** Prints all the data so it will be serialisable (but in text, not binary.)

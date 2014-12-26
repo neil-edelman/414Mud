@@ -16,35 +16,18 @@ import entities.Room;
  @since		1.0, 11-2014 */
 public class Player extends Character {
 
+	static final int distanceWakeUp = 3;
+
 	protected Connection connection;
 
 	private Map<Integer, Room> where = new HashMap<Integer, Room>();
-	private boolean          map[][] = new boolean[7][7];
+	//private boolean          map[][] = new boolean[7][7];
 
 	public Player(Connection connection, String name) {
 		super();
 		this.connection = connection;
 		this.name  = name;
 		this.title = name + " is neutral.";
-	}
-
-	public void go(Room.Direction where) {
-		if(in == null) {
-			sendTo("Can't do that; you are floating in space.");
-			return;
-		}
-		Room target = in.getRoom(where);
-		if(target == null) {
-			sendTo("You can't go that way.");
-			sendToRoom(this + " searches for a way " + where + ".");
-			return;
-		}
-		sendTo("You walk " + where + ".\n"); /* newline! helps keep room seperate */
-		sendToRoom(this + " walks " + where + ".");
-		placeIn(target);
-		sendToRoom(this + " walks in from the " + where.getBack() + ".");
-		sendTo(target.lookDetailed());
-		lookAtStuff();
 	}
 
 	@Override
@@ -63,6 +46,24 @@ public class Player extends Character {
 		return name + " is connected on socket " + connection + "\nThey are wearing . . . <not implemented>";
 	}
 
+	@Override
+	protected void reorient() {
+		/* update players' bfs */
+		/*if(this instanceof Player) ((Player)this).updateWhere();*/
+
+		where.clear();
+
+		if(!(in instanceof Room)) return;
+		connection.getMapper().map((Room)in, distanceWakeUp, (room, dis, dir) -> {
+			System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);
+			where.put(dis, room);
+			for(Stuff s : room) {
+				/* fixme: just to be evil . . . dinosaurs can smell you and attack */
+				if(s instanceof Mob) ((Mob)s).wakeUp();
+			}
+		});
+	}
+	
 /*	public void kill(Stuff murderer) {
 		ReceiveMessage("You have been attacked and killed by " + murderer + "\n");
 		

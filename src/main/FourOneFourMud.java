@@ -32,6 +32,7 @@ import java.util.HashMap;
 import entities.Room;
 import entities.Object;
 import entities.Mob;
+import common.Chance;
 import main.Connection;
 import main.Area;
 
@@ -44,7 +45,7 @@ import main.Area;
 public class FourOneFourMud implements Iterable<Connection> {
 
 	/* debug mode; everyone can read this */
-	public static boolean isVerbose = false;
+	public static boolean isVerbose = true;
 
 	/* constants */
 	private static final int fibonacci20    = 6765;
@@ -77,14 +78,32 @@ public class FourOneFourMud implements Iterable<Connection> {
 
 	}
 
+	public interface Chronos extends Runnable {
+		public void register(Mob mob);
+	}
+
 	/* the thread that is scheduleAtFixedRate */
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private final ScheduledFuture<?> chonosFuture;
-	private final Runnable chonos = new Runnable() {
+	private static final Chronos/*Runnable*/ chronos = new Chronos/*Runnable*/() {
+
+		Chance chance = new Chance();
+
+		List<Mob> mobs = new LinkedList<Mob>();
+
 		/* one time step */
 		public void run() {
-			System.out.print("<Bump>\n");
+			System.out.format("<Bump>\n");
+			for(Mob m : mobs) {
+				if(m.isSleeping()) continue;
+				m.doSomethingInteresting(chance);
+			}
 		}
+
+		public void register(Mob mob) {
+			mobs.add(mob);
+		}
+
 	};
 
 	/* the clients of the mud */
@@ -156,7 +175,7 @@ public class FourOneFourMud implements Iterable<Connection> {
 		/* start the timer */
 
 		System.err.format("%s: starting timer.\n", this);
-		chonosFuture = scheduler.scheduleAtFixedRate(chonos, sStartupDelay, sPeriod, TimeUnit.SECONDS);
+		chonosFuture = scheduler.scheduleAtFixedRate(chronos, sStartupDelay, sPeriod, TimeUnit.SECONDS);
 
 	}
 
@@ -261,6 +280,9 @@ public class FourOneFourMud implements Iterable<Connection> {
 		return motd;
 	}
 
-	
+	public static Chronos getChronos() {
+		if(chronos == null) throw new RuntimeException("You must first start the timer.");
+		return chronos;
+	}
 
 }

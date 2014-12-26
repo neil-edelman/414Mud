@@ -79,7 +79,8 @@ public class FourOneFourMud implements Iterable<Connection> {
 	}
 
 	public interface Chronos extends Runnable {
-		public void register(Mob mob);
+		public Mapper getMapper();
+		public void   register(Mob mob);
 	}
 
 	/* the thread that is scheduleAtFixedRate */
@@ -87,9 +88,10 @@ public class FourOneFourMud implements Iterable<Connection> {
 	private final ScheduledFuture<?> chonosFuture;
 	private static final Chronos/*Runnable*/ chronos = new Chronos/*Runnable*/() {
 
-		Chance chance = new Chance();
+		private Chance chance = new Chance();
+		private Mapper mapper = new Mapper();
 
-		List<Mob> mobs = new LinkedList<Mob>();
+		private List<Mob> mobs = new LinkedList<Mob>();
 
 		/* one time step */
 		public void run() {
@@ -102,6 +104,10 @@ public class FourOneFourMud implements Iterable<Connection> {
 
 		public void register(Mob mob) {
 			mobs.add(mob);
+		}
+
+		public Mapper getMapper() {
+			return mapper;
 		}
 
 	};

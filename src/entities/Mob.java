@@ -43,17 +43,25 @@ public class Mob extends Character {
 
 	/** Do a thing. */
 	public void doSomethingInteresting(Chance c) {
-		
-		/* go to sleep? kind of like . . .
-		 connection.getMapper().map((Room)in, distanceWakeUp, (node, dis, dir) -> {
-			System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);
+
+		/* go to sleep? fixme: this should happen much less frequently */
+		if(FourOneFourMud.getChronos().getMapper().map((Room)in, Player.distanceWakeUp, (room, dis, dir) -> {
+			/*System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);*/
 			for(Stuff s : room) {
 				if(s instanceof Player) {
-					return true;
+					System.err.format("%s: staying awake because of %s.\n", this, s);
+					return false;
 				}
 			}
-		});*/
-		switch(c.uniform(2)) {
+			return true;
+		})) {
+			isSleeping = true;
+			System.err.format("%s: no one nearby, going to sleep.\n", this);
+			return;
+		}
+
+		/* random walking into walls */
+		switch(c.uniform(1)) {
 			case 0: go(Room.Direction.S); break;
 			case 1: sendToRoomExcept(this, this + ": \"Aha!\""); break;
 			default:

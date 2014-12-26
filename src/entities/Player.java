@@ -58,9 +58,10 @@ public class Player extends Character {
 			System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);
 			where.put(dis, room);
 			for(Stuff s : room) {
-				/* fixme: just to be evil . . . dinosaurs can smell you and attack */
+				/* fixme: just to be evil . . . dinosaurs can smell and hunt you! */
 				if(s instanceof Mob) ((Mob)s).wakeUp();
 			}
+			return true;
 		});
 	}
 	

@@ -27,7 +27,7 @@ public class Mapper {
 	private Queue<Room.Direction> dirQueue = new ArrayDeque<Room.Direction>();
 	private Set<Room>              visited = new HashSet<Room>();
 
-	public interface EachNode { void node(final Room node, final int distance, final Room.Direction direction); }
+	public interface EachNode { boolean node(final Room node, final int distance, final Room.Direction direction); }
 
 	/** Constructor. */
 	public Mapper() { }
@@ -36,12 +36,12 @@ public class Mapper {
 	 @pamam root		The place where you are starting from, ie distace = 0.
 	 @param searchDepth	n.
 	 @param each		What to do at each node. */
-	public void map(final Room root, final int searchDepth, final EachNode each) {
+	public boolean map(final Room root, final int searchDepth, final EachNode each) {
 		Room node, near;
 		Room.Direction dir, first;
 		int dist = 0, thisIncrease = 1, nextIncrease = 0;
 
-		if(searchDepth < 0) return;
+		if(searchDepth < 0) return false;
 		roomQueue.clear();
 		 dirQueue.clear();
 		visited.clear();
@@ -56,7 +56,7 @@ public class Mapper {
 
 			visited.add(node);
 
-			each.node(node, dist, dir);
+			if(!each.node(node, dist, dir)) return false;
 
 			if(dist < searchDepth) {
 				for(Room.Direction d : Room.Direction.values()) {
@@ -79,6 +79,8 @@ public class Mapper {
 			}
 
 		}
+
+		return true;
 	}
 
 	/** @return A synecdochical {@link String}. */

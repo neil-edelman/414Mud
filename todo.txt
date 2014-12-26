@@ -1,8 +1,10 @@
-BFS for hearing Mobs, map
-different hit: fall, blunt, sharp, fire, ice, explosion, gun, magic, radiation, poison, chemical
+hearing Mobs, map
+
+different hit: generic, fall, slug, blunt, sharp, slash, fire, ice, poison, chemical, acid, explosion, electricity, radiation, magic
+
 jetpack, dinosaurs, robots, vampires, zombies
 HelpMap extends HashMap { put(key, value, help) { super.put(key, new Help(value, help)); } ...
-exits [ n ] <- explian
+exits [ n ] <- explain
 
 // I tried
 Telnet negotiate line width, word-wrap

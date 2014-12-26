@@ -20,6 +20,7 @@ import java.lang.NoSuchFieldException;
 public class Room extends Stuff {
 
 	public enum Direction {
+		HERE("here", "here"),
 		N("n", "north"),
 		E("e", "east"),
 		S("s", "south"),
@@ -34,6 +35,7 @@ public class Room extends Stuff {
 		static {
 
 			/* reverse direction */
+			HERE.back = HERE;
 			N.back = S;
 			S.back = N;
 			E.back = W;
@@ -75,7 +77,7 @@ public class Room extends Stuff {
 	};
 
 	/* the members of Room; the directions are essential to the above */
-	protected Room n, e, s, w, u, d;
+	protected Room here, n, e, s, w, u, d;
 	protected String description;
 
 	@Override
@@ -83,6 +85,7 @@ public class Room extends Stuff {
 
 	public Room() {
 		super();
+		here        = this;
 		name        = "room";
 		title       = "A room.";
 		description = "This is an entrely bland room.";
@@ -91,11 +94,13 @@ public class Room extends Stuff {
 	/** Read it from a file. */
 	public Room(common.TextReader in) throws java.text.ParseException, java.io.IOException {
 		super(in);
+		here        = this;
 		description = in.nextParagraph();
 	}
 
 	public Room(final String name, final String title, final String desc) {
 		super();
+		here             = this;
 		this.name        = name;
 		this.title       = title;
 		this.description = desc;

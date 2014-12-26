@@ -90,17 +90,12 @@ public abstract class Commandset {
 			StringBuilder sb = new StringBuilder(80);
 			sb.append(p);
 			sb.append(" yells from ");
-			if(dir == null) {
-				sb.append("right in the room");
-			} else {
-				sb.append(dir.getBack());
-				sb.append("-ish, ");
-				sb.append(dist);
-				sb.append(" room(s) away");
-			}
-			sb.append(", \"");
+			sb.append(dir.getBack());
+			sb.append("-ish, \"");
 			sb.append(arg);
-			sb.append("\"");
+			sb.append("\" (");
+			sb.append(dist);
+			sb.append(" room(s) away.)");
 			room.sendToContentsExcept(p, sb.toString());
 		});
 	}, take = (c, arg) -> {

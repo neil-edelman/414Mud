@@ -1,23 +1,32 @@
-Areas make like Commandset
+drop
 
-Chance static tables
+Areas: make like Commandset
+
+Chance: static lookup tables
 
 follow
 
+Hit.java: { type : { generic, fall, ballistic, blunt, sharp, slash, fire, ice, poison, chemical, acid, explosion, electricity, radiation, magic }, responsible, target, etc. } Objects: responsible.
+
 hearing Mobs, map
+
+Mob: how evasive is it? zombies are easy to hit with chalk, dinosaurs are not
 
 have version no in files
 
 have red mobiles be the ones who are pissed off
 
-different hit: generic, fall, ballistic, blunt, sharp, slash, fire, ice, poison, chemical, acid, explosion, electricity, radiation, magic
+different hit: 
 
 sacrifice, food
 
 flee (neswud automatically becomes flee? nah) actually, why have a different mode for fighting?
 
-dinosaurs, robots (from some exp gone awry,) vampires, zombies
-jet-pack (floating,) hockey stick (blunt,) chalk (throw,) grenades, magnum? MP-5? (have ammo,) shit load of swords, katana, pencils/pens (sharp,) 
+dinosaurs (that eat you,) robots (from some experement gone awry,) vampires, zombies
+
+jet-pack (floating,) hockey stick (blunt,) chalk (throw: have density and mass, low mass, high density does the most damage,) grenades, magnum? MP-5? (have ammo,) bombs, load of swords, katana, pencils/pens (sharp,) rocket launchers!!! body armour, shin pads, batons, flash-bangs, pepper spray, water cannon
+
+control the car! tank. humvee, hot air ballon, moped, firetruck . . . bike (security guards will be pissed) boat (sub!) helicopter! police car (make sure they don't set it on fire while you're in it!)
 
 HelpMap extends HashMap { put(key, value, help) { super.put(key, new Help(value, help)); } ...
 exits [ n ] <- explain, all this ^ and fhdfghjf~

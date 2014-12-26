@@ -1,10 +1,20 @@
 hearing Mobs, map
 
-different hit: generic, fall, slug, blunt, sharp, slash, fire, ice, poison, chemical, acid, explosion, electricity, radiation, magic
+have version no in files
 
-jetpack, dinosaurs, robots, vampires, zombies
+have red mobiles be the ones who are pissed off
+
+different hit: generic, fall, ballistic, blunt, sharp, slash, fire, ice, poison, chemical, acid, explosion, electricity, radiation, magic
+
+sacrifice, food
+
+flee (neswud automatically becomes flee? nah) actually, why have a different mode for fighting?
+
+dinosaurs, robots (from some exp gone awry,) vampires, zombies
+jet-pack (floating,) hockey stick (blunt,) chalk (throw,) grenades, magnum? MP-5? (have ammo,) shit load of swords, katana, pencils/pens (sharp,) 
+
 HelpMap extends HashMap { put(key, value, help) { super.put(key, new Help(value, help)); } ...
-exits [ n ] <- explain
+exits [ n ] <- explain, all this ^ and fhdfghjf~
 
 // I tried
 Telnet negotiate line width, word-wrap

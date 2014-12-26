@@ -82,7 +82,7 @@ public abstract class Commandset {
 		if(p == null) return;
 		Stuff r = p.getIn();
 		if(r == null || !(r instanceof Room)) {
-			c.sendTo("You yell, but no one can hear you.");
+			c.sendTo("You can't yell in here.");
 			return;
 		}
 		c.sendTo("You yell \"" + arg + "\"");
@@ -159,46 +159,45 @@ public abstract class Commandset {
 			return;
 		}
 
-		Stuff surround = p.getIn();
+		Stuff in = p.getIn();
 
-		/* look at the room (Stuff in) */
+		Stuff          victim;
+		Room.Direction dir;
+		Room           room;
+
 		if(arg.length() > 0) {
+			/* look at something */
 			int count = 0;
-			if(surround != null) {
+			if(in != null) {
 				/* look at things in the room */
-				for(Stuff stuff : surround) {
-					if(arg.equals(stuff.getName())) {
-						c.sendTo(stuff.lookDetailed());
-						count++;
-					}
+				if((victim = in.matchContents(arg)) != null) {
+					c.sendTo(victim.lookDetailed());
+					count++;
 				}
 				/* look at exits */
-				Room.Direction  dir = Room.Direction.find(arg);
-				if(dir != null) {
-					Room room = surround.getRoom(dir);
-					if(room != null) {
+				if((dir = Room.Direction.find(arg)) != null) {
+					if((room = in.getRoom(dir)) != null) {
 						c.sendTo(room.look());
-						for(Stuff in : room) c.sendTo(in.look());
+						for(Stuff otherIn : room) c.sendTo(otherIn.look());
 					} else {
-						c.sendTo("You can't go that way.");
+						c.sendTo("You don't want to go that way.");
 					}
 					count++;
 				}
 			}
 			/* look at inventory */
-			for(Stuff stuff : p) {
-				if(arg.equals(stuff.getName())) {
-					c.sendTo(stuff.lookDetailed());
-					count++;
-				}
+			if((victim = p.matchContents(arg)) != null) {
+				c.sendTo(victim.lookDetailed());
+				count++;
 			}
 			/* fixme: look at eq't */
 
 			if(count == 0) c.sendTo("There is no '" + arg + "' here.");
 
 		} else {
-			if(surround != null) {
-				c.sendTo(surround.lookDetailed());
+			/* just look in general */
+			if(in != null) {
+				c.sendTo(in.lookDetailed());
 				p.lookAtStuff();
 			} else {
 				c.sendTo("You are floating in space.");
@@ -279,7 +278,20 @@ public abstract class Commandset {
 		Player p = c.getPlayer();
 		if(p == null) return;
 		p.go(Room.Direction.D);
-	};
+	}, enter = (c, arg) -> {
+		Player p;
+		Stuff room, target;
+		if((p = c.getPlayer()) == null || (room = p.getIn()) == null || (target = room.matchContents(arg)) == null) {
+			c.sendTo("Not any <" + arg + "> here.");
+			return;
+		}
+		if(!target.isEnterable()) {
+			c.sendTo("You can't do that.");
+			return;
+		}
+		p.enter(target, true);
+		c.sendTo("unmount to get out");
+	} /* unmount */;
 
 	static {
 

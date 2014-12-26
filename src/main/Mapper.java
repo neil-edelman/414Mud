@@ -15,8 +15,8 @@ import entities.Room;
 /** BFS Search in rooms from a given room.
  
  @author	Neil
- @version	1.1, 12-2014
- @since		1.1, 12-2014 */
+ @version	1.1, 2014-12
+ @since		1.1, 2014-12 */
 public class Mapper {
 
 	/* the braching factor could be used to upper-bound bfs; nah, rooms are

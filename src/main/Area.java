@@ -108,8 +108,6 @@ class Area {
 		}
 		public void connect(final Stuff room, final Stuff target, final Room.Direction dir) {
 			//System.out.format("!!!refl connect in %s %s %s\n", room, target, dir);
-			//if(!(room   instanceof Room)) throw new Exception(room   + " not Room");
-			//if(!(target instanceof Room)) throw new Exception(target + " not Room");
 			Room r = (Room)room;
 			r.connectDirection(dir, (Room)target);
 		}
@@ -120,17 +118,8 @@ class Area {
 		}
 	}
 
-	public enum Things {
-		ABC("abc"),
-		DEF("def"),
-		GHI("ghi");
-		public String symbol;
-		private Things(final String symbol) { this.symbol = symbol; }
-	}
-
 	BitVector<TypeOfStuff> typeOfStuffFlags = new BitVector<TypeOfStuff>(TypeOfStuff.class);
 	BitVector<Reset> resetFlags = new BitVector<Reset>(Reset.class);
-	BitVector<Things> thingsFlags;
 
 	/**** area loading ****/
 
@@ -172,15 +161,11 @@ class Area {
 
 				/* grab the Stuff */
 				while("~".compareTo(line = in.nextLine()) != 0) {
-					/* Scanner is overkill; just use split */
 					scan = new Scanner(line);
 					if((what = typeOfStuffFlags.find(scan.next())) == null) throw new ParseException("unknown token", in.getLineNumber());
 					id = scan.next();
 					if(scan.hasNext()) throw new ParseException("too many things", in.getLineNumber());
 					
-					//name  = in.nextLine();
-					//title = in.nextLine();
-
 					switch(what) {
 						case ROOM:
 							Room room = new Room(in);
@@ -250,20 +235,6 @@ class Area {
 
 		System.err.format("%s: loaded %s, default room %s.\n", file, this, recall);
 
-		Field vector[] = new Field[Things.values().length];
-		Class<?> c = Things.class;
-		try {
-			int i = 0;
-			for(Things thing : Things.values()) {
-				vector[i++] = Things.class.getDeclaredField("" + thing);
-			}
-			System.err.format("%d: %s %s %s\n", Things.values().length, vector[0], vector[1], vector[2]);
-			/*vector[0] = c.getDeclaredField("ABC");
-			vector[1] = c.getDeclaredField("DEF");
-			vector[2] = c.getDeclaredField("GHI");*/
-		} catch(NoSuchFieldException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	/** @return	Default room. */
@@ -273,7 +244,6 @@ class Area {
 
 	/** @return	A synecdochical {@link String}. */
 	public String toString() {
-		//return "" + title + " by " + author;
 		return name;
 	}
 

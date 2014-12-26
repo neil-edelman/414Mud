@@ -77,4 +77,10 @@ public class Mob extends Character {
 		System.err.format("%s is awake!\n", this);
 	}
 
+	/** fixme: you should so be able to, eg, "ride dragon" */
+	@Override
+	public boolean isEnterable() {
+		return false;
+	}
+
 }

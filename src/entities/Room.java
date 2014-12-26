@@ -129,7 +129,7 @@ public class Room extends Stuff {
 
 	@Override
 	public String look() {
-		return "(Room " + name + ") "+ title + "\n" + exits();
+		return title + " (" + name + ")\n" + exits();
 	}
 
 	@Override

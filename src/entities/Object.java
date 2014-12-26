@@ -14,6 +14,7 @@ public class Object extends Stuff {
 
 	public enum ObjectFlags {
 		BREAKABLE("breakable"),
+		ENTERABLE("enterable"),
 		TRANSPORTABLE("transportable");
 		public String symbol;
 		private ObjectFlags(final String symbol) { this.symbol = symbol; }
@@ -23,6 +24,7 @@ public class Object extends Stuff {
 
 	public boolean isBreakable;
 	public boolean isTransportable;
+	public boolean isEnterable;
 	private int    mass;
 
 	public Object() {
@@ -53,4 +55,10 @@ public class Object extends Stuff {
 	public boolean isTransportable() {
 		return isTransportable;
 	}
+
+	@Override
+	public boolean isEnterable() {
+		return isEnterable;
+	}
+
 }

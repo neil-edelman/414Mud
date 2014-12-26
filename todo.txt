@@ -1,12 +1,23 @@
 drop
+follow
+track
+areas
+map
+savearea
+rundown
+fire (as in, shoot) <at something, or default mob you're hating>
+
+try abstraction again: Commandset->Commands should only be a container for commands
+
+Room: capacity
+
+Character: conflict (hating)
+
+control the car! tank. humvee, hot air ballon, moped, firetruck . . . bike (security guards will be pissed) boat (sub!) helicopter! police car (make sure they don't set it on fire while you're in it!) . . . also "ride dragon" mountable, motorcycle (have isIn as one obj flags); unmount; look out: have a look in in look? two things, if(r.isEnterable()) for(Stuff in : r) {"\t" +...}, in.isEnterable()... ; neswup control the tank, but only on chronos timer; have mass and capacity restraints
 
 Areas: make like Commandset
 
 Chance: static lookup tables
-
-follow
-
-Hit.java: { type : { generic, fall, ballistic, blunt, sharp, slash, fire, ice, poison, chemical, acid, explosion, electricity, radiation, magic }, responsible, target, etc. } Objects: responsible.
 
 hearing Mobs, map
 
@@ -24,9 +35,9 @@ flee (neswud automatically becomes flee? nah) actually, why have a different mod
 
 dinosaurs (that eat you,) robots (from some experement gone awry,) vampires, zombies
 
-jet-pack (floating,) hockey stick (blunt,) chalk (throw: have density and mass, low mass, high density does the most damage,) grenades, magnum? MP-5? (have ammo,) bombs, load of swords, katana, pencils/pens (sharp,) rocket launchers!!! body armour, shin pads, batons, flash-bangs, pepper spray, water cannon
+have different objects on your body for eq't, Object->Equipment { worn }
 
-control the car! tank. humvee, hot air ballon, moped, firetruck . . . bike (security guards will be pissed) boat (sub!) helicopter! police car (make sure they don't set it on fire while you're in it!)
+jet-pack (floating,) hockey stick (blunt,) chalk (throw: have density and mass, low mass, high density does the most damage,) grenades, magnum? MP-5? (have ammo,) bombs, load of swords, katana, pencils/pens (sharp,) rocket launchers!!! body armour, shin pads, batons, flash-bangs, pepper spray, water cannon, mining laser, laser beam
 
 HelpMap extends HashMap { put(key, value, help) { super.put(key, new Help(value, help)); } ...
 exits [ n ] <- explain, all this ^ and fhdfghjf~

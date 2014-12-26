@@ -25,9 +25,8 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 
 	private static final int searchDepth = 3;
 
-	/*public List<String> name = new LinkedList<String>(); <- only one name is fine */
-	/* fixme: but have a hash for when there's the same name */
 	protected String name;  /* lower case */
+	/* fixme: have a hash for when there's the collisions */
 	protected String title; /* sentence case */
 
 	/* fixme: have TreeMap or something */
@@ -70,12 +69,12 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 	public void transportTo(final Stuff container) {
 		if(in != null) sendToRoom(this + " disapparates.");
 		placeIn(container);
-		sendTo("You disapparate and instantly travel to '" + container.title + "'\n"); /* newline! we are going somewhere else */
+		sendTo("You disapparate and instantly travel to '" + container + "'\n"); /* newline! we are going somewhere else */
 		sendToRoom(this + " apparates suddenly.");
 		/* players will want to look around immediatly */
 		Connection c = this.getConnection();
 		if(c == null) return;
-		c.sendTo(container.lookDetailed());
+		c.sendTo(container != null ? container.lookDetailed() : "Endless blackness surrounds you.");
 		lookAtStuff();
 	}
 
@@ -83,7 +82,7 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 	public void placeIn(Stuff container) {
 		Connection connection;
 
-		/* it's already in something */
+		/* we're already in something */
 		if(in != null) {
 			in.contents.remove(this);
 			in = null;
@@ -91,15 +90,15 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 
 		/* appear somewhere else */
 		in = container;
-		container.contents.add(this);
+		if(container != null) container.contents.add(this);
 
-		reorient();
+		hasMoved();
 
 		//System.err.print(this + " in " + container + ".\n");
 	}
 
 	/** Called by {@link placeIn} to do stuff. */
-	protected void reorient() {
+	protected void hasMoved() {
 		/* do nothing */
 	}
 
@@ -200,6 +199,31 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 		sendToRoom(this + " walks in from the " + where.getBack() + ".");
 		sendTo(target.lookDetailed());
 		lookAtStuff();
+	}
+
+	/** fixme!!! it's annoying; more advanced please! */
+	public Stuff matchContents(String obj) {
+		/* lol O(n) badness */
+		for(Stuff stuff : this) {
+			if(obj.equals(stuff.getName())) return stuff;
+		}
+		return null;
+	}
+
+	/** tests if the target is enterable */
+	public boolean isEnterable() {
+		return false;
+	}
+
+	/** Heirarcy! */
+	public void enter(Stuff target, boolean isIn) {
+		Connection c;
+		if((c = getConnection()) != null) {
+			c.sendTo("You get " + (isIn ? "in" : "on") + " the " + target + ".");
+		}
+		sendToRoom(this + " gets up and rides the " + target + ".");
+		placeIn(target);
+		sendToRoom(this + " gets up here.");
 	}
 
 	/** Prints all the data so it will be serialisable (but in text, not binary.)

@@ -1,5 +1,6 @@
-/* Copyright 2014 Neil Edelman, distributed under the terms of the GNU General
- Public License, see copying.txt */
+/* 2014 Neil Edelman; Orcish words are gathered off the Internet, SMAUG1.8,
+ made up myself, etc. They originate or are inspired by JRR Tolkien's Orcish;
+ this file has had many incarnations. */
 
 package common;
 

@@ -1,5 +1,7 @@
 Areas make like Commandset
 
+Chance static tables
+
 follow
 
 hearing Mobs, map

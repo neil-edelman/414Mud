@@ -98,8 +98,8 @@ public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
 		if((connection = getConnection()) == null) return;
 		// fixme: clear bfs
 		if(container instanceof Player) return;
-		connection.getMapper().map((Room)container, searchDepth, (node, d) -> {
-			System.err.format("%s: %s\t%d\n", this, node, d);
+		connection.getMapper().map((Room)container, searchDepth, (node, dis, dir) -> {
+			System.err.format("%s: %s\t%d\t%s\n", this, node, dis, dir);
 		});
 
 		//System.err.print(this + " in " + container + ".\n");

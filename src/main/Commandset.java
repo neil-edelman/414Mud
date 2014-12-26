@@ -86,8 +86,22 @@ public abstract class Commandset {
 			return;
 		}
 		c.sendTo("You yell \"" + arg + "\"");
-		c.getMapper().map((Room)r, yellDistance, (room, d) -> {
-			room.sendToContentsExcept(p, p + " yells \"" + arg + "\"");
+		c.getMapper().map((Room)r, yellDistance, (room, dist, dir) -> {
+			StringBuilder sb = new StringBuilder(80);
+			sb.append(p);
+			sb.append(" yells from ");
+			if(dir == null) {
+				sb.append("right in the room");
+			} else {
+				sb.append(dir.getBack());
+				sb.append("-ish, ");
+				sb.append(dist);
+				sb.append(" room(s) away");
+			}
+			sb.append(", \"");
+			sb.append(arg);
+			sb.append("\"");
+			room.sendToContentsExcept(p, sb.toString());
 		});
 	}, take = (c, arg) -> {
 		Player p = c.getPlayer();

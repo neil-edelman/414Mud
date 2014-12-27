@@ -31,7 +31,7 @@ import entities.Room;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public abstract class Commandset {
+public abstract class Commands {
 
 	private static final String csetDir = "data/commandsets";
 	private static final String csetExt = ".cset";
@@ -52,7 +52,7 @@ public abstract class Commandset {
 
 	interface Command { void command(final Connection c, final String arg); }
 
-	private static final Command help = (c, arg) -> {
+	protected static final Command help = (c, arg) -> {
 		Map<String, Command> commandset = c.getCommandset();
 		c.sendTo("These are the commands which you are authorised to use right now:");
 		for(Map.Entry<String, Command> entry : commandset.entrySet()) {
@@ -335,7 +335,7 @@ public abstract class Commandset {
 					if((cmdStr = scan.next()) == null) throw new ParseException("command", in.getLineNumber());
 					if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
 					try {
-						command = (Command)Commandset.class.getDeclaredField(cmdStr).get(null);
+						command = (Command)Commands.class.getDeclaredField(cmdStr).get(null);
 						if(FourOneFourMud.isVerbose) System.err.format("%s: command <%s>: \"%s\"->%s\n", name, alias, cmdStr, command);
 						mod.put(alias, command);
 					} catch(NoSuchFieldException | IllegalAccessException e) {

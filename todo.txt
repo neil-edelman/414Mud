@@ -7,7 +7,11 @@ savearea
 rundown
 fire (as in, shoot) <at something, or default mob you're hating>
 
+Commands: Connection -> Stuff, allows Stuff to use commands, too! Commandset stuff;
+
 try abstraction again: Commandset->Commands should only be a container for commands
+
+mud: have names of directories instead of hc
 
 Room: capacity
 

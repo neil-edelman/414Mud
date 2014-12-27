@@ -48,7 +48,7 @@ import entities.Player;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class Connection extends Commandset implements Runnable {
+public class Connection extends Commands implements Runnable {
 
 	enum Telnet {
 		NAWS(31),	// Negotiate About Window Size

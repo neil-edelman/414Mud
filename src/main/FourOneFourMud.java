@@ -28,6 +28,11 @@ import common.TextReader;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collections;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.Scanner;
 
 import entities.Room;
 import entities.Object;
@@ -38,11 +43,14 @@ import main.Area;
 
 /** This is the entry-point for starting the mud and listening for connections;
  connnections are handled by a fixed socket pool.
+ <p>
+ Extends Commands; no particular reason why the Commands weren't put in here
+ except that it would be huge.
 
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class FourOneFourMud implements Iterable<Connection> {
+public class FourOneFourMud extends Commands implements Iterable<Connection> {
 
 	/* debug mode; everyone can read this */
 	public static boolean isVerbose = true;
@@ -56,10 +64,91 @@ public class FourOneFourMud implements Iterable<Connection> {
 	private static final String areasDir    = dataDir + "/areas";
 	private static final String mudData     = "mud";
 
+	/* this is so meta */
+	//private static final Map<String, Map<String, Command>> commandsets;
+
+	private interface Loader<L> { L load(final String name, TextReader in) throws ParseException; }
+
+	/** Load all resouces into a hash, one per filename. The hash keys are it's
+	 file name minus the extension. */
+	static <L> Map<String, L> load(final String loadDir, final String loadExt, Loader<L> loader) throws IOException {
+
+		Map<String, L> loadMod = new HashMap<String, L>();
+
+		File dir = new File(loadDir);
+		if(!dir.exists() || !dir.isDirectory()) throw new IOException("<" + loadDir + "> is not a thing");
+
+		File files[] = dir.listFiles(new FilenameFilter() {
+			public boolean accept(File current, String name) {
+				return name.endsWith(loadExt);
+			}
+		});
+
+		/* go though all data files */
+		for(File file : files) {
+
+			L mod = null;
+
+			/* resouce name in the map is it's filename without the extension */
+			String name = file.getName();
+			name = name.substring(0, name.length() - loadExt.length());
+
+			System.err.format("%s: loading command set <%s>.\n", name, file);
+
+			try(
+				TextReader in = new TextReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
+			) {
+				mod = loader.load(name, in);
+			} catch(ParseException e) {
+				System.err.format("%s; syntax error: %s, line %d.\n", file, e.getMessage(), e.getErrorOffset());
+			} catch(IOException e) {
+				System.err.format("%s; %s.\n", file, e);
+			}
+
+			if(mod != null) loadMod.put(name, mod/*Collections.unmodifiableMap(mod)*/);
+
+		}
+
+		return loadMod;//Collections.unmodifiableMap(loadMod);
+	}
+
 	/** Starts up the mud and listens for connections.
 	 @param args	Ignored. */
 	public static void main(String args[]) {
 
+		try {
+			load("data/commandsets", ".cset", (name, in) -> {
+				Scanner scan;
+				String line, alias, cmdStr;
+				Command command;
+				Map<String, Command> mod = new HashMap<String, Command>();
+
+				try {
+					/* go through all the lines of the file, in */
+					while((line = in.readLine()) != null) {
+						scan = new Scanner(line);
+						if((alias = scan.next()) == null) throw new ParseException("alias", in.getLineNumber());
+						/*if((thing = .get(scan.next())) == null*/
+						if((cmdStr = scan.next()) == null) throw new ParseException("command", in.getLineNumber());
+						if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
+						try {
+							command = (Command)Commands.class.getDeclaredField(cmdStr).get(null /* static field */);
+							if(FourOneFourMud.isVerbose) System.err.format("%s: command <%s>: \"%s\"->%s\n", name, alias, cmdStr, command);
+							mod.put(alias, command);
+						} catch(NoSuchFieldException | IllegalAccessException e) {
+							System.err.format("%s (line %d:) no such command? %s.\n", name, in.getLineNumber(), e);
+						}
+					}
+					return mod;
+				} catch(IOException e) {
+					System.err.format("%s.\n", e);
+				}
+				return null;
+			});
+		} catch(IOException e) {
+			System.err.format("%s.\n", e);
+		}
+		
 		FourOneFourMud mud;
 
 		/* run mud */

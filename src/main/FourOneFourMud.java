@@ -109,45 +109,12 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 
 		}
 
-		return loadMod;//Collections.unmodifiableMap(loadMod);
+		return loadMod/*Collections.unmodifiableMap(loadMod)*/;
 	}
 
 	/** Starts up the mud and listens for connections.
 	 @param args	Ignored. */
 	public static void main(String args[]) {
-
-		try {
-			load("data/commandsets", ".cset", (name, in) -> {
-				Scanner scan;
-				String line, alias, cmdStr;
-				Command command;
-				Map<String, Command> mod = new HashMap<String, Command>();
-
-				try {
-					/* go through all the lines of the file, in */
-					while((line = in.readLine()) != null) {
-						scan = new Scanner(line);
-						if((alias = scan.next()) == null) throw new ParseException("alias", in.getLineNumber());
-						/*if((thing = .get(scan.next())) == null*/
-						if((cmdStr = scan.next()) == null) throw new ParseException("command", in.getLineNumber());
-						if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
-						try {
-							command = (Command)Commands.class.getDeclaredField(cmdStr).get(null /* static field */);
-							if(FourOneFourMud.isVerbose) System.err.format("%s: command <%s>: \"%s\"->%s\n", name, alias, cmdStr, command);
-							mod.put(alias, command);
-						} catch(NoSuchFieldException | IllegalAccessException e) {
-							System.err.format("%s (line %d:) no such command? %s.\n", name, in.getLineNumber(), e);
-						}
-					}
-					return mod;
-				} catch(IOException e) {
-					System.err.format("%s.\n", e);
-				}
-				return null;
-			});
-		} catch(IOException e) {
-			System.err.format("%s.\n", e);
-		}
 		
 		FourOneFourMud mud;
 
@@ -172,35 +139,6 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 		public void   register(Mob mob);
 	}
 
-	/* the thread that is scheduleAtFixedRate */
-	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-	private final ScheduledFuture<?> chonosFuture;
-	private static final Chronos/*Runnable*/ chronos = new Chronos/*Runnable*/() {
-
-		private Chance chance = new Chance();
-		private Mapper mapper = new Mapper();
-
-		private List<Mob> mobs = new LinkedList<Mob>();
-
-		/* one time step */
-		public void run() {
-			System.out.format("<Bump>\n");
-			for(Mob m : mobs) {
-				if(m.isSleeping()) continue;
-				m.doSomethingInteresting(chance);
-			}
-		}
-
-		public void register(Mob mob) {
-			mobs.add(mob);
-		}
-
-		public Mapper getMapper() {
-			return mapper;
-		}
-
-	};
-
 	/* the clients of the mud */
 	private final ServerSocket    serverSocket;
 	private final int             poolSize;
@@ -224,6 +162,35 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 		String homeareaStr  = "";
 		int    homeareaLine = -1;
 		int    poolSize     = 256;
+
+		load("data/commandsets", ".cset", (name, in) -> {
+			Scanner scan;
+			String line, alias, cmdStr;
+			Command command;
+			Map<String, Command> mod = new HashMap<String, Command>();
+			
+			try {
+				/* go through all the lines of the file, in */
+				while((line = in.readLine()) != null) {
+					scan = new Scanner(line);
+					if((alias = scan.next()) == null) throw new ParseException("alias", in.getLineNumber());
+					/*if((thing = .get(scan.next())) == null*/
+					if((cmdStr = scan.next()) == null) throw new ParseException("command", in.getLineNumber());
+					if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
+					try {
+						command = (Command)Commands.class.getDeclaredField(cmdStr).get(null /* static field */);
+						if(FourOneFourMud.isVerbose) System.err.format("%s: command <%s>: \"%s\"->%s\n", name, alias, cmdStr, command);
+						mod.put(alias, command);
+					} catch(NoSuchFieldException | IllegalAccessException e) {
+						System.err.format("%s (line %d:) no such command? %s.\n", name, in.getLineNumber(), e);
+					}
+				}
+				return mod;
+			} catch(IOException e) {
+				System.err.format("%s.\n", e);
+			}
+			return null;
+		});
 
 		/* read in settings */
 
@@ -379,5 +346,36 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 		if(chronos == null) throw new RuntimeException("You must first start the timer.");
 		return chronos;
 	}
+
+	/* the thread that is scheduleAtFixedRate (I put this at the end because
+	 XCode3 was so confused about indentation; everything after auto-indented
+	 to the margin) */
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	private final ScheduledFuture<?> chonosFuture;
+	private static final Chronos/*Runnable*/ chronos = new Chronos/*Runnable*/() {
+
+		private Chance chance = new Chance();
+		private Mapper mapper = new Mapper();
+
+		private List<Mob> mobs = new LinkedList<Mob>();
+
+		/* one time step */
+		public void run() {
+			System.out.format("<Bump>\n");
+			for(Mob m : mobs) {
+				if(m.isSleeping()) continue;
+				m.doSomethingInteresting(chance);
+			}
+		}
+
+		public void register(Mob mob) {
+			mobs.add(mob);
+		}
+
+		public Mapper getMapper() {
+			return mapper;
+		}
+
+	};
 
 }

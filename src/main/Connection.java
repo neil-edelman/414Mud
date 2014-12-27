@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
-import java.lang.NoSuchFieldException;
+import java.util.NoSuchElementException;
 
 import java.util.regex.Pattern;
 
@@ -105,7 +105,7 @@ public class Connection extends Commands implements Runnable {
 		this.mud        = mud;
 		try {
 			setCommandset("newbie");
-		} catch(NoSuchFieldException e) {
+		} catch(NoSuchElementException e) {
 			System.err.format("%s: %s.\n", this, e);
 		}
 		System.err.print(this + " has connected to " + mud + ".\n");
@@ -276,16 +276,6 @@ public class Connection extends Commands implements Runnable {
 		return socket;
 	}
 
-	public Map<String, Command> getCommandset() {
-		return commandset;
-	}
-
-	public void setCommandset(final String commandsetStr) throws NoSuchFieldException {
-		Map<String, Command> c = commandsets.get(commandsetStr);
-		if(c == null) throw new NoSuchFieldException(commandsetStr + " not found");
-		commandset = c;
-	}
-
 	public Player getPlayer() {
 		return player;
 	}
@@ -296,6 +286,14 @@ public class Connection extends Commands implements Runnable {
 
 	public void setExit() {
 		isExit = true;
+	}
+
+	public Map<String, Command> getCommandset() {
+		return commandset;
+	}
+
+	public void setCommandset(final String commandsetStr) throws NoSuchElementException {
+		commandset = getMud().getCommands(commandsetStr);
 	}
 
 	/* @depreciated	Not used. */

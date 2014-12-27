@@ -34,6 +34,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Scanner;
 
+import java.util.NoSuchElementException;
+
 import entities.Room;
 import entities.Object;
 import entities.Mob;
@@ -153,6 +155,7 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 	private Map<String, Area> areas = new HashMap<String, Area>();
 	private Area   homearea;
 	private Room   homeroom;
+	Map<String, Map<String, Command>> commandsets = new HashMap<String, Map<String, Command>>();
 
 	/** The entire mud constructor.
 	 @param dataDir			The subdirectory where the data file is located.
@@ -163,7 +166,7 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 		int    homeareaLine = -1;
 		int    poolSize     = 256;
 
-		load("data/commandsets", ".cset", (name, in) -> {
+		commandsets = Collections.unmodifiableMap(load("data/commandsets", ".cset", (name, in) -> {
 			Scanner scan;
 			String line, alias, cmdStr;
 			Command command;
@@ -190,7 +193,10 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 				System.err.format("%s.\n", e);
 			}
 			return null;
-		});
+		}));
+
+		//areas = Collections.unmodifiableMap(load("data/areas", ".area", (name, in) -> {
+		//};
 
 		/* read in settings */
 
@@ -340,6 +346,14 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 	/** @return	Gets the Message of the Day. */
 	public String getMotd() {
 		return motd;
+	}
+
+	/** @return A command set with that name.
+	 @throws NamingException	That name isn't loaded. */
+	public Map<String, Command>getCommands(final String commandStr) throws NoSuchElementException {
+		Map<String, Command> command = commandsets.get(commandStr);
+		if(command == null) throw new NoSuchElementException(this + ": command set <" + commandStr + "> not loaded");
+		return command;
 	}
 
 	public static Chronos getChronos() {

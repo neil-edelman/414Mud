@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import java.util.regex.Pattern;
 
@@ -33,9 +34,6 @@ import entities.Room;
  @since		1.0, 11-2014 */
 public abstract class Commands {
 
-	private static final String csetDir = "data/commandsets";
-	private static final String csetExt = ".cset";
-
 	/* sorry, I use a US keyboard and it's difficult to type in accents, etc,
 	 when addressing, etc, players in real time; only allow players to have
 	 ascii names */
@@ -45,12 +43,9 @@ public abstract class Commands {
 
 	private static final int yellDistance = 3;
 
-	/* this is so meta */
-	protected static final Map<String, Map<String, Command>> commandsets;
-
 	/* this is where the commands are stored */
 
-	interface Command { void command(final Connection c, final String arg); }
+	protected interface Command { void command(final Connection c, final String arg); }
 
 	protected static final Command help = (c, arg) -> {
 		Map<String, Command> commandset = c.getCommandset();
@@ -143,7 +138,7 @@ public abstract class Commands {
 		c.setPlayer(p);
 		try {
 			c.setCommandset("common");
-		} catch(NoSuchFieldException e) {
+		} catch(NoSuchElementException e) {
 			System.err.format("%s: %s.\n", c, e);
 			c.sendTo("There is no command set 'common;' sorry!");
 		}
@@ -246,7 +241,7 @@ public abstract class Commands {
 		}
 		try {
 			c.setCommandset("immortal");
-		} catch(NoSuchFieldException e) {
+		} catch(NoSuchElementException e) {
 			System.err.format("ascend: %s, %s.\n", c, e);
 			c.sendTo("No command set immortal exists.");
 			return;
@@ -278,7 +273,7 @@ public abstract class Commands {
 		Player p = c.getPlayer();
 		if(p == null) return;
 		p.go(Room.Direction.D);
-	}, enter = (c, arg) -> {
+	}, mount = (c, arg) -> {
 		Player p;
 		Stuff room, target;
 		if((p = c.getPlayer()) == null || (room = p.getIn()) == null || (target = room.matchContents(arg)) == null) {
@@ -292,75 +287,5 @@ public abstract class Commands {
 		p.enter(target, true);
 		c.sendTo("unmount to get out");
 	} /* unmount */;
-
-	static {
-
-		Map<String, Map<String, Command>> commandsetsMod = new HashMap<String, Map<String, Command>>();
-
-		File dir = new File(csetDir);
-		try {
-			if(!dir.exists() || !dir.isDirectory()) throw new IOException("<" + csetDir + "> is not a thing");
-		} catch(IOException e) {
-			System.err.format("%s.\n", e);
-		}
-
-		File files[] = dir.listFiles(new FilenameFilter() {
-			public boolean accept(File current, String name) {
-				return name.endsWith(csetExt);
-			}
-		});
-
-		/* go though all data/commandsets/*.cset */
-		for(File f : files) {
-
-			String name = f.getName();
-			name = name.substring(0, name.length() - csetExt.length());
-
-			System.err.format("%s: loading command set <%s>.\n", name, f);
-
-			Map<String, Command> mod = new HashMap<String, Command>();
-
-			try(
-				TextReader in = new TextReader(Files.newBufferedReader(f.toPath(), StandardCharsets.UTF_8));
-			) {
-				Scanner scan;
-				String line, alias, cmdStr;
-				Command command;
-
-				/* go through all the lines of the file, in */
-				while((line = in.readLine()) != null) {
-					scan = new Scanner(line);
-					if((alias = scan.next()) == null) throw new ParseException("alias", in.getLineNumber());
-					/*if((thing = .get(scan.next())) == null*/
-					if((cmdStr = scan.next()) == null) throw new ParseException("command", in.getLineNumber());
-					if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
-					try {
-						command = (Command)Commands.class.getDeclaredField(cmdStr).get(null);
-						if(FourOneFourMud.isVerbose) System.err.format("%s: command <%s>: \"%s\"->%s\n", name, alias, cmdStr, command);
-						mod.put(alias, command);
-					} catch(NoSuchFieldException | IllegalAccessException e) {
-						System.err.format("%s (line %d:) no such command? %s.\n", f, in.getLineNumber(), e);
-					}
-				}
-			} catch(ParseException e) {
-				System.err.format("%s; syntax error: %s, line %d.\n", f, e.getMessage(), e.getErrorOffset());
-			} catch(IOException/* | NamingException*/ e) {
-				System.err.format("%s; %s.\n", f, e);
-			}
-
-			commandsetsMod.put(name, Collections.unmodifiableMap(mod));
-		}
-
-		commandsets = Collections.unmodifiableMap(commandsetsMod);
-
-	}
-
-	/*private void add(final String command, final String method) {
-		try {
-			commands.put(command, this.getClass().getDeclaredMethod(method, Connection.class, String.class));
-		} catch(NoSuchMethodException e) {
-			System.err.format("%s: %s!\n", this, e);
-		}
-	}*/
 
 }

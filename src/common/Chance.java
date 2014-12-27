@@ -13,18 +13,6 @@ import java.lang.Math;
  @since		1.1, 12-2014 */
 public class Chance extends Random {
 
-	/** Javadocs {@link URL}.
-	 <p>
-	 More.
-	 
-	 @param p			Thing.
-	 @return			Thing.
-	 @throws Exception	Thing.
-	 @see				package.Class#method(Type)
-	 @see				#field
-	 @since				1.0
-	 @deprecated		Ohnoz. */
-
 	/** Constructor. */
 	public Chance() {
 		super(); /* set a seed? when debugging, it's unhelpful */

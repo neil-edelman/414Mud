@@ -62,12 +62,8 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 	private static final int sStartupDelay  = 20;
 	private static final int sShutdownTime  = 10;
 	private static final int sPeriod        = 10;
-	private static final String dataDir     = "data";
-	private static final String areasDir    = dataDir + "/areas";
+	private static final String dataDir     = "../data";
 	private static final String mudData     = "mud";
-
-	/* this is so meta */
-	//private static final Map<String, Map<String, Command>> commandsets;
 
 	private interface Loader<L> { L load(final String name, TextReader in) throws ParseException; }
 
@@ -107,11 +103,11 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 				System.err.format("%s; %s.\n", file, e);
 			}
 
-			if(mod != null) loadMod.put(name, mod/*Collections.unmodifiableMap(mod)*/);
+			if(mod != null) loadMod.put(name, mod/*Collections.unmodifiableMap(mod)???*/);
 
 		}
 
-		return loadMod/*Collections.unmodifiableMap(loadMod)*/;
+		return loadMod/*Collections.unmodifiableMap(loadMod)???*/;
 	}
 
 	/** Starts up the mud and listens for connections.
@@ -125,7 +121,7 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 		try {
 			mud = new FourOneFourMud(dataDir, mudData);
 		} catch(IOException e) {
-			System.err.format("Connection wouldn't complete: %s.\n", e);
+			System.err.format("main: %s.\n", e);
 			/* deal-breaker */
 			return;
 		}
@@ -166,7 +162,7 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 		int    homeareaLine = -1;
 		int    poolSize     = 256;
 
-		commandsets = Collections.unmodifiableMap(load("data/commandsets", ".cset", (name, in) -> {
+		commandsets = Collections.unmodifiableMap(load(dataDir + "/commandsets", ".cset", (name, in) -> {
 			Scanner scan;
 			String line, alias, cmdStr;
 			Command command;
@@ -221,7 +217,7 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 
 		/* read in areas */
 
-		areas = Area.loadAreas(areasDir);
+		areas = Area.loadAreas(dataDir + "/areas");
 
 		/* set the [defaut] recall spot */
 

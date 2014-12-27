@@ -1,0 +1,232 @@
+Burnside Hall
+Neil
+e3s
+~
+Room a1
+stairs
+North-West stairs.
+The base of the stairs going up.
+
+Room a1u
+stairs
+North-West stairs.
+There is construction and the stairs to the outside are blocked.
+
+Room a2
+snack
+Snack counter.
+There is a snack counter here.
+
+Mob woman
+woman
+A smiling woman waits here to take your order.
+friendly
+Room a3
+tunnel
+Tunnel to MacDonald-Stewart
+The tunnel is locked for the night.
+
+Object vending
+vending
+A vending-machine is here.
+breakable
+Room b1
+1b21
+A classroom.
+There are no windows and the smell of chalk permeates the air.
+
+Object desk
+desk
+A old-school desk is here.
+breakable transportable
+Room b2
+hall
+A concrete hall.
+Southwards is the main area. West is a class; East is an access door that's
+locked and a door to parking.
+
+Room c1
+sums
+Sums.
+This is the Society of Undergraduate Math Students.
+
+Room c2
+north-west
+North-West hallway.
+There are desks on the concrete walls.
+
+Room c3
+north
+North hallway.
+There are lockers.
+
+Room c3s
+stair1B-N
+North stairs.
+The emergency exit stairs at the Basement.
+
+Room c3u
+stair0-N
+North stairs.
+Construction on the emergency exit stairs at the main level prevents you from
+going further.
+
+Room c4
+north
+North hallway.
+A closed and intercommed door to the North that goes to the server room.
+
+Room c4s
+washroom
+Men's washroom.
+There are many urinals.
+
+Room c5
+north-east
+North-East hallway.
+There is a booth that used to have a free phone.
+
+Room c6
+exit
+Exit
+The sign on the exit says Emergency.
+
+Object trap
+trap
+A rat-trap says, 'do not remove.'
+breakable transportable
+Room d1
+ctf
+Ctf.
+The Computer Task-Force of the Science Undergraduate Society.
+
+Object stapler
+stapler
+A stapler.
+transportable breakable
+Room d2
+west
+West hallway.
+The busiest part of the basement. The elevators to the East are all broken.
+
+Room d5
+east
+East hallway.
+No one hardly comes here. There are poster-boards with all kinds of advertising.
+
+Room d6
+1b50
+A classroom.
+A dimly-lit classroom.
+
+Room e1
+1b25
+Ctf computer room.
+Computers everywhere.
+
+Room e2
+south-west
+South-West hallway.
+A couple of uncomfortable couches.
+
+Room e3
+south
+South hallway.
+There are drinking fountains.
+
+Room e3n
+stair1B-S
+South stairs.
+The emergency exit stairs at the Basement.
+
+Room e3u
+stair0-S
+South stairs.
+Construction on the emergency exit stairs at the main level prevents you from
+going further.
+
+Room e3s
+1b45
+1B45.
+There are no windows.
+
+Room e4
+south
+South hallway.
+There are flyers posted on cork-boards.
+
+Room e4n
+washroom
+Woman's washroom.
+There are many stalls.
+
+Room e5
+south-east
+South-East hallway.
+The classrooms are locked to the South and East.
+
+Room f1
+stairs
+South-West stairs.
+Stairs lead up to the suface.
+
+Room f1u
+stairs
+North-West stairs.
+The door outside is locked.
+
+Room f2
+south
+Hallway.
+Hallway at the South end.
+
+Room f3
+tunnel
+Tunnel to Ottomass.
+The tunnel is locked. There is a sign from the 70s showing the McGill tunnel
+system.
+
+Object tank
+tank
+A tank.
+enterable
+~
+a1 connect E a2
+a2 connect E a3
+a2 connect S b2
+a1 connect U a1u
+b1 connect E b2
+b2 connect S c2
+c1 connect E c2
+c2 connect E c3
+c3 connect E c4
+c4 connect E c5
+c5 connect E c6
+c2 connect S d2
+c3 connect S c3s
+c4 connect S c4s
+c5 connect S d5
+c3s connect U c3u
+d1 connect E d2
+d5 connect E d6
+d2 connect S e2
+d5 connect S e5
+e1 connect E e2
+e2 connect E e3
+e3 connect E e4
+e4 connect E e5
+e2 connect S f2
+e3 connect N e3n
+e3 connect S e3s
+e4 connect N e4n
+e4 set S e3s
+e3n connect U e3u
+f1 connect E f2
+f2 connect E f3
+f1 connect U f1u
+woman in a2
+vending in a3
+desk in b1
+trap in c6
+stapler in d1
+tank in e2

@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 import common.TextReader;
 import java.io.IOException;
 
-import main.FourOneFourMud;
+import main.Mud;
 
 /** More abstaction! This is kind of messy, not used.
 
@@ -78,7 +78,7 @@ public abstract class Loader<T> {
 			}
 
 			loadMod.put(name, Collections.unmodifiableMap(mod));
-			if(FourOneFourMud.isVerbose) System.err.format("%s: loaded <%s>.\n", name, f);
+			if(Mud.isVerbose) System.err.format("%s: loaded <%s>.\n", name, f);
 		}
 
 		return Collections.unmodifiableMap(loadMod);

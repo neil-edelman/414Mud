@@ -196,7 +196,7 @@ class Area {
 							throw new ParseException(what + " not implemented", in.getLineNumber());
 					}
 
-					if(FourOneFourMud.isVerbose) System.err.format("%s.%s: name <%s>,  title <%s>, %s.\n", this, id, name, title, info);
+					if(Mud.isVerbose) System.err.format("%s.%s: name <%s>,  title <%s>, %s.\n", this, id, name, title, info);
 				}
 
 				/* set the default room now that we've loaded it (hopefully) */
@@ -219,7 +219,7 @@ class Area {
 					if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
 					reset.invoke(thing, target, dir);
 
-					if(FourOneFourMud.isVerbose) System.err.print(this + ": <" + thing + "> <" + reset + "> direction <" + dir + "> to/in <" + target + ">.\n");
+					if(Mud.isVerbose) System.err.print(this + ": <" + thing + "> <" + reset + "> direction <" + dir + "> to/in <" + target + ">.\n");
 				}
 
 			} catch(UnrecognisedTokenException e) {

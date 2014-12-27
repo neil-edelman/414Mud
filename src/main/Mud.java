@@ -52,7 +52,7 @@ import main.Area;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class FourOneFourMud extends Commands implements Iterable<Connection> {
+public class Mud extends Commands implements Iterable<Connection> {
 
 	/* debug mode; everyone can read this */
 	public static boolean isVerbose = true;
@@ -114,12 +114,12 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 	 @param args	Ignored. */
 	public static void main(String args[]) {
 		
-		FourOneFourMud mud;
+		Mud mud;
 
 		/* run mud */
 
 		try {
-			mud = new FourOneFourMud(dataDir, mudData);
+			mud = new Mud(dataDir, mudData);
 		} catch(IOException e) {
 			System.err.format("main: %s.\n", e);
 			/* deal-breaker */
@@ -157,7 +157,7 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 	 @param dataDir			The subdirectory where the data file is located.
 	 @param mudData			The data file name.
 	 @throws IOException	Passes the IOException from the underlyieng sockets. */
-	public FourOneFourMud(final String dataDir, final String mudData) throws IOException {
+	public Mud(final String dataDir, final String mudData) throws IOException {
 		String homeareaStr  = "";
 		int    homeareaLine = -1;
 		int    poolSize     = 256;
@@ -178,7 +178,7 @@ public class FourOneFourMud extends Commands implements Iterable<Connection> {
 					if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
 					try {
 						command = (Command)Commands.class.getDeclaredField(cmdStr).get(null /* static field */);
-						if(FourOneFourMud.isVerbose) System.err.format("%s: command <%s>: \"%s\"->%s\n", name, alias, cmdStr, command);
+						if(Mud.isVerbose) System.err.format("%s: command <%s>: \"%s\"->%s\n", name, alias, cmdStr, command);
 						mod.put(alias, command);
 					} catch(NoSuchFieldException | IllegalAccessException e) {
 						System.err.format("%s (line %d:) no such command? %s.\n", name, in.getLineNumber(), e);

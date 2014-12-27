@@ -82,7 +82,7 @@ public class Connection extends Commands implements Runnable {
 
 	private final Socket socket;
 	private final String name = Orcish.get();
-	private final FourOneFourMud mud;
+	private final Mud mud;
 
 	/* so we don't have to worry about synconisation, we'll assign each
 	 Thread/Socket/Connection one and operate them in parallel */
@@ -100,7 +100,7 @@ public class Connection extends Commands implements Runnable {
 
 	/** Initalize the connection.
 	 @param socket	The client socket. */
-	Connection(final Socket socket, final FourOneFourMud mud) {
+	Connection(final Socket socket, final Mud mud) {
 		this.socket     = socket;
 		this.mud        = mud;
 		try {
@@ -258,7 +258,7 @@ public class Connection extends Commands implements Runnable {
 		 Sent by the Telnet client to inform the Telnet server of the
 		 window width and height. */
 
-	public FourOneFourMud getMud() {
+	public Mud getMud() {
 		return mud;
 	}
 

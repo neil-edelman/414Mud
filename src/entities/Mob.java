@@ -5,7 +5,7 @@ package entities;
 
 import common.Chance;
 import common.BitVector;
-import main.FourOneFourMud;
+import main.Mud;
 
 /** NPC.
 
@@ -31,21 +31,21 @@ public class Mob extends Character {
 	public Mob() {
 		super();
 		title = "Someone is looking confused.";
-		FourOneFourMud.getChronos().register(this);
+		Mud.getChronos().register(this);
 	}
 
 	/** Read it from a file. */
 	public Mob(common.TextReader in) throws java.text.ParseException, java.io.IOException, common.UnrecognisedTokenException {
 		super(in);
 		mobFlags.fromLine(this, in.nextLine());
-		FourOneFourMud.getChronos().register(this);
+		Mud.getChronos().register(this);
 	}
 
 	/** Do a thing. */
 	public void doSomethingInteresting(Chance c) {
 
 		/* go to sleep? fixme: this should happen much less frequently */
-		if(FourOneFourMud.getChronos().getMapper().map((Room)in, Player.distanceWakeUp, (room, dis, dir) -> {
+		if(Mud.getChronos().getMapper().map((Room)in, Player.distanceWakeUp, (room, dis, dir) -> {
 			/*System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);*/
 			for(Stuff s : room) {
 				if(s instanceof Player) {

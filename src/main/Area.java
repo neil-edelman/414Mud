@@ -31,12 +31,137 @@ import javax.naming.NamingException;
 
 import entities.*;
 
+class LoadArea implements Mud.Loader<Area> {
+	public Area load(TextReader in) throws ParseException, IOException {
+		return new Area(in);
+	}
+}
+
 /** Loading/storing of areas. 
  @author	Neil
  @version	1.1, 12-2014
  @since		1.1, 12-2014 */
 class Area {
 
+	public Area(TextReader in) throws ParseException, IOException {
+		try {
+			Scanner scan;
+			String recallStr;
+			String word, line;
+			String id, name = "", title = "", info = "";
+			TypeOfStuff what;
+			boolean flags[];
+
+			/* grab the header;
+			 this.title belongs to Area; title belongs to Stuff in the Area */
+			this.title  = in.nextLine();
+			this.author = in.nextLine();
+			recallStr   = in.nextLine();
+
+			in.assertLine("~");
+
+			/* grab the Stuff */
+			while("~".compareTo(line = in.nextLine()) != 0) {
+				scan = new Scanner(line);
+				if((what = typeOfStuffFlags.find(scan.next())) == null) throw new ParseException("unknown token", in.getLineNumber());
+				id = scan.next();
+				if(scan.hasNext()) throw new ParseException("too many things", in.getLineNumber());
+
+				switch(what) {
+					case ROOM:
+						Room room = new Room(in);
+						stuff.put(id, room);
+						name = room.getName();
+						title = room.getTitle();
+						info = String.format("desc <%s>", room.getDescription());
+						break;
+					case MOB:
+						Mob mob = new Mob(in);
+						stuff.put(id, mob);
+						name = mob.getName();
+						title = mob.getTitle();
+						info = String.format("F %b, X %b", mob.isFriendly, mob.isXeno);
+						break;
+					case OBJECT:
+						entities.Object obj = new entities.Object(in);
+						stuff.put(id, obj);
+						name = obj.getName();
+						title = obj.getTitle();
+						info = String.format("B %b, T %b", obj.isBreakable, obj.isTransportable);
+						break;
+					case CHARACTER:
+					case CONTAINER:
+					case MONEY:
+					case PLAYER:
+					case STUFF:
+						throw new ParseException(what + " not implemented", in.getLineNumber());
+				}
+
+				if(Mud.isVerbose) System.err.format("%s.%s: name <%s>,  title <%s>, %s.\n", this, id, name, title, info);
+			}
+
+			/* set the default room now that we've loaded it (hopefully) */
+			if((recall = (Room)stuff.get(recallStr)) == null) throw new ParseException(recallStr + " not found", in.getLineNumber());
+
+			/* resets/connections to the end of the file */
+			Stuff thing, target;
+			Reset reset;
+			Room.Direction dir;
+			while((line = in.readLine()) != null) {
+				scan = new Scanner(line);
+				if((thing  =       stuff.get(scan.next())) == null) throw new ParseException("unknown stuff", in.getLineNumber());
+				if((reset  = resetFlags.find(scan.next())) == null) throw new ParseException("unknown token", in.getLineNumber());
+				if(reset == Reset.CONNECT || reset == Reset.SET) {
+					if((dir = Room.Direction.find(scan.next())) == null) throw new ParseException("unknown direction", in.getLineNumber());
+				} else {
+					dir = null;
+				}
+				if((target =  stuff.get(scan.next())) == null) throw new ParseException("unknown argument", in.getLineNumber());
+				if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
+				reset.invoke(thing, target, dir);
+
+				if(Mud.isVerbose) System.err.print(this + ": <" + thing + "> <" + reset + "> direction <" + dir + "> to/in <" + target + ">.\n");
+			}
+
+		} catch(UnrecognisedTokenException e) {
+			/* transform it into ParseException with the line number which
+			 we now have */
+			throw new ParseException("unrecognised " + e.getMessage(), in.getLineNumber());
+		}
+
+		System.err.format("%s, default room %s.\n", this, recall);
+
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**** all areas ****/
 
 	private static final String areaExt = ".area";
@@ -142,98 +267,13 @@ class Area {
 		try(
 			TextReader in = new TextReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
 		) {
-			/* for exceptions requiring access to 'in' */
-			try {
-				Scanner scan;
-				String recallStr;
-				String word, line;
-				String id, name = "", title = "", info = "";
-				TypeOfStuff what;
-				boolean flags[];
-
-				/* grab the header;
-				 this.title belongs to Area; title belongs to Stuff in the Area */
-				this.title  = in.nextLine();
-				this.author = in.nextLine();
-				recallStr   = in.nextLine();
-
-				in.assertLine("~");
-
-				/* grab the Stuff */
-				while("~".compareTo(line = in.nextLine()) != 0) {
-					scan = new Scanner(line);
-					if((what = typeOfStuffFlags.find(scan.next())) == null) throw new ParseException("unknown token", in.getLineNumber());
-					id = scan.next();
-					if(scan.hasNext()) throw new ParseException("too many things", in.getLineNumber());
-					
-					switch(what) {
-						case ROOM:
-							Room room = new Room(in);
-							stuff.put(id, room);
-							name = room.getName();
-							title = room.getTitle();
-							info = String.format("desc <%s>", room.getDescription());
-							break;
-						case MOB:
-							Mob mob = new Mob(in);
-							stuff.put(id, mob);
-							name = mob.getName();
-							title = mob.getTitle();
-							info = String.format("F %b, X %b", mob.isFriendly, mob.isXeno);
-							break;
-						case OBJECT:
-							entities.Object obj = new entities.Object(in);
-							stuff.put(id, obj);
-							name = obj.getName();
-							title = obj.getTitle();
-							info = String.format("B %b, T %b", obj.isBreakable, obj.isTransportable);
-							break;
-						case CHARACTER:
-						case CONTAINER:
-						case MONEY:
-						case PLAYER:
-						case STUFF:
-							throw new ParseException(what + " not implemented", in.getLineNumber());
-					}
-
-					if(Mud.isVerbose) System.err.format("%s.%s: name <%s>,  title <%s>, %s.\n", this, id, name, title, info);
-				}
-
-				/* set the default room now that we've loaded it (hopefully) */
-				if((recall = (Room)stuff.get(recallStr)) == null) throw new ParseException(recallStr + " not found", in.getLineNumber());
-
-				/* resets/connections to the end of the file */
-				Stuff thing, target;
-				Reset reset;
-				Room.Direction dir;
-				while((line = in.readLine()) != null) {
-					scan = new Scanner(line);
-					if((thing  =       stuff.get(scan.next())) == null) throw new ParseException("unknown stuff", in.getLineNumber());
-					if((reset  = resetFlags.find(scan.next())) == null) throw new ParseException("unknown token", in.getLineNumber());
-					if(reset == Reset.CONNECT || reset == Reset.SET) {
-						if((dir = Room.Direction.find(scan.next())) == null) throw new ParseException("unknown direction", in.getLineNumber());
-					} else {
-						dir = null;
-					}
-					if((target =  stuff.get(scan.next())) == null) throw new ParseException("unknown argument", in.getLineNumber());
-					if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
-					reset.invoke(thing, target, dir);
-
-					if(Mud.isVerbose) System.err.print(this + ": <" + thing + "> <" + reset + "> direction <" + dir + "> to/in <" + target + ">.\n");
-				}
-
-			} catch(UnrecognisedTokenException e) {
-				/* transform it into ParseException with the line number which
-				 we now have */
-				throw new ParseException("unrecognised " + e.getMessage(), in.getLineNumber());
-			}
-		} catch(ParseException e) {
-			/* re-throw it: the area is not parseable; harsh, but otherwise
-			 [most] area designers would get sloppy */
+			/*Area(in);*/
+			System.err.format("%s: loaded %s, default room %s.\n", file.getName(), this, recall);
+		}/* catch(ParseException e) {
+			* re-throw it: the area is not parseable; harsh, but otherwise
+			 [most] area designers would get sloppy *
 			throw new ParseException(e.getMessage(), e.getErrorOffset());
-		}
-
-		System.err.format("%s: loaded %s, default room %s.\n", file, this, recall);
+		}*/
 
 	}
 

@@ -101,6 +101,10 @@ public class Mud implements Iterable<Connection> {
 
 		return loadDir/*Collections.unmodifiableMap(loadMod)???*/;
 	}
+	
+	static <F> Map<String, F> loadAll(final String dirStr, final String extStr) throws IOException {
+		return loadAll(dirStr, extStr, null);
+	}
 
 	/** Starts up the mud and listens for connections.
 	 @param args	Ignored. */
@@ -155,7 +159,7 @@ public class Mud implements Iterable<Connection> {
 		int    poolSize     = 256;
 
 		commandsets = Collections.unmodifiableMap(loadAll(dataDir + "/commandsets", ".cset", new LoadCommands()));
-		/*areas       = Collections.unmodifiableMap(loadAll<Area>(dataDir + "/areas", ".area"));*/
+		areas       = Collections.unmodifiableMap(loadAll(dataDir + "/areas", ".area", new LoadArea()));
 
 		/* read in settings */
 

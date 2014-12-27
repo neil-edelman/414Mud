@@ -46,13 +46,13 @@ import main.Area;
 /** This is the entry-point for starting the mud and listening for connections;
  connnections are handled by a fixed socket pool.
  <p>
- Extends Commands; no particular reason why the Commands weren't put in here
+ Extends Commands.Commands; no particular reason why the Commands.Commands weren't put in here
  except that it would be huge.
 
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class Mud extends Commands implements Iterable<Connection> {
+public class Mud implements Iterable<Connection> {
 
 	/* debug mode; everyone can read this */
 	public static boolean isVerbose = true;
@@ -65,49 +65,45 @@ public class Mud extends Commands implements Iterable<Connection> {
 	private static final String dataDir     = "../data";
 	private static final String mudData     = "mud";
 
-	private interface Loader<L> { L load(final String name, TextReader in) throws ParseException; }
+	interface Loader<F> { F load(TextReader in) throws IOException, ParseException; }
 
 	/** Load all resouces into a hash, one per filename. The hash keys are it's
-	 file name minus the extension. */
-	static <L> Map<String, L> load(final String loadDir, final String loadExt, Loader<L> loader) throws IOException {
+	 file name minus the extension. F stands for file. */
+	static <F> Map<String, F> loadAll(final String dirStr, final String extStr, Loader<F> loader) throws IOException {
 
-		Map<String, L> loadMod = new HashMap<String, L>();
-
-		File dir = new File(loadDir);
-		if(!dir.exists() || !dir.isDirectory()) throw new IOException("<" + loadDir + "> is not a thing");
-
+		/* make a list of all the data files */
+		File dir = new File(dirStr);
+		if(!dir.exists() || !dir.isDirectory())
+			throw new IOException("<" + dirStr + "> is not a thing");
 		File files[] = dir.listFiles(new FilenameFilter() {
 			public boolean accept(File current, String name) {
-				return name.endsWith(loadExt);
+				return name.endsWith(extStr);
 			}
 		});
 
-		/* go though all data files */
+		/* go though files, loading each one */
+		Map<String, F> loadDir = new HashMap<String, F>();
 		for(File file : files) {
-
-			L mod = null;
-
-			/* resouce name in the map is it's filename without the extension */
+			F loadFile = null;
+			/* resouce name in the loadDir map is it's filename minus extension */
 			String name = file.getName();
-			name = name.substring(0, name.length() - loadExt.length());
-
-			System.err.format("%s: loading command set <%s>.\n", name, file);
-
+			name = name.substring(0, name.length() - extStr.length());
+			System.err.format("%s: loading <%s>.\n", name, file);
 			try(
 				TextReader in = new TextReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
 			) {
-				mod = loader.load(name, in);
+				loadFile = loader.load(in);
 			} catch(ParseException e) {
 				System.err.format("%s; syntax error: %s, line %d.\n", file, e.getMessage(), e.getErrorOffset());
 			} catch(IOException e) {
 				System.err.format("%s; %s.\n", file, e);
 			}
 
-			if(mod != null) loadMod.put(name, mod/*Collections.unmodifiableMap(mod)???*/);
+			if(loadFile != null) loadDir.put(name, loadFile/*Collections.unmodifiableMap(mod)???*/);
 
 		}
 
-		return loadMod/*Collections.unmodifiableMap(loadMod)???*/;
+		return loadDir/*Collections.unmodifiableMap(loadMod)???*/;
 	}
 
 	/** Starts up the mud and listens for connections.
@@ -151,7 +147,7 @@ public class Mud extends Commands implements Iterable<Connection> {
 	private Map<String, Area> areas = new HashMap<String, Area>();
 	private Area   homearea;
 	private Room   homeroom;
-	Map<String, Map<String, Command>> commandsets = new HashMap<String, Map<String, Command>>();
+	Map<String, Map<String, Commands.Command>> commandsets;
 
 	/** The entire mud constructor.
 	 @param dataDir			The subdirectory where the data file is located.
@@ -162,22 +158,22 @@ public class Mud extends Commands implements Iterable<Connection> {
 		int    homeareaLine = -1;
 		int    poolSize     = 256;
 
-		commandsets = Collections.unmodifiableMap(load(dataDir + "/commandsets", ".cset", (name, in) -> {
+		commandsets = Collections.unmodifiableMap(loadAll(dataDir + "/commandsets", ".cset", new Commands()));
+		/*commandsets = Collections.unmodifiableMap(loadAll(dataDir + "/commandsets", ".cset", (name, in) -> {
 			Scanner scan;
 			String line, alias, cmdStr;
-			Command command;
-			Map<String, Command> mod = new HashMap<String, Command>();
+			Commands.Command command;
+			Map<String, Commands.Command> mod = new HashMap<String, Commands.Command>();
 			
 			try {
-				/* go through all the lines of the file, in */
+				* go through all the lines of the file, in *
 				while((line = in.readLine()) != null) {
 					scan = new Scanner(line);
 					if((alias = scan.next()) == null) throw new ParseException("alias", in.getLineNumber());
-					/*if((thing = .get(scan.next())) == null*/
 					if((cmdStr = scan.next()) == null) throw new ParseException("command", in.getLineNumber());
 					if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
 					try {
-						command = (Command)Commands.class.getDeclaredField(cmdStr).get(null /* static field */);
+						command = (Commands.Command)Commands.class.getDeclaredField(cmdStr).get(null);
 						if(Mud.isVerbose) System.err.format("%s: command <%s>: \"%s\"->%s\n", name, alias, cmdStr, command);
 						mod.put(alias, command);
 					} catch(NoSuchFieldException | IllegalAccessException e) {
@@ -189,7 +185,7 @@ public class Mud extends Commands implements Iterable<Connection> {
 				System.err.format("%s.\n", e);
 			}
 			return null;
-		}));
+		}));*/
 
 		//areas = Collections.unmodifiableMap(load("data/areas", ".area", (name, in) -> {
 		//};
@@ -346,8 +342,8 @@ public class Mud extends Commands implements Iterable<Connection> {
 
 	/** @return A command set with that name.
 	 @throws NamingException	That name isn't loaded. */
-	public Map<String, Command>getCommands(final String commandStr) throws NoSuchElementException {
-		Map<String, Command> command = commandsets.get(commandStr);
+	public Map<String, Commands.Command>getCommands(final String commandStr) throws NoSuchElementException {
+		Map<String, Commands.Command> command = commandsets.get(commandStr);
 		if(command == null) throw new NoSuchElementException(this + ": command set <" + commandStr + "> not loaded");
 		return command;
 	}

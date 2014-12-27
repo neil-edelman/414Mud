@@ -25,6 +25,7 @@ import common.TextReader;
 import entities.Stuff;
 import entities.Player;
 import entities.Room;
+import main.Mud;
 
 /** Commands you can enact; actually part of Connection, but imagine the file
  size! Connection extends Commandset.
@@ -32,7 +33,35 @@ import entities.Room;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public abstract class Commands {
+class Commands implements Mud.Loader<Map<String, Commands.Command>> {
+
+	/** Loads a command set */
+	public Map<String, Commands.Command> load(TextReader in) throws IOException, ParseException {
+		Scanner scan;
+		String line, alias, cmdStr;
+		Commands.Command command;
+		Map<String, Commands.Command> map = new HashMap<String, Commands.Command>();
+
+		/* go through all the lines of the file, in */
+		while((line = in.readLine()) != null) {
+			scan = new Scanner(line);
+			if((alias = scan.next()) == null || (cmdStr = scan.next()) == null)
+				throw new ParseException("too short", in.getLineNumber());
+			if(scan.hasNext())
+				throw new ParseException("too long", in.getLineNumber());
+			try {
+				/* null == static */
+				command = (Commands.Command)Commands.class.getDeclaredField(cmdStr).get(null);
+				if(Mud.isVerbose)
+					System.err.format("<%s>\t\"%s\"->%s\n", alias, cmdStr, command);
+				map.put(alias, command);
+			} catch(NoSuchFieldException | IllegalAccessException e) {
+				throw new ParseException("no such command? " + e, in.getLineNumber());
+			}
+		}
+		return map;
+
+	}
 
 	/* sorry, I use a US keyboard and it's difficult to type in accents, etc,
 	 when addressing, etc, players in real time; only allow players to have
@@ -45,7 +74,7 @@ public abstract class Commands {
 
 	/* this is where the commands are stored */
 
-	protected interface Command { void command(final Connection c, final String arg); }
+	public interface Command { void command(final Connection c, final String arg); }
 
 	protected static final Command help = (c, arg) -> {
 		Map<String, Command> commandset = c.getCommandset();

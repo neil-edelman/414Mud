@@ -27,19 +27,25 @@ import entities.Player;
 import entities.Room;
 import main.Mud;
 
+/** The contract that a command will have. Fixme: Connection->Stuff alows Stuff
+ to use commands, too! (although I'd really have to think about bodyless
+ connections) */
+interface Command { void command(final Connection c, final String arg); }
+
 /** Command loader.
  
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-class Commands implements Mud.Loader<Map<String, Commands.Command>> {
+class LoadCommands implements Mud.Loader<Map<String, Command>> {
 
-	/** Loads a command set */
-	public Map<String, Commands.Command> load(TextReader in) throws IOException, ParseException {
+	/** Loads a command set.
+	 @param in	The already open {@link common.TestReader}. */
+	public Map<String, Command> load(TextReader in) throws IOException, ParseException {
 		Scanner scan;
 		String line, alias, cmdStr;
-		Commands.Command command;
-		Map<String, Commands.Command> map = new HashMap<String, Commands.Command>();
+		Command command;
+		Map<String, Command> map = new HashMap<String, Command>();
 
 		/* go through all the lines of the file, in */
 		while((line = in.readLine()) != null) {
@@ -50,7 +56,7 @@ class Commands implements Mud.Loader<Map<String, Commands.Command>> {
 				throw new ParseException("too long", in.getLineNumber());
 			try {
 				/* null == static */
-				command = (Commands.Command)Commands.class.getDeclaredField(cmdStr).get(null);
+				command = (Command)LoadCommands.class.getDeclaredField(cmdStr).get(null);
 				if(Mud.isVerbose)
 					System.err.format("<%s>\t\"%s\"->%s\n", alias, cmdStr, command);
 				map.put(alias, command);
@@ -59,7 +65,6 @@ class Commands implements Mud.Loader<Map<String, Commands.Command>> {
 			}
 		}
 		return map;
-
 	}
 
 	/* sorry, I use a US keyboard and it's difficult to type in accents, etc,
@@ -70,8 +75,6 @@ class Commands implements Mud.Loader<Map<String, Commands.Command>> {
 	private static final int maxName  = 8;
 
 	private static final int yellDistance = 3;
-
-	public interface Command { void command(final Connection c, final String arg); }
 
 	protected static final Command help = (c, arg) -> {
 		Map<String, Command> commandset = c.getCommandset();

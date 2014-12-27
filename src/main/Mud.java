@@ -41,13 +41,9 @@ import entities.Object;
 import entities.Mob;
 import common.Chance;
 import main.Connection;
-import main.Area;
 
 /** This is the entry-point for starting the mud and listening for connections;
  connnections are handled by a fixed socket pool.
- <p>
- Extends Commands.Commands; no particular reason why the Commands.Commands weren't put in here
- except that it would be huge.
 
  @author	Neil
  @version	1.1, 12-2014
@@ -147,7 +143,7 @@ public class Mud implements Iterable<Connection> {
 	private Map<String, Area> areas = new HashMap<String, Area>();
 	private Area   homearea;
 	private Room   homeroom;
-	Map<String, Map<String, Commands.Command>> commandsets;
+	Map<String, Map<String, Command>> commandsets;
 
 	/** The entire mud constructor.
 	 @param dataDir			The subdirectory where the data file is located.
@@ -158,8 +154,8 @@ public class Mud implements Iterable<Connection> {
 		int    homeareaLine = -1;
 		int    poolSize     = 256;
 
-		commandsets = Collections.unmodifiableMap(loadAll(dataDir + "/commandsets", ".cset", new Commands()));
-		//areas = Collections.unmodifiableMap(load("data/areas", ".area", new Areas());
+		commandsets = Collections.unmodifiableMap(loadAll(dataDir + "/commandsets", ".cset", new LoadCommands()));
+		/*areas       = Collections.unmodifiableMap(loadAll<Area>(dataDir + "/areas", ".area"));*/
 
 		/* read in settings */
 
@@ -184,7 +180,7 @@ public class Mud implements Iterable<Connection> {
 
 		/* read in areas */
 
-		areas = Area.loadAreas(dataDir + "/areas");
+		//areas = Area.loadAreas(dataDir + "/areas");
 
 		/* set the [defaut] recall spot */
 
@@ -313,8 +309,8 @@ public class Mud implements Iterable<Connection> {
 
 	/** @return A command set with that name.
 	 @throws NamingException	That name isn't loaded. */
-	public Map<String, Commands.Command>getCommands(final String commandStr) throws NoSuchElementException {
-		Map<String, Commands.Command> command = commandsets.get(commandStr);
+	public Map<String, Command>getCommands(final String commandStr) throws NoSuchElementException {
+		Map<String, Command> command = commandsets.get(commandStr);
 		if(command == null) throw new NoSuchElementException(this + ": command set <" + commandStr + "> not loaded");
 		return command;
 	}

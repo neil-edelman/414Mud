@@ -159,36 +159,7 @@ public class Mud implements Iterable<Connection> {
 		int    poolSize     = 256;
 
 		commandsets = Collections.unmodifiableMap(loadAll(dataDir + "/commandsets", ".cset", new Commands()));
-		/*commandsets = Collections.unmodifiableMap(loadAll(dataDir + "/commandsets", ".cset", (name, in) -> {
-			Scanner scan;
-			String line, alias, cmdStr;
-			Commands.Command command;
-			Map<String, Commands.Command> mod = new HashMap<String, Commands.Command>();
-			
-			try {
-				* go through all the lines of the file, in *
-				while((line = in.readLine()) != null) {
-					scan = new Scanner(line);
-					if((alias = scan.next()) == null) throw new ParseException("alias", in.getLineNumber());
-					if((cmdStr = scan.next()) == null) throw new ParseException("command", in.getLineNumber());
-					if(scan.hasNext()) throw new ParseException("too much stuff", in.getLineNumber());
-					try {
-						command = (Commands.Command)Commands.class.getDeclaredField(cmdStr).get(null);
-						if(Mud.isVerbose) System.err.format("%s: command <%s>: \"%s\"->%s\n", name, alias, cmdStr, command);
-						mod.put(alias, command);
-					} catch(NoSuchFieldException | IllegalAccessException e) {
-						System.err.format("%s (line %d:) no such command? %s.\n", name, in.getLineNumber(), e);
-					}
-				}
-				return mod;
-			} catch(IOException e) {
-				System.err.format("%s.\n", e);
-			}
-			return null;
-		}));*/
-
-		//areas = Collections.unmodifiableMap(load("data/areas", ".area", (name, in) -> {
-		//};
+		//areas = Collections.unmodifiableMap(load("data/areas", ".area", new Areas());
 
 		/* read in settings */
 
@@ -282,7 +253,7 @@ public class Mud implements Iterable<Connection> {
 	/** Closes a connection.
 	 @param c The connection to close. */
 	public void deleteClient(Connection c) {
-		System.err.print(c + " is closed: " + c.getSocket().isClosed() + "; removing from " + name + ".\n");
+		System.err.print(c + " removing from " + name + " (closed: " + c.getSocket().isClosed() + ".)\n");
 		clients.remove(c);
 	}
 

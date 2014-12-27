@@ -27,8 +27,7 @@ import entities.Player;
 import entities.Room;
 import main.Mud;
 
-/** Commands you can enact; actually part of Connection, but imagine the file
- size! Connection extends Commandset.
+/** Command loader.
  
  @author	Neil
  @version	1.1, 12-2014
@@ -72,8 +71,6 @@ class Commands implements Mud.Loader<Map<String, Commands.Command>> {
 
 	private static final int yellDistance = 3;
 
-	/* this is where the commands are stored */
-
 	public interface Command { void command(final Connection c, final String arg); }
 
 	protected static final Command help = (c, arg) -> {
@@ -83,7 +80,7 @@ class Commands implements Mud.Loader<Map<String, Commands.Command>> {
 			c.sendTo(entry.getKey()/* + ":" + entry.getValue()*/);
 		}
 	}, exit = (c, arg) -> {
-		//System.err.print(c + " has exited.\n");
+		System.err.print(c + " has exited.\n");
 		Player p = c.getPlayer();
 		if(p != null) p.sendToRoom(p + " has suddenly vashished.");
 		c.sendTo("Goodbye.");
@@ -314,7 +311,6 @@ class Commands implements Mud.Loader<Map<String, Commands.Command>> {
 			return;
 		}
 		p.enter(target, true);
-		c.sendTo("unmount to get out");
 	} /* unmount */;
 
 }

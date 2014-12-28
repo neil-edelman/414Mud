@@ -7,18 +7,18 @@ savearea
 rundown
 fire (as in, shoot) <at something, or default mob you're hating>
 as <stuff> (immortal)
-flee (neswud automatically becomes flee? nah) actually, why have a different mode for fighting?
+flee
 help start at the beginning
 
-test exit; do other players see you exit? or afk?
-
+finish case destroy in Object
+Connection--Player think about it
+afk on exit!
 Connection: re-arrange order
+getConnection->getHandler Connection, Chronos, extend Handler (getMapper); put in subdir
 
 channels, on/off, given chat at 1
 
-getConnection->getHandler Connection, Chronos, extend Handler (getMapper)
-
-Commands: Connection -> Stuff, allows Stuff to use commands, too! Commandset stuff; do new Stuff Newbie->Login
+Commandset stuff; do new Stuff Newbie->Login
 
 try abstraction again: Commandset->Commands should only be a container for commands
 

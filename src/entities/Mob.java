@@ -35,9 +35,13 @@ public class Mob extends Character {
 	}
 
 	/** Read it from a file. */
-	public Mob(common.TextReader in) throws java.text.ParseException, java.io.IOException, common.UnrecognisedTokenException {
+	public Mob(common.TextReader in) throws java.text.ParseException, java.io.IOException {
 		super(in);
-		mobFlags.fromLine(this, in.nextLine());
+		try {
+			mobFlags.fromLine(this, in.nextLine());
+		} catch(common.UnrecognisedTokenException e) {
+			throw new java.text.ParseException(e.getMessage(), in.getLineNumber());
+		}
 		Mud.getChronos().register(this);
 	}
 

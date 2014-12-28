@@ -274,7 +274,7 @@ public class Mud implements Iterable<Connection> {
 	static <F> Map<String, F> loadAll(final String dirStr, final String extStr, Loader<F> loader) throws IOException {
 
 		/* make a list of all the data files */
-		//File dir = path//new File(dataDir + "/" + dirStr);
+		//File dir = new File(dataDir + "/" + dirStr);
 		File dir = FileSystems.getDefault().getPath(dataDir, dirStr).toFile();
 		if(!dir.exists() || !dir.isDirectory())
 			throw new IOException("<" + dirStr + "> is not a thing");

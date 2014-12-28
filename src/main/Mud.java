@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 
-//import java.io.BufferedReader;
-//import java.io.LineNumberReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,7 +59,11 @@ public class Mud implements Iterable<Connection> {
 	private static final String dataDir     = "../data";
 	private static final String mudData     = "mud";
 
-	interface Loader<F> { F load(TextReader in) throws IOException, ParseException; }
+	/** Interfaces and Abstract can not have static methods (too bad;) classes
+	 can implement Mud.Loader to be loaded in {@link loadAll}. */
+	interface Loader<F> {
+		F load(TextReader in) throws ParseException, IOException;
+	}
 
 	/** Load all resouces into a hash, one per filename. The hash keys are it's
 	 file name minus the extension. F stands for file. */
@@ -100,10 +102,6 @@ public class Mud implements Iterable<Connection> {
 		}
 
 		return loadDir/*Collections.unmodifiableMap(loadMod)???*/;
-	}
-	
-	static <F> Map<String, F> loadAll(final String dirStr, final String extStr) throws IOException {
-		return loadAll(dirStr, extStr, null);
 	}
 
 	/** Starts up the mud and listens for connections.
@@ -158,8 +156,10 @@ public class Mud implements Iterable<Connection> {
 		int    homeareaLine = -1;
 		int    poolSize     = 256;
 
-		commandsets = Collections.unmodifiableMap(loadAll(dataDir + "/commandsets", ".cset", new LoadCommands()));
-		areas       = Collections.unmodifiableMap(loadAll(dataDir + "/areas", ".area", new LoadArea()));
+		/*commandsets = Collections.unmodifiableMap(loadAll(dataDir + "/commandsets", ".cset"));
+		areas       = Collections.unmodifiableMap(loadAll(dataDir + "/areas", ".area"));*/
+		commandsets = loadAll(dataDir + "/commandsets", ".cset", new LoadCommands());
+		areas       = loadAll(dataDir + "/areas", ".area", new Area());
 
 		/* read in settings */
 

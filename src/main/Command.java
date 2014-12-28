@@ -39,9 +39,9 @@ interface Command { void command(final Connection c, final String arg); }
  @since		1.0, 11-2014 */
 class LoadCommands implements Mud.Loader<Map<String, Command>> {
 
-	/** Loads a command set.
-	 @param in	The already open {@link common.TestReader}. */
-	public Map<String, Command> load(TextReader in) throws IOException, ParseException {
+	/** Loads a command set per implementation of Mud.Loader.
+	 @param in	The already open {@link common.TextReader}. */
+	public Map<String, Command> load(TextReader in) throws ParseException, IOException {
 		Scanner scan;
 		String line, alias, cmdStr;
 		Command command;

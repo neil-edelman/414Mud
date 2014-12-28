@@ -31,19 +31,25 @@ import javax.naming.NamingException;
 
 import entities.*;
 
-class LoadArea implements Mud.Loader<Area> {
-	public Area load(TextReader in) throws ParseException, IOException {
-		return new Area(in);
-	}
-}
-
 /** Loading/storing of areas. 
  @author	Neil
  @version	1.1, 12-2014
  @since		1.1, 12-2014 */
-class Area {
+class Area implements Mud.Loader<Area> {
 
-	public Area(TextReader in) throws ParseException, IOException {
+	private String             name = "Untitled";
+	private String             title;
+	private String             author;
+	private Map<String, Stuff> stuff = new HashMap<String, Stuff>();
+	private Room               recall;
+	
+	/** Creates a blank Area (ie, for {@link load}-ing.) */
+	public Area() {
+	}
+
+	/** Loads an Area per implementation of Mud.Loader.
+	 @param in	The already open {@link common.TextReader}. */
+	public Area load(TextReader in) throws ParseException, IOException {
 		try {
 			Scanner scan;
 			String recallStr;
@@ -131,6 +137,7 @@ class Area {
 
 		System.err.format("%s, default room %s.\n", this, recall);
 
+		return this;
 	}
 	
 	
@@ -247,12 +254,6 @@ class Area {
 	BitVector<Reset> resetFlags = new BitVector<Reset>(Reset.class);
 
 	/**** area loading ****/
-
-	private String             name;
-	private String             title;
-	private String             author;
-	private Map<String, Stuff> stuff = new HashMap<String, Stuff>();
-	private Room               recall;
 
 	/** @param file	Filename that the area is read from.
 	 @fixme			Throws something, don't just make an empty area. */

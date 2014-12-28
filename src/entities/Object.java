@@ -38,9 +38,13 @@ public class Object extends Stuff {
 		//name.add("object");
 	}
 
-	public Object(common.TextReader in) throws java.text.ParseException, java.io.IOException, common.UnrecognisedTokenException {
+	public Object(common.TextReader in) throws java.text.ParseException, java.io.IOException {
 		super(in);
-		objectFlags.fromLine(this, in.nextLine());
+		try {
+			objectFlags.fromLine(this, in.nextLine());
+		} catch(common.UnrecognisedTokenException e) {
+			throw new java.text.ParseException(e.getMessage(), in.getLineNumber());
+		}
 	}
 
 	public Object(final String name, final String title, final boolean isB, final boolean isT) {

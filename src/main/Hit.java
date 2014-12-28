@@ -3,14 +3,15 @@
 
 import entities.Stuff;
 
-/** These are hit things.
+/** These are damage objects.
  
  @author	Neil
  @version	1.1, 2014-12
  @since		1.1, 2014-12 */
 public class Hit {
 
-	/* fixme: it would be cool to laod this at runtime */
+	/* fixme: it would be cool to load this at runtime, probably a hack
+	 involving reflection */
 	public enum HitType {
 		trip(		"trip",		"trips",		"triped"),
 		fall(		"crash",	"crashes",		"crashed"),

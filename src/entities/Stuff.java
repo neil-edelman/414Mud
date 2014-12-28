@@ -21,7 +21,7 @@ import entities.Room.Direction;
  @author	Sid, Neil
  @version	1.0, 11-2014
  @since		1.0, 11-2014 */
-public class Stuff implements Iterable<Stuff> /*, Serializable*/ {
+public class Stuff implements Iterable<Stuff> {
 
 	private static final int searchDepth = 3;
 

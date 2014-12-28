@@ -3,8 +3,6 @@
 
 package common;
 
-//import java.io.LineNumberReader;
-
 import java.util.Map;
 import java.util.HashMap;
 
@@ -28,16 +26,13 @@ public class BitVector<E extends Enum<E>> {
 
 	private static final String symbol = "symbol";
 
-	// FIXME: don't need all of these fields
-
 	private final Class<E> aClass;
 	private final Field    aField;
 
-	private boolean flags[];
-	private Map<String, E> map = null;
-	//private Enum<E> e;
+	private final Map<String, E> map;
 
-	private Field vector[];
+	/* buffer to return from {@link fromLine} */
+	private boolean flags[];
 
 	/** Contstuct a BitVector out of a {@link Class}.
 	 @param aClass					An Enum having a unique varible "symbol."
@@ -47,24 +42,18 @@ public class BitVector<E extends Enum<E>> {
 
 		if(!aClass.isEnum()) throw new RuntimeException("" + aClass + " not an enum");
 
-		E   set[]  = aClass.getEnumConstants();
-		int length = set.length;
+		E enumc[] = aClass.getEnumConstants();
 
 		try {
 
 			/* fill in the BitVector; flags is pre-allocate for returning */
 			this.aClass = aClass;
 			this.aField = aClass.getDeclaredField(symbol);
-			this.flags  = new boolean[length];
+			this.flags  = new boolean[enumc.length];
 
-			/* refected values */
-			vector = new Field[length];
-			int i  = 0;
-			for(E thing : set) vector[i++] = aClass.getDeclaredField(thing.name());
-
-			/* a mapping of Strings */
+			/* a mapping of Strings to E so we can get better then O(n) */
 			Map<String, E> mod = new HashMap<String, E>();
-			for(E val : set) mod.put((String)aField.get(val), val);
+			for(E val : enumc) mod.put((String)aField.get(val), val);
 			map = Collections.unmodifiableMap(mod);
 
 		} catch(NoSuchFieldException | IllegalAccessException e) {
@@ -80,8 +69,10 @@ public class BitVector<E extends Enum<E>> {
 		return map.get(f);
 	}
 
+	/** Auto-magically sets public fields, "foo" -> isFoo = true.
+	 @param stuff	The {@link entities.Stuff} you want to be modified.
+	 @param line	The line of how you want it to be modifed. */
 	public void fromLine(final Stuff stuff, final String line) throws UnrecognisedTokenException {
-		//fixme: if( extends Stuff)
 		E sym;
 		/* split on whitespace */
 		String toks[] = line.trim().split("\\s++");
@@ -101,37 +92,13 @@ public class BitVector<E extends Enum<E>> {
 				throw new RuntimeException(e);
 			}
 		}
-		/* set fields */
-//		for(Field field : stuff.getFields()) {
-//			System.err.format("> <%s> <%s> %b\n", field, field.getGenericType(), field.getGenericType() == boolean.class);
-//			if(field.getGenericType() != boolean.class) continue;
-			/* it's a public boolean variable, assume */
-//		}
 	}
-
-	/** Reads the line and sets boolean array appropriately.
-	 @param line			The line with only the strings from the enum.
-	 @return				The values arranged by incresing order.
-	 @throws ParseException	On any tokens not in the enum. */
-//	public boolean[] fromLine(final String line) throws UnrecognisedTokenException {
-//		E sym;
-//		/* split on whitespace */
-//		String toks[] = line.trim().split("\\s++");
-//		/* clear */
-//		for(int i = 0; i < flags.length; i++) flags[i] = false;
-//		/* set */
-//		for(String tok : toks) {
-//			if((sym = map.get(tok)) == null) throw new UnrecognisedTokenException(tok);
-//			flags[sym.ordinal()] = true;
-//		}
-//		return flags;
-//	}
 
 	/**
 	 @param bv	Must have size() elements
 	 @return	A string with the representations of the true bit values set. */
 	public String toLine(boolean bv[]) throws Exception {
-		if(bv.length != vector.length) throw new Exception("" + bv + " has to have " + vector.length + " elements");
+		if(bv.length != map.size()) throw new Exception("" + bv + " has to have " + map.size() + " elements");
 		StringBuilder sb = new StringBuilder();
 		boolean isFirst = true;
 		for(E val : aClass.getEnumConstants()) {
@@ -151,10 +118,6 @@ public class BitVector<E extends Enum<E>> {
 		}
 		return sb.toString();
 	}
-
-	/*public Enum<E> getEnum() {
-		return e;
-	}*/
 
 	/** Eg, { boolean b[] = new boolean[f.size()]; }.
 	 @return	The number of constants. */

@@ -30,7 +30,7 @@ import main.Mud;
 /** The contract that a command will have. Fixme: Connection->Stuff alows Stuff
  to use commands, too! (although I'd really have to think about bodyless
  connections) */
-interface Command { void command(final Connection c, final String arg); }
+interface Command { void command(final Stuff s, final String arg); }
 
 /** Command loader.
  
@@ -76,77 +76,90 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 
 	private static final int yellDistance = 3;
 
-	protected static final Command help = (c, arg) -> {
-		Map<String, Command> commandset = c.getCommandset();
-		c.sendTo("These are the commands which you are authorised to use right now:");
-		for(Map.Entry<String, Command> entry : commandset.entrySet()) {
-			c.sendTo(entry.getKey()/* + ":" + entry.getValue()*/);
-		}
-	}, exit = (c, arg) -> {
-		System.err.print(c + " has exited.\n");
-		Player p = c.getPlayer();
-		if(p != null) p.sendToRoom(p + " has suddenly vashished.");
-		c.sendTo("Goodbye.");
-		c.setExit();
-	}, say = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		c.sendTo("You say, \"" + arg + "\"");
-		p.sendToRoom(p + " says \"" + arg + "\"");
-	}, chat = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		/* fixme: channels! */
-		String s = "[chat] " + p + ": " + arg;
-		for(Connection everyone : c.getMud()) {
-			everyone.sendTo(s);
-		}
-	}, yell = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		Stuff r = p.getIn();
-		if(r == null || !(r instanceof Room)) {
-			c.sendTo("You can't yell in here.");
+	protected static final Command help = (s, arg) -> {
+		Connection c = s.getConnection();
+		if(c == null) {
+			/* fixme: default stuffprogs set */
+			s.sendTo("You mast have a connection.");
 			return;
 		}
-		c.sendTo("You yell \"" + arg + "\"");
-		String str = p + " yells from %s-ish, \"%s\" (%d room(s) away.)";
-		c.getMapper().map((Room)r, yellDistance, (room, dist, dir) -> {
-			room.sendToContentsExcept(p, String.format(str, dir.getBack(), arg, dist));
-			return true;
+		Map<String, Command> commandset = c.getCommandset();
+		s.sendTo("These are the commands which you are authorised to use right now:");
+		for(Map.Entry<String, Command> entry : commandset.entrySet()) {
+			c.sendTo(entry.getKey());
+		}
+	}, exit = (s, arg) -> {
+		Connection c = s.getConnection();
+		System.err.print(s + " has exited.\n");
+		s.sendToRoom(s + " has suddenly vashished.");
+		s.sendTo("Goodbye.");
+		if(c != null) c.setExit();
+	}, say = (s, arg) -> {
+		s.sendTo("You say, \"" + arg + "\"");
+		s.sendToRoom(s + " says \"" + arg + "\"");
+	}, chat = (s, arg) -> {
+		Connection c = s.getConnection();
+		if(c == null) {
+			s.sendTo("You can't without a connection.");
+			return;
+		}
+		/* fixme: channels! */
+		String str = "[chat] " + s + ": " + arg;
+		for(Connection everyone : c.getMud()) {
+			everyone.sendTo(str);
+		}
+	}, yell = (s, arg) -> {
+		Stuff r = s.getIn();
+		if(r == null || !(r instanceof Room)) {
+			s.sendTo("You can't yell in here.");
+			return;
+		}
+		s.sendTo("You yell \"" + arg + "\"");
+		String str = s + " yells from %s-ish, \"%s\" (%d room(s) away.)";
+		Mapper.map((Room)r, yellDistance, (room, dist, dir) -> {
+			room.sendToContentsExcept(s, String.format(str, dir.getBack(), arg, dist));
+			return true; /* <- want everyone to hear */
 		});
-	}, take = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		Stuff r = p.getIn();
-		if(r == null) return;
+	}, take = (s, arg) -> {
+		Stuff r = s.getIn();
+		if(r == null) {
+			s.sendTo("You are in space.");
+			return;
+		}
 		/* fixme: have them be in order, 1.obj 2.obj, this is hacked */
 		Stuff target = null;
-		for(Stuff s : r) {
-			if(arg.compareTo("" + s) != 0) continue;
-			target = s;
+		for(Stuff f : r) {
+			if(arg.compareTo("" + f) != 0) continue;
+			target = f;
 			break;
 		}
+		if(target == null) {
+			s.sendTo("You see no <" + arg + "> here.");
+			return;
+		}
 		if(!target.isTransportable()) {
-			c.sendTo("You can't pick " + target + " up.");
-			p.sendToRoomExcept(target, p + " tries to pick up " + target + " and fails.");
-			target.sendTo(p + " tries to pick you up off the ground and fails.");
+			s.sendTo("You can't pick " + target + " up.");
+			s.sendToRoomExcept(target, s + " tries to pick up " + target + " and fails.");
+			target.sendTo(s + " tries to pick you up off the ground and fails.");
 			return;
 		}
 		/* fixme: mass */
-		target.placeIn(p);
-		c.sendTo("You pick up " + target + ".");
-		p.sendToRoomExcept(target, p + " picks up " + target + ".");
-		target.sendTo(p + " picks you up.");
-	}, inventory = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		for(Stuff i : p) {
-			c.sendTo("" + i);
+		target.placeIn(s);
+		s.sendTo("You pick up " + target + ".");
+		s.sendToRoomExcept(target, s + " picks up " + target + ".");
+		target.sendTo(s + " picks you up.");
+	}, inventory = (s, arg) -> {
+		for(Stuff i : s) {
+			s.sendTo("" + i);
 		}
-	}, cant = (c, arg) -> {
-		c.sendTo("You can't do that, [yet.]");
-	}, create = (c, arg) -> {
+	}, cant = (s, arg) -> {
+		s.sendTo("You can't do that, [yet.]");
+	}, create = (s, arg) -> {
+		Connection c = s.getConnection();
+		if(c == null) {
+			s.sendTo("You must have a connection.");
+			return;
+		}
 		int len = arg.length();
 		if(len < minName) {
 			c.sendTo("Your name must be at least " + minName + " characters.");
@@ -163,27 +176,19 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		/* fixme: this is where int, wis, are calculated; not that we have them */
 
 		/* passed the grammar police */
-		Player p = new Player(c, arg);
-		c.setPlayer(p);
+		s.setName(arg);
+		s.setTitle(arg + " is here.");
 		try {
 			c.setCommandset("common");
 		} catch(NoSuchElementException e) {
 			System.err.format("%s: %s.\n", c, e);
 			c.sendTo("There is no command set 'common;' sorry!");
 		}
-		System.err.print(c + " has created " + arg + ".\n");
-		c.sendTo("You create a character named " + arg + "!");
-
-		Room r = c.getMud().getHome();
-		p.transportTo(r);
-	}, look = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) {
-			c.sendTo("You don't have eyes yet.");
-			return;
-		}
-
-		Stuff in = p.getIn();
+		System.err.format("%s: create <%s>.\n", c, s);
+		//c.sendTo("You create a character named " + s + "!");
+		s.transportTo(c.getMud().getHome());
+	}, look = (s, arg) -> {
+		Stuff in = s.getIn();
 
 		Stuff          victim;
 		Room.Direction dir;
@@ -195,59 +200,64 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			if(in != null) {
 				/* look at things in the room */
 				if((victim = in.matchContents(arg)) != null) {
-					c.sendTo(victim.lookDetailed());
+					s.sendTo(victim.lookDetailed());
 					count++;
 				}
 				/* look at exits */
 				if((dir = Room.Direction.find(arg)) != null) {
 					if((room = in.getRoom(dir)) != null) {
-						c.sendTo(room.look());
-						for(Stuff otherIn : room) c.sendTo(otherIn.look());
+						s.sendTo(room.look());
+						for(Stuff otherIn : room) s.sendTo(otherIn.look());
 					} else {
-						c.sendTo("You don't want to go that way.");
+						s.sendTo("You don't want to go that way.");
 					}
 					count++;
 				}
 			}
 			/* look at inventory */
-			if((victim = p.matchContents(arg)) != null) {
-				c.sendTo(victim.lookDetailed());
+			if((victim = s.matchContents(arg)) != null) {
+				s.sendTo(victim.lookDetailed());
 				count++;
 			}
 			/* fixme: look at eq't */
 
-			if(count == 0) c.sendTo("There is no '" + arg + "' here.");
+			if(count == 0) s.sendTo("There is no '" + arg + "' here.");
 
 		} else {
 			/* just look in general */
 			if(in != null) {
-				c.sendTo(in.lookDetailed());
-				p.lookAtStuff();
+				s.sendTo(in.lookDetailed());
+				s.lookAtStuff();
 			} else {
-				c.sendTo("You are floating in space.");
+				s.sendTo("You are floating in space.");
 			}
 		}
-	}, who = (c, arg) -> {
-		Player p;
+	}, who = (s, arg) -> {
+		Connection c = s.getConnection();
+		if(c == null) {
+			s.sendTo("You must have a connection.");
+			return;
+		}
 		c.sendTo("Active connections:");
 		for(Connection hoo : c.getMud()) {
-			p = hoo.getPlayer();
-			c.sendTo(hoo + " (" + (p != null ? p.getName() : "not in game") + ")");
+			c.sendTo(hoo + " (" + hoo.getPlayer().getName() + ")");
 		}
-	}, shutdown = (c, arg) -> {
+	}, shutdown = (s, arg) -> {
+		Connection c = s.getConnection();
 		if(arg.length() != 0) {
-			c.sendTo("Command takes no arguments.");
+			s.sendTo("Command takes no arguments.");
+			return;
+		}
+		if(c == null) {
+			s.sendTo("Must have a connection.");
 			return;
 		}
 
-		Player p = c.getPlayer();
-		if(p == null) return;
-
 		System.out.print(c + " initated shutdown.\n");
 
-		String s = p + " initiated shutdown!";
+		String str = s + " initiated shutdown!";
 		for(Connection everyone : c.getMud()) {
-			everyone.sendTo(s);
+			everyone.sendTo(str);
 			everyone.setExit(); /* doesn't work -- Connection stuck waiting */
 			try {
 				everyone.getSocket().close();
@@ -258,10 +268,10 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 
 		c.setExit();
 		c.getMud().shutdown();
-	}, ascend = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) {
-			c.sendTo("You must have a body.");
+	}, ascend = (s, arg) -> {
+		Connection c = s.getConnection();
+		if(c == null) {
+			s.sendTo("You must have a connection.");
 			return;
 		}
 		if(!c.getMud().comparePassword(arg)) {
@@ -275,45 +285,33 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			c.sendTo("No command set immortal exists.");
 			return;
 		}
-		p.sendToRoom("A glorious light surronds " + p + " as they ascend.");
-		System.err.print(c + " has ascended.\n");
 		c.sendTo("You are now an immortal; type 'help' for new commands.");
-	}, north = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		p.go(Room.Direction.N);
-	}, east = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		p.go(Room.Direction.E);
-	}, south = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		p.go(Room.Direction.S);
-	}, west = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		p.go(Room.Direction.W);
-	}, up = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		p.go(Room.Direction.U);
-	}, down = (c, arg) -> {
-		Player p = c.getPlayer();
-		if(p == null) return;
-		p.go(Room.Direction.D);
-	}, mount = (c, arg) -> {
-		Player p;
+		s.sendToRoom("A glorious light surronds " + s + " as they ascend.");
+		System.err.print(c + " has ascended.\n");
+	}, north = (s, arg) -> {
+		s.go(Room.Direction.N);
+	}, east = (s, arg) -> {
+		s.go(Room.Direction.E);
+	}, south = (s, arg) -> {
+		s.go(Room.Direction.S);
+	}, west = (s, arg) -> {
+		s.go(Room.Direction.W);
+	}, up = (s, arg) -> {
+		s.go(Room.Direction.U);
+	}, down = (s, arg) -> {
+		s.go(Room.Direction.D);
+	}, mount = (s, arg) -> {
 		Stuff room, target;
-		if((p = c.getPlayer()) == null || (room = p.getIn()) == null || (target = room.matchContents(arg)) == null) {
-			c.sendTo("Not any <" + arg + "> here.");
+		if((room = s.getIn()) == null || (target = room.matchContents(arg)) == null) {
+			s.sendTo("Not any <" + arg + "> here.");
 			return;
 		}
 		if(!target.isEnterable()) {
-			c.sendTo("You can't do that.");
+			s.sendTo("You can't do that.");
 			return;
 		}
-		p.enter(target, true);
+		//s.enter(target, target instanceof Character ? false/*on*/ : true/*in*/); ???
+		s.enter(target, true);
 	} /* unmount */;
 
 }

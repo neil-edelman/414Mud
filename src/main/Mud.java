@@ -49,7 +49,7 @@ import main.Connection;
 public class Mud implements Iterable<Connection> {
 
 	/* debug mode; everyone can read this */
-	public static boolean isVerbose = true;
+	public static final boolean isVerbose = true;
 
 	/* constants */
 	private static final int fibonacci20    = 6765;
@@ -58,84 +58,6 @@ public class Mud implements Iterable<Connection> {
 	private static final int sPeriod        = 10;
 	private static final String dataDir     = "../data";
 	private static final String mudData     = "mud";
-
-	/** Interfaces and Abstract can not have static methods (too bad;) classes
-	 can implement Mud.Loader to be loaded in {@link loadAll}. */
-	interface Loader<F> {
-		F load(TextReader in) throws ParseException, IOException;
-	}
-
-	/** Load all resouces into a hash, one per filename. The hash keys are it's
-	 file name minus the extension. F stands for file. */
-	static <F> Map<String, F> loadAll(final String dirStr, final String extStr, Loader<F> loader) throws IOException {
-
-		/* make a list of all the data files */
-		File dir = new File(dirStr);
-		if(!dir.exists() || !dir.isDirectory())
-			throw new IOException("<" + dirStr + "> is not a thing");
-		File files[] = dir.listFiles(new FilenameFilter() {
-			public boolean accept(File current, String name) {
-				return name.endsWith(extStr);
-			}
-		});
-
-		/* go though files, loading each one */
-		Map<String, F> loadDir = new HashMap<String, F>();
-		for(File file : files) {
-			F loadFile = null;
-			/* resouce name in the loadDir map is it's filename minus extension */
-			String name = file.getName();
-			name = name.substring(0, name.length() - extStr.length());
-			System.err.format("%s: loading <%s>.\n", name, file);
-			try(
-				TextReader in = new TextReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
-			) {
-				loadFile = loader.load(in);
-			} catch(ParseException e) {
-				System.err.format("%s; syntax error: %s, line %d.\n", file, e.getMessage(), e.getErrorOffset());
-			} catch(IOException e) {
-				System.err.format("%s; %s.\n", file, e);
-			}
-
-			if(loadFile != null) loadDir.put(name, loadFile/*Collections.unmodifiableMap(mod)???*/);
-
-		}
-
-		return loadDir/*Collections.unmodifiableMap(loadMod)???*/;
-	}
-
-	/** Starts up the mud and listens for connections.
-	 @param args	Ignored. */
-	public static void main(String args[]) {
-		
-		Mud mud;
-
-		/* run mud */
-
-		try {
-			mud = new Mud(dataDir, mudData);
-		} catch(IOException e) {
-			System.err.format("main: %s.\n", e);
-			/* deal-breaker */
-			return;
-		}
-
-		mud.run();
-
-		mud.shutdown();
-
-	}
-
-	public interface Chronos extends Runnable {
-		public Mapper getMapper();
-		public void   register(Mob mob);
-	}
-
-	/* the clients of the mud */
-	private final ServerSocket    serverSocket;
-	private final int             poolSize;
-	private final ExecutorService pool;
-	private List<Connection>      clients = new LinkedList<Connection>();
 
 	/* the mud data */
 	private String name     = "414Mud";
@@ -147,6 +69,12 @@ public class Mud implements Iterable<Connection> {
 	private Room   homeroom;
 	Map<String, Map<String, Command>> commandsets;
 
+	/* the clients of the mud */
+	private final ServerSocket    serverSocket;
+	private final int             poolSize;
+	private final ExecutorService pool;
+	private List<Connection>      clients = new LinkedList<Connection>();
+
 	/** The entire mud constructor.
 	 @param dataDir			The subdirectory where the data file is located.
 	 @param mudData			The data file name.
@@ -156,13 +84,7 @@ public class Mud implements Iterable<Connection> {
 		int    homeareaLine = -1;
 		int    poolSize     = 256;
 
-		/*commandsets = Collections.unmodifiableMap(loadAll(dataDir + "/commandsets", ".cset"));
-		areas       = Collections.unmodifiableMap(loadAll(dataDir + "/areas", ".area"));*/
-		commandsets = loadAll(dataDir + "/commandsets", ".cset", new LoadCommands());
-		areas       = loadAll(dataDir + "/areas", ".area", new Area());
-
 		/* read in settings */
-
 		Path path = FileSystems.getDefault().getPath(dataDir, mudData);
 		try(TextReader text = new TextReader(Files.newBufferedReader(path, StandardCharsets.UTF_8))) {
 			name         = text.nextLine();
@@ -172,22 +94,21 @@ public class Mud implements Iterable<Connection> {
 			homeareaLine = text.getLineNumber();
 			password     = text.nextLine();
 			motd         = text.nextParagraph();
+			/* could go really customisable and set the, eg, ".area", but why? */
 		} catch(ParseException e) {
 			System.err.format("%s/%s; syntax error: %s, line %d.\n", dataDir, mudData, e.getMessage(), e.getErrorOffset());
 			throw new IOException(dataDir + "/" + mudData);
 		}
-		/* final = rewritable */
+		/* set class final = local rewritable */
 		this.poolSize = poolSize;
 		System.err.format("%s: port %d, max connections %d, home area <%s>.\n", this, port, poolSize, homeareaStr);
 		System.err.format("%s: set the ascent password: <%s>.\n", this, password);
 		System.err.format("%s: set MOTD: <%s>.\n", this, motd);
 
-		/* read in areas */
-
-		//areas = Area.loadAreas(dataDir + "/areas");
+		commandsets = loadAll("commandsets", ".cset", new LoadCommands());
+		areas       = loadAll("areas",       ".area", new Area());
 
 		/* set the [defaut] recall spot */
-
 		homearea = areas.get(homeareaStr);
 		try {
 			if(homearea == null) throw new Exception("area <" + homeareaStr + "> (line " + homeareaLine + ") does not exist; connections will be sent to the null room");
@@ -248,6 +169,28 @@ public class Mud implements Iterable<Connection> {
 			}
 		}
 
+	}
+
+	/** Starts up the mud and listens for connections.
+	 @param args	Ignored. */
+	public static void main(String args[]) {
+		Mud mud;
+
+		/* run mud */
+		try {
+			mud = new Mud(dataDir, mudData);
+		} catch(IOException e) {
+			System.err.format("At top level: %s.\n", e);
+			/* deal-breaker */
+			return;
+		}
+		mud.run();
+		mud.shutdown();
+	}
+
+	public interface Chronos extends Runnable {
+		public Mapper getMapper();
+		public void   register(Mob mob);
 	}
 
 	/** Closes a connection.
@@ -317,6 +260,52 @@ public class Mud implements Iterable<Connection> {
 		Map<String, Command> command = commandsets.get(commandStr);
 		if(command == null) throw new NoSuchElementException(this + ": command set <" + commandStr + "> not loaded");
 		return command;
+	}
+
+	/** Interfaces and Abstract can not have static methods (too bad;) classes
+	 can implement Mud.Loader to be loaded in {@link loadAll}. */
+	interface Loader<F> {
+		F load(TextReader in) throws ParseException, IOException;
+	}
+
+	/** Load all resouces into a hash, one per filename. The hash keys are it's
+	 file name minus the extension (F stands for file.)
+	 @param dirStr	The directory. */
+	static <F> Map<String, F> loadAll(final String dirStr, final String extStr, Loader<F> loader) throws IOException {
+
+		/* make a list of all the data files */
+		File dir = new File(dataDir + "/" + dirStr);
+		if(!dir.exists() || !dir.isDirectory())
+			throw new IOException("<" + dirStr + "> is not a thing");
+		File files[] = dir.listFiles(new FilenameFilter() {
+			public boolean accept(File current, String name) {
+				return name.endsWith(extStr);
+			}
+		});
+
+		/* go though files, loading each one */
+		Map<String, F> loadDir = new HashMap<String, F>();
+		for(File file : files) {
+			F loadFile = null;
+			/* resouce name in the loadDir map is it's filename minus extension */
+			String name = file.getName();
+			name = name.substring(0, name.length() - extStr.length());
+			System.err.format("%s: loading <%s>.\n", name, file);
+			try(
+				TextReader in = new TextReader(Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8));
+				) {
+				loadFile = loader.load(in);
+			} catch(ParseException e) {
+				System.err.format("%s; syntax error: %s, line %d.\n", file, e.getMessage(), e.getErrorOffset());
+			} catch(IOException e) {
+				System.err.format("%s; %s.\n", file, e);
+			}
+
+			if(loadFile != null) loadDir.put(name, loadFile/*Collections.unmodifiableMap(mod)???*/);
+
+		}
+
+		return loadDir/*Collections.unmodifiableMap(loadMod)???*/;
 	}
 
 	public static Chronos getChronos() {

@@ -47,14 +47,14 @@ public class Stuff implements Iterable<Stuff> {
 	public void setName(final String name) {
 		String old = this.name;
 		this.name = name;
-		sendToRoom("The '" + old + "' is now known as '" + this + ".'");
-		sendTo("You will not be called '" + old + ";' I dub thee '" + this + ".'");
+		sendToRoom("'" + old + "' is now known as '" + this + ".'");
+		sendTo("The universe dubs thee, '" + this + ".'");
 	}
 
 	public void setTitle(final String line) {
-		this.title = title;
-		sendToRoom(this + " is now '" + title + ".'");
-		sendTo("You are '" + title + ".'");
+		title = line;
+		sendToRoom(this + " is now '" + title + "'");
+		sendTo("You are '" + title + "'");
 	}
 
 	public String getName() {
@@ -144,7 +144,7 @@ public class Stuff implements Iterable<Stuff> {
 	}
 
 	/** @return The connection, if there is one, otherwise null. */
-	protected Connection getConnection() {
+	public Connection getConnection() {
 		return null;
 	}
 

@@ -20,12 +20,20 @@ public class Player extends Character {
 
 	protected Connection connection;
 
-	public Player(Connection connection, String name) {
+	/** The defaut name. */
+	public Player(Connection connection) {
+		super();
+		this.connection = connection;
+		name = "nemo";
+		title= "Nemo hasn't chosen a name yet.";
+	}
+
+	/*public Player(Connection connection, String name) {
 		super();
 		this.connection = connection;
 		this.name  = name;
 		this.title = name + " is neutral.";
-	}
+	}*/
 
 	@Override
 	public void lookAtStuff() {
@@ -64,7 +72,7 @@ public class Player extends Character {
 	}
 
 	@Override
-	protected Connection getConnection() {
+	public Connection getConnection() {
 		return connection;
 	}
 

@@ -21,22 +21,8 @@ import java.util.regex.Pattern;
 
 import common.BoundedReader;
 import common.Orcish;
+import entities.Character;
 import entities.Player;
-
-/* 0 black
- * 1 red
- * 2 green
- * 3 yellow
- * 4 blue
- * 5 magenta
- * 6 cyan
- * 7 white */
-
-/* (n)F - Moves cursor to beginning of the line n (default 1) lines up.
- * (n)L - Insert Line, current line moves down.
- * (n)S - Scroll up, entire display is moved up, new lines at bottom
- * (n)E - Cursor to Next Line. If the active position is at the bottom margin,
- *        a scroll up is performed. */
 
 /** Connections are the people connected to our mud; later we will build a
  character around them and put them in the game.
@@ -48,41 +34,16 @@ import entities.Player;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class Connection /*extends Commands*/ implements Runnable {
+public class Connection implements Runnable {
 
-	enum Telnet {
-		NAWS(31),	// Negotiate About Window Size
-		SE(240),	// End of subnegotiation parameters.
-		NOP(241),	// No operation
-		DM(242),	// Data mark. Should TCP Urgent.
-		BRK(243),	// Indicates that the "break" key was hit.
-		IP(244),	// Suspend, interrupt or abort.
-		AO(245),	// Abort output.
-		AYT(246),	// Are you there?
-		EC(247),	// Erase character.
-		EL(248),	// Erase line.
-		GA(249),	// Go ahead.
-		SB(250),	// Subnegotiation of the indicated option follows.
-		WILL(251),	// Indicates the desire to begin performing, or confirmation that you are now performing.
-		WONT(252),	// Indicates the refusal to perform, or continue performing
-		DO(253),	// Indicates the request that the other party perform, or confirmation expecting
-		DONT(254),	// Indicates the demand that the other party stop performing.
-		IAC(255);	// Interpret as command
-		private int command;
-		Telnet(final int command)	{ this.command = command; }
-		int val()					{ return command; }
-		byte bval()                 { return (byte)command; }
-	}
-
-	private static final int bufferSize       = 80;
-	private static final String cancelCommand = "~";	
-
+	private static final int     bufferSize     = 80;
+	private static final String  cancelCommand  = "~";	
 	/* ^[\x00-\x1F\x7F] */
 	private static final Pattern invalidPattern = Pattern.compile("\\p{Cntrl}");
 
 	private final Socket socket;
 	private final String name = Orcish.get();
-	private final Mud mud;
+	private final Mud    mud;
 
 	/* so we don't have to worry about synconisation, we'll assign each
 	 Thread/Socket/Connection one and operate them in parallel */
@@ -93,8 +54,8 @@ public class Connection /*extends Commands*/ implements Runnable {
 	private PrintWriter     out;
 	private BoundedReader   in;
 	/*private OutputStream    outRaw = null;
-	private InputStream     inRaw = null;*/
-	private Player  player = null;
+	private InputStream     inRaw = null; <- for ansi commands */
+	private Player  player;
 	private boolean isExit = false;
 	/* fixme: ip */
 
@@ -108,6 +69,7 @@ public class Connection /*extends Commands*/ implements Runnable {
 		} catch(NoSuchElementException e) {
 			System.err.format("%s: %s.\n", this, e);
 		}
+		player          = new Player(this);
 		System.err.print(this + " has connected to " + mud + ".\n");
 	}
 
@@ -328,7 +290,7 @@ public class Connection /*extends Commands*/ implements Runnable {
 		Command command = commandset.get(cmd);
 
 		if(command != null) {
-			command.command(this, arg);
+			command.command(this.player, arg);
 		} else {
 			sendTo("Huh? \"" + cmd + "\" (use help for a list)");
 		}
@@ -337,5 +299,45 @@ public class Connection /*extends Commands*/ implements Runnable {
 	public Mapper getMapper() {
 		return mapper;
 	}
+
+	/** This is not used . . . yet. */
+	private enum Telnet {
+		NAWS(31),	// Negotiate About Window Size
+		SE(240),	// End of subnegotiation parameters.
+		NOP(241),	// No operation
+		DM(242),	// Data mark. Should TCP Urgent.
+		BRK(243),	// Indicates that the "break" key was hit.
+		IP(244),	// Suspend, interrupt or abort.
+		AO(245),	// Abort output.
+		AYT(246),	// Are you there?
+		EC(247),	// Erase character.
+		EL(248),	// Erase line.
+		GA(249),	// Go ahead.
+		SB(250),	// Subnegotiation of the indicated option follows.
+		WILL(251),	// Indicates the desire to begin performing, or confirmation that you are now performing.
+		WONT(252),	// Indicates the refusal to perform, or continue performing
+		DO(253),	// Indicates the request that the other party perform, or confirmation expecting
+		DONT(254),	// Indicates the demand that the other party stop performing.
+		IAC(255);	// Interpret as command
+		private int command;
+		Telnet(final int command)	{ this.command = command; }
+		int val()					{ return command; }
+		byte bval()                 { return (byte)command; }
+	}
+
+	/* 0 black
+	 * 1 red
+	 * 2 green
+	 * 3 yellow
+	 * 4 blue
+	 * 5 magenta
+	 * 6 cyan
+	 * 7 white */
+
+	/* (n)F - Moves cursor to beginning of the line n (default 1) lines up.
+	 * (n)L - Insert Line, current line moves down.
+	 * (n)S - Scroll up, entire display is moved up, new lines at bottom
+	 * (n)E - Cursor to Next Line. If the active position is at the bottom margin,
+	 *        a scroll up is performed. */
 
 }

@@ -67,15 +67,15 @@ public class Stuff implements Iterable<Stuff> {
 
 	/** Noisy (mostly use this.) */
 	public void transportTo(final Stuff container) {
-		if(in != null) sendToRoom(this + " disapparates.");
+		sendToRoom(this + " suddenly disapparates.");
 		placeIn(container);
 		sendTo("You disapparate and instantly travel to '" + container + "'\n"); /* newline! we are going somewhere else */
-		sendToRoom(this + " apparates suddenly.");
+		sendToRoom(this + " suddenly apparates.");
 		/* players will want to look around immediatly */
-		Connection c = this.getConnection();
-		if(c == null) return;
-		c.sendTo(container != null ? container.lookDetailed() : "Endless blackness surrounds you.");
-		lookAtStuff();
+		sendTo(container.lookDetailed(this));
+		//Connection c = this.getConnection();
+		//if(c == null) return;
+		//c.sendTo(container != null ? container.lookDetailed(this) : "Endless blackness surrounds you.");
 	}
 
 	/** Silent (only if you know what you're doing.) */
@@ -101,8 +101,6 @@ public class Stuff implements Iterable<Stuff> {
 	protected void hasMoved() {
 		/* do nothing */
 	}
-
-	public void lookAtStuff() { }
 
 	public Stuff getIn() {
 		return in;
@@ -160,9 +158,17 @@ public class Stuff implements Iterable<Stuff> {
 	}
 
 	/** Gives detailed info.
-	 @return String info. */
-	public String lookDetailed() {
-		return look();
+	 @param exempt	It would be akward if you looked and saw yourself.
+	 @return		String info. */
+	public String lookDetailed(final Stuff exempt) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(look());
+		for(Stuff i : this) {
+			if(i == exempt) continue;
+			sb.append("\n");
+			sb.append(i.look());
+		}
+		return sb.toString();
 	}
 
 	/** @return Iterate over the contents. */
@@ -197,8 +203,7 @@ public class Stuff implements Iterable<Stuff> {
 		sendToRoom(this + " walks " + where + ".");
 		placeIn(target);
 		sendToRoom(this + " walks in from the " + where.getBack() + ".");
-		sendTo(target.lookDetailed());
-		lookAtStuff();
+		sendTo(target.lookDetailed(this));
 	}
 
 	/** fixme!!! it's annoying; more advanced please! */

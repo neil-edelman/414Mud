@@ -200,14 +200,13 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			if(in != null) {
 				/* look at things in the room */
 				if((victim = in.matchContents(arg)) != null) {
-					s.sendTo(victim.lookDetailed());
+					s.sendTo(victim.lookDetailed(s));
 					count++;
 				}
 				/* look at exits */
 				if((dir = Room.Direction.find(arg)) != null) {
 					if((room = in.getRoom(dir)) != null) {
 						s.sendTo(room.look());
-						for(Stuff otherIn : room) s.sendTo(otherIn.look());
 					} else {
 						s.sendTo("You don't want to go that way.");
 					}
@@ -216,7 +215,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			}
 			/* look at inventory */
 			if((victim = s.matchContents(arg)) != null) {
-				s.sendTo(victim.lookDetailed());
+				s.sendTo(victim.lookDetailed(s));
 				count++;
 			}
 			/* fixme: look at eq't */
@@ -226,8 +225,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		} else {
 			/* just look in general */
 			if(in != null) {
-				s.sendTo(in.lookDetailed());
-				s.lookAtStuff();
+				s.sendTo(in.lookDetailed(s));
 			} else {
 				s.sendTo("You are floating in space.");
 			}
@@ -288,6 +286,16 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		c.sendTo("You are now an immortal; type 'help' for new commands.");
 		s.sendToRoom("A glorious light surronds " + s + " as they ascend.");
 		System.err.print(c + " has ascended.\n");
+}, areas = (s, arg) -> {
+Connection c = s.getConnection();
+if(c == null) {
+s.sendTo("You must have a connection.");
+return;
+}
+Map<String, Area> areas = c.getMud().getAreas();
+for(Area a : areas.values()) {
+c.sendTo(a.toString());
+}
 	}, north = (s, arg) -> {
 		s.go(Room.Direction.N);
 	}, east = (s, arg) -> {

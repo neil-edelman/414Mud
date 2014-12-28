@@ -35,20 +35,18 @@ public class Player extends Character {
 		this.title = name + " is neutral.";
 	}*/
 
-	@Override
-	public void lookAtStuff() {
-		if(in == null) return;
-		for(Stuff s : in) {
-			if(s == this) continue;
-			connection.sendTo(s.look());
-		}
-	}
-
 	/** Gives more info.
 	 @return More info on the object. */
 	@Override
-	public String lookDetailed() {
-		return name + " is connected on socket " + connection + "\nThey are wearing . . . <not implemented>";
+	public String lookDetailed(final Stuff exempt) {
+		StringBuilder sb = new StringBuilder();
+		/* you can look at yourself */
+		if(this == exempt) sb.append("You look at yourself; ");
+		sb.append(name);
+		sb.append(" is connected on socket ");
+		sb.append(connection);
+		sb.append("\nThey are wearing . . . <not implemented>");
+		return sb.toString();
 	}
 
 	/* Update players' bfs. */

@@ -106,7 +106,7 @@ public class Mud implements Iterable<Connection> {
 		System.err.format("%s: set MOTD: <%s>.\n", this, motd);
 
 		commandsets = loadAll("commandsets", ".cset", new LoadCommands());
-		areas       = loadAll("areas",       ".area", new Area());
+		areas       = loadAll("areas",       ".area", (in) -> { return new Area(in); });
 
 		/* set the [defaut] recall spot */
 		homearea = areas.get(homeareaStr);
@@ -231,6 +231,10 @@ public class Mud implements Iterable<Connection> {
 	/** Prints out the mud info. */
 	public String toString() {
 		return name;
+	}
+
+	public Map<String, Area> getAreas() {
+		return areas;
 	}
 
 	/** @return The place you start. */

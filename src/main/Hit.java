@@ -13,6 +13,7 @@ public class Hit {
 	/* fixme: it would be cool to load this at runtime, probably a hack
 	 involving reflection */
 	public enum HitType {
+		/*pugilism(	"puch",		"punches",		"punched"), Your punch hits -> blunt */
 		trip(		"trip",		"trips",		"triped"),
 		fall(		"crash",	"crashes",		"crashed"),
 		crush(		"crush",	"cruses",		"crushed"),

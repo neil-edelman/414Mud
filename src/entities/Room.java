@@ -129,24 +129,47 @@ public class Room extends Stuff {
 
 	@Override
 	public String look() {
-		return title + " (" + name + ")\n" + exits();
+		StringBuilder sb = new StringBuilder();
+		sb.append(title);
+		sb.append(" (");
+		sb.append(name);
+		sb.append(")\n");
+		exits(sb);
+		for(Stuff i : this) {
+			sb.append("\n");
+			sb.append(i.look());
+		}
+		return sb.toString();
 	}
 
 	@Override
-	public String lookDetailed() {
-		return "\33[4m" + title + "\33[0m (" + name + ")\n" + description + "\nexits \33[7m" + exits() + "\33[0m";
+	public String lookDetailed(final Stuff exempt) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\33[4m");
+		sb.append(title);
+		sb.append("\33[0m (");
+		sb.append(name);
+		sb.append(")\n");
+		sb.append(description);
+		sb.append("\n");
+		exits(sb);
+		for(Stuff i : this) {
+			if(i == exempt) continue;
+			sb.append("\n");
+			sb.append(i.look());
+		}
+		return sb.toString();
 	}
 
-	private String exits() {
-		StringBuilder sb = new StringBuilder("[ ");
+	private void exits(StringBuilder sb) {
+		sb.append("exits \33[7m[ ");
 		if(n != null) sb.append("n ");
 		if(e != null) sb.append("e ");
 		if(s != null) sb.append("s ");
 		if(w != null) sb.append("w ");
 		if(u != null) sb.append("u ");
 		if(d != null) sb.append("d ");
-		sb.append("]");
-		return sb.toString();
+		sb.append("]\33[0m");
 	}
 
 }

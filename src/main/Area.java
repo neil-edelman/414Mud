@@ -27,7 +27,7 @@ import entities.*;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.1, 12-2014 */
-class Area implements Mud.Loader<Area> {
+class Area {
 
 	/* area loading enums; wrapping them around BitVector allows efficient lookup */
 	private static final BitVector<TypeOfStuff> typeOfStuffFlags = new BitVector<TypeOfStuff>(Area.TypeOfStuff.class);
@@ -44,12 +44,9 @@ class Area implements Mud.Loader<Area> {
 	/** @return	A synecdochical {@link String}. */
 	public String toString() { return title + " by " + author; }
 
-	/** Creates a blank Area (ie, for {@link load}-ing.) */
-	Area()                   { }
-
-	/** Loads an Area per implementation of Mud.Loader.
+	/** Loads an Area.
 	 @param in	The already open {@link common.TextReader}. */
-	public Area load(TextReader in) throws ParseException, IOException {
+	Area(TextReader in) throws ParseException, IOException {
 		String recallStr;
 		String word, line;
 		String id, info = "";
@@ -146,7 +143,6 @@ class Area implements Mud.Loader<Area> {
 
 		System.err.format("%s: default room <%s>.\n", this, recall);
 
-		return this;
 	}
 
 	/** An enum of all the types of stuff that we could have in the definitions
@@ -186,8 +182,7 @@ class Area implements Mud.Loader<Area> {
 											  ).invoke(this, thing, arg, dir);
 			} catch(NoSuchElementException | NoSuchMethodException
 					| IllegalAccessException | InvocationTargetException e) {
-				assert(true): "something's terribly wrong with resets";
-				System.err.format("%s: could not call on %s, %s, %s.\n", thing, arg, dir);
+				System.err.format("Reset %s %s %s, dir %s: %s.\n", thing, symbol, arg, dir, e);
 			}
 		}
 		public void in(final Stuff thing, final Stuff container, final Room.Direction dir) {

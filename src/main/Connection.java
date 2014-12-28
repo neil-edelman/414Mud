@@ -34,7 +34,7 @@ import entities.Player;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class Connection implements Runnable {
+public class Connection /* extends Handler */ implements Runnable {
 
 	private static final int     bufferSize     = 80;
 	private static final String  cancelCommand  = "~";	

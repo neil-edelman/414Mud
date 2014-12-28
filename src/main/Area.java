@@ -75,7 +75,8 @@ class Area {
 			if(scan.hasNext())
 				throw new ParseException("too many things", in.getLineNumber());
 
-			/* I replaced a massive switch statement; that's how I roll */
+			/* I replaced a massive switch statement; that's how I roll;
+			 loader is defined in the TypeOfStuff enum */
 			if((loader = what.loader()) == null)
 				throw new ParseException(what + " not implemented", in.getLineNumber());
 			s = (Stuff)loader.load(in);
@@ -91,7 +92,8 @@ class Area {
 		if((recall = (Room)stuff.get(recallStr)) == null)
 			throw new ParseException(recallStr + " not found", in.getLineNumber());
 
-		/* resets/connections to the end of the file */
+		/* resets/connections to the end of the file; this is kind of messy, but
+		 humans can read the file and know what's up */
 		Stuff          thing, target;
 		TypeOfReset    reset;
 		Room.Direction dir;
@@ -111,6 +113,7 @@ class Area {
 				throw new ParseException("unknown argument", in.getLineNumber());
 			if(scan.hasNext())
 				throw new ParseException("too much stuff", in.getLineNumber());
+
 			reset.invoke(thing, target, dir);
 
 			if(Mud.isVerbose)

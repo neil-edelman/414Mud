@@ -22,6 +22,7 @@ public class Object extends Stuff {
 	}
 	BitVector<ObjectFlags> objectFlags = new BitVector<ObjectFlags>(ObjectFlags.class);
 
+	/* "breakable" must have a "public isBreakable" for the BitVector magic to work */
 	public boolean isBreakable;
 	public boolean isTransportable;
 	public boolean isEnterable;
@@ -34,8 +35,6 @@ public class Object extends Stuff {
 		mass            = 1;
 		name  = "object";
 		title = "Some sort of object is here.";
-		/* name.clear() ? */
-		//name.add("object");
 	}
 
 	public Object(common.TextReader in) throws java.text.ParseException, java.io.IOException {

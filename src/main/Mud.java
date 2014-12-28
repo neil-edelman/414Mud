@@ -81,10 +81,10 @@ public class Mud implements Iterable<Connection> {
 	 @throws IOException	Passes the IOException from the underlyieng sockets. */
 	public Mud(final String dataDir, final String mudData) throws IOException {
 		String homeareaStr  = "";
-		int    homeareaLine = -1;
+		int    homeareaLine = 0;
 		int    poolSize     = 256;
 
-		/* read in settings */
+		//File file = new File(dataDir + "/" + mudData);
 		Path path = FileSystems.getDefault().getPath(dataDir, mudData);
 		try(TextReader text = new TextReader(Files.newBufferedReader(path, StandardCharsets.UTF_8))) {
 			name         = text.nextLine();
@@ -274,7 +274,8 @@ public class Mud implements Iterable<Connection> {
 	static <F> Map<String, F> loadAll(final String dirStr, final String extStr, Loader<F> loader) throws IOException {
 
 		/* make a list of all the data files */
-		File dir = new File(dataDir + "/" + dirStr);
+		//File dir = path//new File(dataDir + "/" + dirStr);
+		File dir = FileSystems.getDefault().getPath(dataDir, dirStr).toFile();
 		if(!dir.exists() || !dir.isDirectory())
 			throw new IOException("<" + dirStr + "> is not a thing");
 		File files[] = dir.listFiles(new FilenameFilter() {

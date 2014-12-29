@@ -20,8 +20,9 @@ import java.io.FilenameFilter;
 import java.text.ParseException;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
-import common.TextReader;
+import java.lang.NullPointerException;
 
+import common.TextReader;
 import entities.Stuff;
 import entities.Player;
 import entities.Room;
@@ -38,6 +39,11 @@ interface Command { void command(final Stuff s, final String arg); }
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
 class LoadCommands implements Mud.Loader<Map<String, Command>> {
+
+	/* fixme: there are many more in UTF-8 */
+	private static final String    vowels = "aeiouyAEIOUY";
+	private static StringBuilder testChar = new StringBuilder(1);
+	static { testChar.append(" "); }
 
 	/** Loads a command set per implementation of Mud.Loader.
 	 @param in	The already open {@link common.TextReader}. */
@@ -136,6 +142,28 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		s.sendTo("You pick up " + target + ".");
 		s.sendToRoomExcept(target, s + " picks up " + target + ".");
 		target.sendTo(s + " picks you up.");
+	}, drop = (s, arg) -> {
+		Stuff inventory, in;
+		int l;
+		if((l = arg.length()) <= 0 || (inventory = s.matchContents(arg)) == null) {
+			if(l <= 0) {
+				s.sendTo("Drop what?");
+			} else {
+				s.sendTo("You don't seem to be carrying " + an(arg) + ".");
+			}
+			s.sendToRoom(s + " looks though their like they forgot something.");
+			return;
+		}
+		String an = an(inventory.toString());
+		/* fixme: check if it will go there */
+		if((in = s.getIn()) == null) {
+			s.sendTo("You drop " + an + ", and it floats off into space.");
+			/* fixme: actually have it destroyed */
+			return;
+		}
+		inventory.placeIn(in);
+		s.sendTo("You drop " + an + ".");
+		s.sendToRoom(s + " drops " + an + ".");
 	}, inventory = (s, arg) -> {
 		for(Stuff i : s) {
 			s.sendTo("" + i);
@@ -287,5 +315,28 @@ s.sendTo("You can do that yet. Very soon.");
 		//s.enter(target, target instanceof Character ? false/*on*/ : true/*in*/); ???
 		s.enter(target, true);
 	} /* unmount */;
+
+	/* lazy */
+	static String an(final String str) {
+		try {
+			testChar.setCharAt(0, str.charAt(0));
+			return (vowels.contains(testChar) ? "an " : "a ") + str;
+		} catch(NullPointerException | IndexOutOfBoundsException e) {
+			return "a " + str;
+		}
+	}
+
+	/** good one */
+	/*private static void an(StringBuilder sb, final String str) {
+		try {
+			testChar.setCharAt(0, str.charAt(0));
+			*//** strpbrk *//*
+			sb.append(vowels.contains(testChar) ? "an " : "a ");
+			sb.append(str);
+		} catch(NullPointerException | IndexOutOfBoundsException e) {
+			sb.append("a ");
+			sb.append(str);
+		}
+	}*/
 
 }

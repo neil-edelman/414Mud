@@ -14,7 +14,6 @@ import entities.Room;
 /** BFS Search in rooms from a given room.
  
  @author	Neil
- @bugs		Doesn't work well with others.
  @version	1.1, 2014-12
  @since		1.1, 2014-12 */
 public class Mapper {
@@ -23,20 +22,20 @@ public class Mapper {
 	 sparse, we'll just go with the default, 16, and allow it to grow */
 	/* roomQueue and dirQueue are the same, but Java provides no static
 	 allocation, so we can not group them w/o allocating memory */
-	private static Queue<Room>          roomQueue = new ArrayDeque<Room>();
-	private static Queue<Room.Direction> dirQueue = new ArrayDeque<Room.Direction>();
-	private static Set<Room>              visited = new HashSet<Room>();
+	private Queue<Room>          roomQueue = new ArrayDeque<Room>();
+	private Queue<Room.Direction> dirQueue = new ArrayDeque<Room.Direction>();
+	private Set<Room>              visited = new HashSet<Room>();
 
 	public interface EachNode { boolean node(final Room node, final int distance, final Room.Direction direction); }
 
 	/** Constructor. */
-	/*public Mapper() { }*/
+	public Mapper() { }
 
 	/** Does bfs to map out the rooms n hops away, where n is a constant.
 	 @pamam root		The place where you are starting from, ie distace = 0.
 	 @param searchDepth	n.
 	 @param each		What to do at each node. */
-	public static boolean map(final Room root, final int searchDepth, final EachNode each) {
+	public boolean map(final Room root, final int searchDepth, final EachNode each) {
 		Room node, near;
 		Room.Direction dir, first;
 		int dist = 0, thisIncrease = 1, nextIncrease = 0;
@@ -84,8 +83,8 @@ public class Mapper {
 	}
 
 	/** @return A synecdochical {@link String}. */
-	/*public String toString() {
+	public String toString() {
 		return "Mapper";
-	}*/
+	}
 
 }

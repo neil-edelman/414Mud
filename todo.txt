@@ -10,7 +10,6 @@ as <stuff> (immortal)
 flee
 help start at the beginning
 
-finish case destroy in Object
 Connection--Player think about it
 afk on exit!
 Connection: re-arrange order

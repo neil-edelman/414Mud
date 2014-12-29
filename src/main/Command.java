@@ -116,7 +116,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		}
 		s.sendTo("You yell \"" + arg + "\"");
 		String str = s + " yells from %s-ish, \"%s\" (%d room(s) away.)";
-		Mapper.map((Room)r, yellDistance, (room, dist, dir) -> {
+		s.getMapper().map((Room)r, yellDistance, (room, dist, dir) -> {
 			room.sendToContentsExcept(s, String.format(str, dir.getBack(), arg, dist));
 			return true; /* <- want everyone to hear */
 		});
@@ -286,16 +286,18 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		c.sendTo("You are now an immortal; type 'help' for new commands.");
 		s.sendToRoom("A glorious light surronds " + s + " as they ascend.");
 		System.err.print(c + " has ascended.\n");
-}, areas = (s, arg) -> {
-Connection c = s.getConnection();
-if(c == null) {
-s.sendTo("You must have a connection.");
-return;
-}
-Map<String, Area> areas = c.getMud().getAreas();
-for(Area a : areas.values()) {
-c.sendTo(a.toString());
-}
+	}, areas = (s, arg) -> {
+		Connection c = s.getConnection();
+		if(c == null) {
+			s.sendTo("You must have a connection.");
+			return;
+		}
+		Map<String, Area> areas = c.getMud().getAreas();
+		for(Area a : areas.values()) {
+			c.sendTo(a.toString());
+		}
+	}, map = (s, arg) -> {
+s.getMapper();
 	}, north = (s, arg) -> {
 		s.go(Room.Direction.N);
 	}, east = (s, arg) -> {

@@ -15,6 +15,7 @@ import java.util.Iterator;
 import main.Connection;
 import main.Mapper;
 import entities.Room.Direction;
+import main.Mud;
 
 /** The most general sort of stuff.
 
@@ -34,8 +35,8 @@ public class Stuff implements Iterable<Stuff> {
 	protected Stuff in;
 
 	public Stuff() {
-		name  = "stuff";
-		title = "Some stuff is here.";
+		name     = "stuff";
+		title    = "Some stuff is here.";
 	}
 
 	/** Read it from a file. */
@@ -63,6 +64,11 @@ public class Stuff implements Iterable<Stuff> {
 
 	public String getTitle() {
 		return title;
+	}
+
+	public Mapper getMapper() {
+		System.err.print(" ********** Returning getChronos.getMapper()\n");
+		return Mud.getMudInstance().getChronos().getMapper();
 	}
 
 	/** Noisy (mostly use this.) */

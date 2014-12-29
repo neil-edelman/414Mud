@@ -1,7 +1,7 @@
 /* Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
  the GNU General Public License, see copying.txt */
 
-package main;
+package main /*.handlers fuck you "package does not exist"*/;
 
 import java.net.Socket;
 import java.net.SocketException;

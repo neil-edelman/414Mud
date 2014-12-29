@@ -37,8 +37,10 @@ import java.util.NoSuchElementException;
 import entities.Room;
 import entities.Object;
 import entities.Mob;
+import entities.Stuff;
 import common.Chance;
 import main.Connection;
+import main.Chronos;
 
 /** This is the entry-point for starting the mud and listening for connections;
  connnections are handled by a fixed socket pool.
@@ -58,6 +60,7 @@ public class Mud implements Iterable<Connection> {
 	private static final int sPeriod        = 10;
 	private static final String dataDir     = "../data";
 	private static final String mudData     = "mud";
+	private static /*final*/ Mud mudInstance; /* whatever, it keeps us from passing this parameter around */
 
 	/* the mud data */
 	private String name     = "414Mud";
@@ -75,6 +78,19 @@ public class Mud implements Iterable<Connection> {
 	private final ExecutorService pool;
 	private List<Connection>      clients = new LinkedList<Connection>();
 
+	/* the timer */
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	private final ScheduledFuture<?> chonosFuture;
+	private static final Chronos chronos = new Chronos();
+
+	/** classes can implement Mud.Loader to be loaded in {@link loadAll}. */
+	interface Loader<F> { F load(TextReader in) throws ParseException, IOException; }
+	
+	public interface Handler extends Runnable {
+		public Mapper getMapper();
+		public void   register(Stuff stuff);
+	}
+
 	/** The entire mud constructor.
 	 @param dataDir			The subdirectory where the data file is located.
 	 @param mudData			The data file name.
@@ -83,6 +99,9 @@ public class Mud implements Iterable<Connection> {
 		String homeareaStr  = "";
 		int    homeareaLine = 0;
 		int    poolSize     = 256;
+
+		if(mudInstance != null) throw new RuntimeException("There already is a mud.");
+		mudInstance = this;
 
 		//File file = new File(dataDir + "/" + mudData);
 		Path path = FileSystems.getDefault().getPath(dataDir, mudData);
@@ -188,11 +207,6 @@ public class Mud implements Iterable<Connection> {
 		mud.shutdown();
 	}
 
-	public interface Chronos extends Runnable {
-		public Mapper getMapper();
-		public void   register(Mob mob);
-	}
-
 	/** Closes a connection.
 	 @param c The connection to close. */
 	public void deleteClient(Connection c) {
@@ -228,6 +242,10 @@ public class Mud implements Iterable<Connection> {
 
 	}
 
+	public static Mud getMudInstance() {
+		return mudInstance;
+	}
+
 	/** Prints out the mud info. */
 	public String toString() {
 		return name;
@@ -240,6 +258,10 @@ public class Mud implements Iterable<Connection> {
 	/** @return The place you start. */
 	public Room getHome() {
 		return homeroom;
+	}
+
+	public static Chronos getChronos() {
+		return chronos;
 	}
 
 	/** @param p	The test password.
@@ -264,12 +286,6 @@ public class Mud implements Iterable<Connection> {
 		Map<String, Command> command = commandsets.get(commandStr);
 		if(command == null) throw new NoSuchElementException(this + ": command set <" + commandStr + "> not loaded");
 		return command;
-	}
-
-	/** Interfaces and Abstract can not have static methods (too bad;) classes
-	 can implement Mud.Loader to be loaded in {@link loadAll}. */
-	interface Loader<F> {
-		F load(TextReader in) throws ParseException, IOException;
 	}
 
 	/** Load all resouces into a hash, one per filename. The hash keys are it's
@@ -312,41 +328,5 @@ public class Mud implements Iterable<Connection> {
 
 		return loadDir/*Collections.unmodifiableMap(loadMod)???*/;
 	}
-
-	public static Chronos getChronos() {
-		if(chronos == null) throw new RuntimeException("You must first start the timer.");
-		return chronos;
-	}
-
-	/* the thread that is scheduleAtFixedRate (I put this at the end because
-	 XCode3 was so confused about indentation; everything after auto-indented
-	 to the margin) */
-	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-	private final ScheduledFuture<?> chonosFuture;
-	private static final Chronos/*Runnable*/ chronos = new Chronos/*Runnable*/() {
-
-		private Chance chance = new Chance();
-		private Mapper mapper = new Mapper();
-
-		private List<Mob> mobs = new LinkedList<Mob>();
-
-		/* one time step */
-		public void run() {
-			System.out.format("<Bump>\n");
-			for(Mob m : mobs) {
-				if(m.isSleeping()) continue;
-				m.doSomethingInteresting(chance);
-			}
-		}
-
-		public void register(Mob mob) {
-			mobs.add(mob);
-		}
-
-		public Mapper getMapper() {
-			return mapper;
-		}
-
-	};
 
 }

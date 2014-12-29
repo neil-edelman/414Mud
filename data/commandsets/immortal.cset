@@ -24,9 +24,10 @@ west	west
 up	up
 down	down
 take	take
-put	cant
+drop	cant
 i	inventory
 inventory	inventory
 mount	mount
 areas	areas
+map	map
 shutdown	shutdown

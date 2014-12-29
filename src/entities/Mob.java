@@ -49,7 +49,7 @@ public class Mob extends Character {
 	public void doSomethingInteresting(Chance c) {
 
 		/* go to sleep? fixme: this should happen much less frequently */
-		if(Mud.getChronos().getMapper().map((Room)in, Player.distanceWakeUp, (room, dis, dir) -> {
+		if(getMapper().map((Room)in, Player.distanceWakeUp, (room, dis, dir) -> {
 			/*System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);*/
 			for(Stuff s : room) {
 				if(s instanceof Player) {

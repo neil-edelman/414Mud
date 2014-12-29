@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import main.Connection;
 import entities.Room;
+import main.Mapper;
 
 /** A player; this should always have a Connection.
 
@@ -24,7 +25,7 @@ public class Player extends Character {
 	public Player(Connection connection) {
 		super();
 		this.connection = connection;
-		name = "nemo";
+		name = "nemo"; /* fixme: Orcish */
 		title= "Nemo hasn't chosen a name yet.";
 	}
 
@@ -53,7 +54,7 @@ public class Player extends Character {
 	@Override
 	protected void hasMoved() {
 		if(!(in instanceof Room)) return;
-		connection.getMapper().map((Room)in, distanceWakeUp, (room, dis, dir) -> {
+		getMapper().map((Room)in, distanceWakeUp, (room, dis, dir) -> {
 			System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);
 			//where.put(dis, room);
 			for(Stuff s : room) {
@@ -62,6 +63,13 @@ public class Player extends Character {
 			}
 			return true;
 		});
+	}
+
+	/** Overrides Chronos: this is in the other thread, so it must use it's own */
+	@Override
+	public Mapper getMapper() {
+		System.err.print(" ****** Returning " + connection + ".getMapper()\n");
+		return connection.getMapper();
 	}
 
 	@Override

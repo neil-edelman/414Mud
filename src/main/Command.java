@@ -28,12 +28,10 @@ import entities.Player;
 import entities.Room;
 import main.Mud;
 
-/** The contract that a command will have. Fixme: Connection->Stuff alows Stuff
- to use commands, too! (although I'd really have to think about bodyless
- connections) */
+/** The contract that a command will have. */
 interface Command { void command(final Stuff s, final String arg); }
 
-/** Command loader.
+/** Command loader. This is where the commands are stored as lambdas.
  
  @author	Neil
  @version	1.1, 12-2014
@@ -43,7 +41,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 	/* fixme: there are many more in UTF-8 */
 	private static final String    vowels = "aeiouyAEIOUY";
 	private static StringBuilder testChar = new StringBuilder(1);
-	static { testChar.append(" "); }
+	static { testChar.append(" "); } /* replaced with test char */
 
 	/** Loads a command set per implementation of Mud.Loader.
 	 @param in	The already open {@link common.TextReader}. */
@@ -61,7 +59,8 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			if(scan.hasNext())
 				throw new ParseException("too long", in.getLineNumber());
 			try {
-				/* null == static */
+				/* "null" means static; all sorts of Stuff will be calling these
+				 commands, so it makes sense to have it be one of the parameters */
 				command = (Command)LoadCommands.class.getDeclaredField(cmdStr).get(null);
 				if(Mud.isVerbose)
 					System.err.format("<%s>\t\"%s\"->%s\n", alias, cmdStr, command);
@@ -72,6 +71,9 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		}
 		return map;
 	}
+
+	/* these are the static pool of commands; the Command variable name is the
+	 second parameter of the .cset file (see {@link load}.) */
 
 	/* sorry, I use a US keyboard and it's difficult to type in accents, etc,
 	 when addressing, etc, players in real time; only allow players to have
@@ -121,15 +123,15 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			return;
 		}
 		/* fixme: have them be in order, 1.obj 2.obj, this is hacked */
-		Stuff target = null;
-		for(Stuff f : r) {
-			if(arg.compareTo("" + f) != 0) continue;
-			target = f;
-			break;
-		}
+		Stuff target = r.matchContents(arg);
 		if(target == null) {
-			s.sendTo("You see no <" + arg + "> here.");
+			s.sendTo("You see no " + arg + " here.");
+			s.sendToRoom(s + " tries to find " + an(arg) + " here, but fails.");
 			return;
+		}
+		if(target == s) {
+			s.sendTo("You try to pick yourself up, but it's not working.");
+			s.sendToRoom(s + " tries to pick themselves up, without success.");
 		}
 		if(!target.isTransportable()) {
 			s.sendTo("You can't pick " + target + " up.");
@@ -137,7 +139,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			target.sendTo(s + " tries to pick you up off the ground and fails.");
 			return;
 		}
-		/* fixme: mass */
+		/* fixme: check mass */
 		target.placeIn(s);
 		s.sendTo("You pick up " + target + ".");
 		s.sendToRoomExcept(target, s + " picks up " + target + ".");
@@ -145,25 +147,25 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 	}, drop = (s, arg) -> {
 		Stuff inventory, in;
 		int l;
-		if((l = arg.length()) <= 0 || (inventory = s.matchContents(arg)) == null) {
-			if(l <= 0) {
-				s.sendTo("Drop what?");
-			} else {
-				s.sendTo("You don't seem to be carrying " + an(arg) + ".");
-			}
-			s.sendToRoom(s + " looks though their like they forgot something.");
+		if(arg.length() <= 0) {
+			s.sendTo("Drop what?");
 			return;
 		}
-		String an = an(inventory.toString());
+		if((inventory = s.matchContents(arg)) == null) {
+			String an = an(arg);
+			s.sendTo("You don't seem to be carrying " + an + ".");
+			s.sendToRoom(s + " looks though their pockets trying to find " + an + ".");
+			return;
+		}
+		String anItem = an(inventory.toString());
 		/* fixme: check if it will go there */
 		if((in = s.getIn()) == null) {
-			s.sendTo("You drop " + an + ", and it floats off into space.");
-			/* fixme: actually have it destroyed */
-			return;
+			s.sendTo("You drop " + anItem + ", and it floats off into space.");
+		} else {
+			s.sendTo("You drop " + anItem + ".");
 		}
+		s.sendToRoom(s + " drops " + anItem + ".");
 		inventory.placeIn(in);
-		s.sendTo("You drop " + an + ".");
-		s.sendToRoom(s + " drops " + an + ".");
 	}, inventory = (s, arg) -> {
 		for(Stuff i : s) {
 			s.sendTo("" + i);
@@ -176,7 +178,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			s.sendTo("Your name must be at least " + minName + " characters.");
 			return;
 		} else if(len > maxName) {
-			s.sendTo("Your name must be bounded by " + maxName + " characters.");
+			s.sendTo("Your name must be at most " + maxName + " characters.");
 			return;
 		} else if(!namePattern.matcher(arg).matches()) {
 			s.sendTo("Your name must match " + namePattern + "; ie, appropriate capitalisation, please.");

@@ -12,7 +12,6 @@ help start at the beginning
 
 Connection--Player think about it
 afk on exit!
-Connection: re-arrange order
 getConnection->getHandler Connection, Chronos, extend Handler (getMapper); put in subdir
 
 channels, on/off, given chat at 1

@@ -3,8 +3,13 @@
 
 package main;
 
+import java.util.Map;
+//import java.util.HashMap;
+//import java.util.Collections;
 import java.util.List;
 import java.util.LinkedList;
+
+import java.util.NoSuchElementException;
 
 import common.Chance;
 import main.Mapper;
@@ -20,25 +25,49 @@ import entities.Stuff;
  @since		1.1, 2014-12 */
 public class Chronos implements Mud.Handler {
 
-	private Chance  chance = new Chance();
-	private Mapper  mapper = new Mapper();
-	private List<Mob> mobs = new LinkedList<Mob>(); /* <- hashmap!!? */
+	private static final String stuffCommandset = "stuff";
+
+	private final Chance chance = new Chance();
+	private final Mapper mapper = new Mapper();
+	private      List<Mob> mobs = new LinkedList<Mob>(); /* <- hashmap!!? */
+	private final Mud       mud;
+	private	final Map<String, Command> commands; /* could be null! */
 
 	/** Constructor. */
-	public Chronos() {
+	public Chronos(final Mud mud) {
+		Map<String, Command> c = null;
+		this.mud = mud;
+		try {
+			c = mud.getCommands(stuffCommandset);
+		} catch(NoSuchElementException e) {
+			System.err.format("%s: command set not loaded, <%s>.\n", this, stuffCommandset);
+		}
+		commands = c;
+		System.err.format("%s: waiting.\n", this);
+	}
+
+	public Mud    getMud()    { return mud; }
+
+	public Map<String, Command> getCommands() { return commands; }
+
+	public void setCommands(final String cmdStr) throws NoSuchElementException {
+		System.err.format("%s: attempting to change the command set to %s? no thanks.\n", this, cmdStr);
+	}
+
+	public Mapper getMapper() { return mapper; }
+
+	public void   setExit()   {
+		/* fixme! on death? */
 	}
 
 	public void register(Stuff stuff) {
+		System.err.print("Chronos::register stuff = " + stuff + "\n");
 		if(!(stuff instanceof Mob)) {
 			System.err.format("%s: that's funny, <%s>, is not a Mob; ignoring.\n", this, stuff);
 			return;
 		}
 		mobs.add((Mob)stuff);
 		System.err.format("%s: registered <%s>.\n", this, stuff);
-	}
-
-	public Mapper getMapper() {
-		return mapper;
 	}
 
 	/* one time step */
@@ -49,18 +78,6 @@ public class Chronos implements Mud.Handler {
 			m.doSomethingInteresting(chance);
 		}
 	}
-
-	/** Javadocs {@link URL}.
-	 <p>
-	 More.
-	 
-	 @param p			Thing.
-	 @return			Thing.
-	 @throws Exception	Thing.
-	 @see				package.Class#method(Type)
-	 @see				#field
-	 @since				1.0
-	 @deprecated		Ohnoz. */
 
 	/** @return A synecdochical {@link String}. */
 	public String toString() {

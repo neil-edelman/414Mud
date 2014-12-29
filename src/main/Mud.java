@@ -81,13 +81,17 @@ public class Mud implements Iterable<Connection> {
 	/* the timer */
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private final ScheduledFuture<?> chonosFuture;
-	private static final Chronos chronos = new Chronos();
+	private final Chronos chronos;/* = new Chronos();*/
 
 	/** classes can implement Mud.Loader to be loaded in {@link loadAll}. */
 	interface Loader<F> { F load(TextReader in) throws ParseException, IOException; }
 	
 	public interface Handler extends Runnable {
+		public Mud    getMud();
+		public Map<String, Command> getCommands();
+		public void setCommands(final String cmdStr) throws NoSuchElementException;
 		public Mapper getMapper();
+		public void   setExit();
 		public void   register(Stuff stuff);
 	}
 
@@ -118,13 +122,18 @@ public class Mud implements Iterable<Connection> {
 			System.err.format("%s/%s; syntax error: %s, line %d.\n", dataDir, mudData, e.getMessage(), e.getErrorOffset());
 			throw new IOException(dataDir + "/" + mudData);
 		}
-		/* set class final = local rewritable */
-		this.poolSize = poolSize;
+		this.poolSize = poolSize; /* set class final = local rewritable */
 		System.err.format("%s: port %d, max connections %d, home area <%s>.\n", this, port, poolSize, homeareaStr);
 		System.err.format("%s: set the ascent password: <%s>.\n", this, password);
 		System.err.format("%s: set MOTD: <%s>.\n", this, motd);
 
+
+		/* new LoadCommands() is like a lambda, but in it's own file; because
+		 it's big */
 		commandsets = loadAll("commandsets", ".cset", new LoadCommands());
+		/* after commandsets so that stuff.cset is loaded and we don't get a null-pointer-
+		 exception, but before the areas are loaded so mobs will be able to register */
+		chronos     = new Chronos(this);
 		areas       = loadAll("areas",       ".area", (in) -> { return new Area(in); });
 
 		/* set the [defaut] recall spot */
@@ -242,6 +251,7 @@ public class Mud implements Iterable<Connection> {
 
 	}
 
+	/****** fixme!!! *******/
 	public static Mud getMudInstance() {
 		return mudInstance;
 	}
@@ -260,7 +270,7 @@ public class Mud implements Iterable<Connection> {
 		return homeroom;
 	}
 
-	public static Chronos getChronos() {
+	public Chronos getChronos() {
 		return chronos;
 	}
 

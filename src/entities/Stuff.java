@@ -67,7 +67,6 @@ public class Stuff implements Iterable<Stuff> {
 	}
 
 	public Mapper getMapper() {
-		System.err.print(" ********** Returning getChronos.getMapper()\n");
 		return Mud.getMudInstance().getChronos().getMapper();
 	}
 
@@ -78,10 +77,7 @@ public class Stuff implements Iterable<Stuff> {
 		sendTo("You disapparate and instantly travel to '" + container + "'\n"); /* newline! we are going somewhere else */
 		sendToRoom(this + " suddenly apparates.");
 		/* players will want to look around immediatly */
-		sendTo(container.lookDetailed(this));
-		//Connection c = this.getConnection();
-		//if(c == null) return;
-		//c.sendTo(container != null ? container.lookDetailed(this) : "Endless blackness surrounds you.");
+		sendTo((container != null) ? container.lookDetailed(this) : "Endless blackness surrounds you; you suddenly feel weightless.");
 	}
 
 	/** Silent (only if you know what you're doing.) */
@@ -148,8 +144,8 @@ public class Stuff implements Iterable<Stuff> {
 	}
 
 	/** @return The connection, if there is one, otherwise null. */
-	public Connection getConnection() {
-		return null;
+	public Mud.Handler getHandler() {
+		return Mud.getMudInstance().getChronos();
 	}
 
 	/** @return How the object looks very simply. */
@@ -228,10 +224,7 @@ public class Stuff implements Iterable<Stuff> {
 
 	/** Heirarcy! */
 	public void enter(Stuff target, boolean isIn) {
-		Connection c;
-		if((c = getConnection()) != null) {
-			c.sendTo("You get " + (isIn ? "in" : "on") + " the " + target + ".");
-		}
+		sendTo("You get " + (isIn ? "in" : "on") + " the " + target + ".");
 		sendToRoom(this + " gets up and rides the " + target + ".");
 		placeIn(target);
 		sendToRoom(this + " gets up here.");

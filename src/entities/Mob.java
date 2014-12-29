@@ -31,7 +31,7 @@ public class Mob extends Character {
 	public Mob() {
 		super();
 		title = "Someone is looking confused.";
-		Mud.getChronos().register(this);
+		Mud.getMudInstance().getChronos().register(this);
 	}
 
 	/** Read it from a file. */
@@ -42,7 +42,7 @@ public class Mob extends Character {
 		} catch(common.UnrecognisedTokenException e) {
 			throw new java.text.ParseException(e.getMessage(), in.getLineNumber());
 		}
-		Mud.getChronos().register(this);
+		Mud.getMudInstance().getChronos().register(this);
 	}
 
 	/** Do a thing. */

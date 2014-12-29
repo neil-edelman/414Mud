@@ -77,35 +77,23 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 	private static final int yellDistance = 3;
 
 	protected static final Command help = (s, arg) -> {
-		Connection c = s.getConnection();
-		if(c == null) {
-			/* fixme: default stuffprogs set */
-			s.sendTo("You mast have a connection.");
-			return;
-		}
-		Map<String, Command> commandset = c.getCommandset();
+		Map<String, Command> commands = s.getHandler().getCommands();
 		s.sendTo("These are the commands which you are authorised to use right now:");
-		for(Map.Entry<String, Command> entry : commandset.entrySet()) {
-			c.sendTo(entry.getKey());
+		for(Map.Entry<String, Command> entry : commands.entrySet()) {
+			s.sendTo(entry.getKey());
 		}
 	}, exit = (s, arg) -> {
-		Connection c = s.getConnection();
 		System.err.print(s + " has exited.\n");
 		s.sendToRoom(s + " has suddenly vashished.");
 		s.sendTo("Goodbye.");
-		if(c != null) c.setExit();
+		s.getHandler().setExit();
 	}, say = (s, arg) -> {
 		s.sendTo("You say, \"" + arg + "\"");
 		s.sendToRoom(s + " says \"" + arg + "\"");
 	}, chat = (s, arg) -> {
-		Connection c = s.getConnection();
-		if(c == null) {
-			s.sendTo("You can't without a connection.");
-			return;
-		}
 		/* fixme: channels! */
 		String str = "[chat] " + s + ": " + arg;
-		for(Connection everyone : c.getMud()) {
+		for(Connection everyone : s.getHandler().getMud()) {
 			everyone.sendTo(str);
 		}
 	}, yell = (s, arg) -> {
@@ -155,20 +143,15 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 	}, cant = (s, arg) -> {
 		s.sendTo("You can't do that, [yet.]");
 	}, create = (s, arg) -> {
-		Connection c = s.getConnection();
-		if(c == null) {
-			s.sendTo("You must have a connection.");
-			return;
-		}
 		int len = arg.length();
 		if(len < minName) {
-			c.sendTo("Your name must be at least " + minName + " characters.");
+			s.sendTo("Your name must be at least " + minName + " characters.");
 			return;
 		} else if(len > maxName) {
-			c.sendTo("Your name must be bounded by " + maxName + " characters.");
+			s.sendTo("Your name must be bounded by " + maxName + " characters.");
 			return;
 		} else if(!namePattern.matcher(arg).matches()) {
-			c.sendTo("Your name must match " + namePattern + "; ie, appropriate capitalisation, please.");
+			s.sendTo("Your name must match " + namePattern + "; ie, appropriate capitalisation, please.");
 			return;
 		}
 		/* fixme: compare file of bad names */
@@ -179,14 +162,14 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		s.setName(arg);
 		s.setTitle(arg + " is here.");
 		try {
-			c.setCommandset("common");
+			s.getHandler().setCommands("common");
 		} catch(NoSuchElementException e) {
-			System.err.format("%s: %s.\n", c, e);
-			c.sendTo("There is no command set 'common;' sorry!");
+			System.err.format("%s: %s.\n", s, e);
+			s.sendTo("There is no command set 'common;' sorry!");
 		}
-		System.err.format("%s: create <%s>.\n", c, s);
+		System.err.format("%s: create <%s>.\n", s.getHandler(), s);
 		//c.sendTo("You create a character named " + s + "!");
-		s.transportTo(c.getMud().getHome());
+		s.transportTo(s.getHandler().getMud().getHome());
 	}, look = (s, arg) -> {
 		Stuff in = s.getIn();
 
@@ -231,30 +214,20 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			}
 		}
 	}, who = (s, arg) -> {
-		Connection c = s.getConnection();
-		if(c == null) {
-			s.sendTo("You must have a connection.");
-			return;
-		}
-		c.sendTo("Active connections:");
-		for(Connection hoo : c.getMud()) {
-			c.sendTo(hoo + " (" + hoo.getPlayer().getName() + ")");
+		s.sendTo("Active connections:");
+		for(Connection hoo : s.getHandler().getMud()) {
+			s.sendTo(hoo + " (" + hoo.getPlayer().getName() + ")");
 		}
 	}, shutdown = (s, arg) -> {
-		Connection c = s.getConnection();
 		if(arg.length() != 0) {
 			s.sendTo("Command takes no arguments.");
 			return;
 		}
-		if(c == null) {
-			s.sendTo("Must have a connection.");
-			return;
-		}
 
-		System.out.print(c + " initated shutdown.\n");
+		System.out.print(s + " initated shutdown.\n");
 
 		String str = s + " initiated shutdown!";
-		for(Connection everyone : c.getMud()) {
+		for(Connection everyone : s.getHandler().getMud()) {
 			everyone.sendTo(str);
 			everyone.setExit(); /* doesn't work -- Connection stuck waiting */
 			try {
@@ -264,40 +237,31 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			}
 		}
 
-		c.setExit();
-		c.getMud().shutdown();
+		s.getHandler().setExit();
+		s.getHandler().getMud().shutdown();
 	}, ascend = (s, arg) -> {
-		Connection c = s.getConnection();
-		if(c == null) {
-			s.sendTo("You must have a connection.");
-			return;
-		}
-		if(!c.getMud().comparePassword(arg)) {
-			c.sendTo("That's not the password.");
+		if(!s.getHandler().getMud().comparePassword(arg)) {
+			s.sendTo("That's not the password.");
 			return;
 		}
 		try {
-			c.setCommandset("immortal");
+			s.getHandler().setCommands("immortal");
 		} catch(NoSuchElementException e) {
-			System.err.format("ascend: %s, %s.\n", c, e);
-			c.sendTo("No command set immortal exists.");
+			System.err.format("ascend: %s, %s.\n", s, e);
+			s.sendTo("No command set immortal exists.");
 			return;
 		}
-		c.sendTo("You are now an immortal; type 'help' for new commands.");
+		s.sendTo("You are now an immortal; type 'help' for new commands.");
 		s.sendToRoom("A glorious light surronds " + s + " as they ascend.");
-		System.err.print(c + " has ascended.\n");
+		System.err.print(s.getHandler() + " has ascended.\n");
 	}, areas = (s, arg) -> {
-		Connection c = s.getConnection();
-		if(c == null) {
-			s.sendTo("You must have a connection.");
-			return;
-		}
-		Map<String, Area> areas = c.getMud().getAreas();
+		Map<String, Area> areas = s.getHandler().getMud().getAreas();
 		for(Area a : areas.values()) {
-			c.sendTo(a.toString());
+			s.sendTo(a.toString());
 		}
 	}, map = (s, arg) -> {
 s.getMapper();
+s.sendTo("You can do that yet. Very soon.");
 	}, north = (s, arg) -> {
 		s.go(Room.Direction.N);
 	}, east = (s, arg) -> {

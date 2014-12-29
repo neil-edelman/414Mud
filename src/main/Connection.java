@@ -23,6 +23,7 @@ import common.BoundedReader;
 import common.Orcish;
 import entities.Character;
 import entities.Player;
+import entities.Stuff;
 
 /** Connections are the people connected to our mud; later we will build a
  character around them and put them in the game.
@@ -34,7 +35,26 @@ import entities.Player;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class Connection /* extends Handler */ implements Runnable {
+public class Connection implements Mud.Handler {
+
+	private static final String newbieCommandset = "newbie";
+
+	public Mud    getMud()                    { return mud; }
+	public Map<String, Command> getCommands() { return commands; };
+	public void setCommands(final String cmdStr) throws NoSuchElementException {
+		commands = getMud().getCommands(cmdStr);
+	}
+	public Mapper getMapper()                 { return mapper; }
+	public void   setExit()                   { isExit = true; }
+	public void   register(Stuff stuff) {
+		if(!(stuff instanceof Player)) {
+			System.err.format("%s: that's funny, <%s>, is not a Player; ignoring.\n", this, stuff);
+			return;
+		}
+		//mud.players . . . fixme! we don't have to keep track of players in mud
+		//players.add((Player)stuff);
+		System.err.format("%s: registered <%s>. (but not really)\n", this, stuff);
+	}
 
 	private static final int     bufferSize     = 80;
 	private static final String  cancelCommand  = "~";	
@@ -49,7 +69,7 @@ public class Connection /* extends Handler */ implements Runnable {
 	 Thread/Socket/Connection one and operate them in parallel */
 	private Mapper          mapper = new Mapper();
 
-	private Map<String, Command> commandset = null;
+	private Map<String, Command> commands;
 	private boolean         isWaiting;
 	private PrintWriter     out;
 	private BoundedReader   in;
@@ -62,14 +82,15 @@ public class Connection /* extends Handler */ implements Runnable {
 	/** Initalize the connection.
 	 @param socket	The client socket. */
 	Connection(final Socket socket, final Mud mud) {
-		this.socket     = socket;
-		this.mud        = mud;
+		this.socket       = socket;
+		this.mud          = mud;
+		player            = new Player(this);
 		try {
-			setCommandset("newbie");
+			this.commands = mud.getCommands(newbieCommandset);
 		} catch(NoSuchElementException e) {
-			System.err.format("%s: %s.\n", this, e);
+			System.err.format("%s: not loaded <%s>.\n", this, newbieCommandset);
+			sendTo("No command set '" + newbieCommandset + ".'");
 		}
-		player          = new Player(this);
 		System.err.print(this + " has connected to " + mud + ".\n");
 	}
 
@@ -218,10 +239,6 @@ public class Connection /* extends Handler */ implements Runnable {
 		 Sent by the Telnet client to inform the Telnet server of the
 		 window width and height. */
 
-	public Mud getMud() {
-		return mud;
-	}
-
 	public String toString() {
 		String s = "Connection " + name;
 		if(player != null) s += "(" + player + ")";
@@ -242,18 +259,6 @@ public class Connection /* extends Handler */ implements Runnable {
 
 	public void setPlayer(Player p) {
 		player = p;
-	}
-
-	public void setExit() {
-		isExit = true;
-	}
-
-	public Map<String, Command> getCommandset() {
-		return commandset;
-	}
-
-	public void setCommandset(final String commandsetStr) throws NoSuchElementException {
-		commandset = getMud().getCommands(commandsetStr);
 	}
 
 	/* @depreciated	Not used. */
@@ -285,17 +290,13 @@ public class Connection /* extends Handler */ implements Runnable {
 		}
 
 		/* parse */
-		Command command = commandset.get(cmd);
+		Command command = commands.get(cmd);
 
 		if(command != null) {
 			command.command(this.player, arg);
 		} else {
 			sendTo("Huh? \"" + cmd + "\" (use help for a list)");
 		}
-	}
-
-	public Mapper getMapper() {
-		return mapper;
 	}
 
 	/** This is not used . . . yet. */

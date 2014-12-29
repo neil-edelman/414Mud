@@ -9,6 +9,7 @@ import java.util.HashMap;
 import main.Connection;
 import entities.Room;
 import main.Mapper;
+import main.Mud;
 
 /** A player; this should always have a Connection.
 
@@ -25,7 +26,7 @@ public class Player extends Character {
 	public Player(Connection connection) {
 		super();
 		this.connection = connection;
-		name = "nemo"; /* fixme: Orcish */
+		name = "Nemo"; /* fixme: Orcish */
 		title= "Nemo hasn't chosen a name yet.";
 	}
 
@@ -78,7 +79,7 @@ public class Player extends Character {
 	}
 
 	@Override
-	public Connection getConnection() {
+	public Mud.Handler getHandler() {
 		return connection;
 	}
 

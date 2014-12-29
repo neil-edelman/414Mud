@@ -102,6 +102,7 @@ public class Connection /* extends Handler */ implements Runnable {
 			while(!isExit) {
 
 				/* wait for next line */
+				sendToRaw(player.prompt());
 				isWaiting = true;
 				if((input = in.readLine()) == null) break;
 				isWaiting = false;
@@ -112,9 +113,6 @@ public class Connection /* extends Handler */ implements Runnable {
 				} else {
 					this.sendTo("Weird characters within your input; ignoring.");
 				}
-
-				/* do the prompt again */
-				if(player != null) sendToRaw(player.prompt());
 
 			}
 

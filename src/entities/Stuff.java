@@ -55,7 +55,7 @@ public class Stuff implements Iterable<Stuff> {
 	public void setTitle(final String line) {
 		title = line;
 		sendToRoom(this + " is now '" + title + "'");
-		sendTo("You are '" + title + "'");
+		sendTo("You are now '" + title + "'");
 	}
 
 	public String getName() {

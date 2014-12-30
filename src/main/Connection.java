@@ -24,6 +24,7 @@ import common.Orcish;
 import entities.Character;
 import entities.Player;
 import entities.Stuff;
+import entities.PlayerLike;
 
 /** Connections are the people connected to our mud; later we will build a
  character around them and put them in the game.
@@ -35,26 +36,9 @@ import entities.Stuff;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class Connection implements Mud.Handler {
+public class Connection implements Mud.Handler, PlayerLike {
 
 	private static final String newbieCommandset = "newbie";
-
-	public Mud    getMud()                    { return mud; }
-	public Map<String, Command> getCommands() { return commands; };
-	public void setCommands(final String cmdStr) throws NoSuchElementException {
-		commands = getMud().getCommands(cmdStr);
-	}
-	public Mapper getMapper()                 { return mapper; }
-	public void   setExit()                   { isExit = true; }
-	public void   register(Stuff stuff) {
-		if(!(stuff instanceof Player)) {
-			System.err.format("%s: that's funny, <%s>, is not a Player; ignoring.\n", this, stuff);
-			return;
-		}
-		//mud.players . . . fixme! we don't have to keep track of players in mud
-		//players.add((Player)stuff);
-		System.err.format("%s: registered <%s>. (but not really)\n", this, stuff);
-	}
 
 	private static final int     bufferSize     = 80;
 	private static final String  cancelCommand  = "~";	
@@ -75,7 +59,8 @@ public class Connection implements Mud.Handler {
 	private BoundedReader   in;
 	/*private OutputStream    outRaw = null;
 	private InputStream     inRaw = null; <- for ansi commands */
-	private Player  player;
+	/*private Player  player;*/
+	private PlayerLike playerlike;
 	private boolean isExit = false;
 	/* fixme: ip */
 
@@ -84,7 +69,8 @@ public class Connection implements Mud.Handler {
 	Connection(final Socket socket, final Mud mud) {
 		this.socket       = socket;
 		this.mud          = mud;
-		player            = new Player(this);
+		//player            = null;//new Player(this);
+		this.playerlike   = this;
 		try {
 			this.commands = mud.getCommands(newbieCommandset);
 		} catch(NoSuchElementException e) {
@@ -94,6 +80,31 @@ public class Connection implements Mud.Handler {
 		System.err.print(this + " has connected to " + mud + ".\n");
 	}
 
+//	/* for Mud.GetHandler, allows us to enter the game with only a connection. */
+//	public Mud.Handler GetHandler() { return this; }
+//	/*public String getHanderName()   { return this.toString(); }*/
+
+	/* for PlayerLike */
+	public Mud.Handler getHandler() { return this; }
+	public String getPrompt() { return "> "; }
+
+	/* for Mud.Handler, the thead thing */
+	public Mud    getMud()                    { return mud; }
+	public Map<String, Command> getCommands() { return commands; };
+	public void setCommands(final String cmdStr) throws NoSuchElementException {
+		commands = getMud().getCommands(cmdStr);
+	}
+	public Mapper getMapper()                 { return mapper; }
+	public void   setExit()                   { isExit = true; }
+	public void   register(Stuff stuff) {
+		if(!(stuff instanceof Player)) {
+			System.err.format("%s: that's funny, <%s>, is not a Player; ignoring.\n", this, stuff);
+			return;
+		}
+		//mud.players . . . fixme! we don't have to keep track of players in mud
+		//players.add((Player)stuff);
+		System.err.format("%s: registered <%s>. (but not really)\n", this, stuff);
+	}
 	/** The server-side handler for connections. */
 	public void run() {
 		//System.err.print(this + " up and running, waiting for character creation.\n");
@@ -123,7 +134,8 @@ public class Connection implements Mud.Handler {
 			while(!isExit) {
 
 				/* wait for next line */
-				sendToRaw(player.prompt());
+				//if(player != null) sendToRaw(player.prompt());
+				sendToRaw(playerlike.getPrompt());
 				isWaiting = true;
 				if((input = in.readLine()) == null) break;
 				isWaiting = false;
@@ -169,7 +181,8 @@ public class Connection implements Mud.Handler {
 		if(isWaiting) sb.append("\n"); // fixme: it works, but should really be newLine(), \r\n
 		sb.append(message);
 		sb.append("\n");
-		if(isWaiting && player != null) sb.append(player.prompt());
+//		if(isWaiting && player != null) sb.append(player.prompt());
+		if(isWaiting) sb.append(playerlike.getPrompt());
 		sendToRaw(sb.toString());
 	}
 
@@ -241,30 +254,23 @@ public class Connection implements Mud.Handler {
 
 	public String toString() {
 		String s = "Connection " + name;
-		if(player != null) s += "(" + player + ")";
+//		if(player != null) s += "(" + player + ")";
 		return s;
-	}
-
-	public String getName() {
-		return this.name;
 	}
 
 	public Socket getSocket() {
 		return socket;
 	}
 
-	public Player getPlayer() {
+	/*public Player getPlayer() {
 		return player;
-	}
+	}*/
 
-	public void setPlayer(Player p) {
+/*	public void setPlayer(Player p) {
 		player = p;
-	}
-
-	/* @depreciated	Not used. */
-	public void sendToRoom(final String s) {
-		if(player == null) return;
-		player.sendToRoom(s);
+	}*/
+	public void setPlayerlike(PlayerLike p) {
+		playerlike = p;
 	}
 
 	/** This parses the string and runs it.
@@ -293,7 +299,7 @@ public class Connection implements Mud.Handler {
 		Command command = commands.get(cmd);
 
 		if(command != null) {
-			command.command(this.player, arg);
+			command.command(this.playerlike, arg);
 		} else {
 			sendTo("Huh? \"" + cmd + "\" (use help for a list)");
 		}

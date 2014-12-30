@@ -85,7 +85,9 @@ public class Mud implements Iterable<Connection> {
 
 	/** classes can implement Mud.Loader to be loaded in {@link loadAll}. */
 	interface Loader<F> { F load(TextReader in) throws ParseException, IOException; }
-	
+
+	/** Handlers are threads (extends Runnable) that do more stuff. At least
+	 they're meant to be. */
 	public interface Handler extends Runnable {
 		public Mud    getMud();
 		public Map<String, Command> getCommands();
@@ -93,6 +95,14 @@ public class Mud implements Iterable<Connection> {
 		public Mapper getMapper();
 		public void   setExit();
 		public void   register(Stuff stuff);
+	}
+
+	/** GetHandler is any class that is associated with a specific Handler; viz,
+	 any sort of Stuff is associated to Chronos, except Player which is
+	 assocated with it's own Connection */
+	public interface GetHandler {
+		public Mud.Handler getHandler();
+		//public String      getHandlerName();
 	}
 
 	/** The entire mud constructor.

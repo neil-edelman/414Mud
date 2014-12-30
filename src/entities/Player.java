@@ -6,6 +6,8 @@ package entities;
 import java.util.Map;
 import java.util.HashMap;
 
+//import java.util.Iterator;
+
 import main.Connection;
 import entities.Room;
 import main.Mapper;
@@ -14,9 +16,9 @@ import main.Mud;
 /** A player; this should always have a Connection.
 
  @author	Sid, Neil
- @version	1.0, 11-2014
- @since		1.0, 11-2014 */
-public class Player extends Character {
+ @version	1.1, 2014-12
+ @since		1.0, 2014-11 */
+public class Player extends Character implements PlayerLike {
 
 	static final int distanceWakeUp = 3;
 
@@ -26,7 +28,7 @@ public class Player extends Character {
 	public Player(Connection connection) {
 		super();
 		this.connection = connection;
-		name = "Nemo"; /* fixme: Orcish */
+		name = "Nemo"; /* fixme: Orcish? */
 		title= "Nemo hasn't chosen a name yet.";
 	}
 
@@ -34,7 +36,23 @@ public class Player extends Character {
 		super();
 		this.connection = connection;
 		this.name  = name;
-		this.title = name + " is neutral.";
+		this.title = name + " is here.";
+	}*/
+
+	/** Part of the contract with GetHandler: this is in it's own thread, so it
+	 must use it's own Handler, viz, Connection implemts Mud.Handler */
+	public Mud.Handler getHandler() {
+		return connection;
+	}
+	/*public String getHandlerName() {
+		return name + "(" + connection + ")";
+	}*/
+
+	/** Overrides giving you Chronos: this is in it's own thread, so it must use
+	 it's own. */
+	/*@Override
+	public Mapper getMapper() {
+		return connection.getMapper();
 	}*/
 
 	/** Gives more info.
@@ -66,21 +84,9 @@ public class Player extends Character {
 		});
 	}
 
-	/** Overrides Chronos: this is in the other thread, so it must use it's own */
-	@Override
-	public Mapper getMapper() {
-		System.err.print(" ****** Returning " + connection + ".getMapper()\n");
-		return connection.getMapper();
-	}
-
 	@Override
 	public void sendTo(final String message) {
 		connection.sendTo(message);
-	}
-
-	@Override
-	public Mud.Handler getHandler() {
-		return connection;
 	}
 
 	/** fixme! */

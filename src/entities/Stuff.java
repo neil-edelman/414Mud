@@ -22,7 +22,7 @@ import main.Mud;
  @author	Sid, Neil
  @version	1.0, 11-2014
  @since		1.0, 11-2014 */
-public class Stuff implements Iterable<Stuff> {
+public class Stuff implements Iterable<Stuff>, Mud.GetHandler {
 
 	private static final int searchDepth = 3;
 
@@ -43,6 +43,12 @@ public class Stuff implements Iterable<Stuff> {
 	public Stuff(common.TextReader in) throws java.text.ParseException, java.io.IOException {
 		name  = in.nextLine();
 		title = in.nextLine();
+	}
+
+	/** Part of the contract with GetHander to return Chronos, the defaut
+	 timer-Handler-thread. */
+	public Mud.Handler getHandler() {
+		return Mud.getMudInstance().getChronos();
 	}
 
 	public void setName(final String name) {
@@ -66,9 +72,9 @@ public class Stuff implements Iterable<Stuff> {
 		return title;
 	}
 
-	public Mapper getMapper() {
+	/*public Mapper getMapper() {
 		return Mud.getMudInstance().getChronos().getMapper();
-	}
+	}*/
 
 	/** Noisy (mostly use this.) */
 	public void transportTo(final Stuff container) {
@@ -141,11 +147,6 @@ public class Stuff implements Iterable<Stuff> {
 
 	public void sendToContents(final String message) {
 		for(Stuff s : this) s.sendTo(message);
-	}
-
-	/** @return The connection, if there is one, otherwise null. */
-	public Mud.Handler getHandler() {
-		return Mud.getMudInstance().getChronos();
 	}
 
 	/** @return How the object looks very simply. */

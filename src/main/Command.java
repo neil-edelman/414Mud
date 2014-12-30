@@ -290,8 +290,8 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			s.sendTo(a.toString());
 		}
 	}, map = (s, arg) -> {
-s.getMapper();
-s.sendTo("You can do that yet. Very soon.");
+		s.getMapper();
+		s.sendTo("You can do that yet. Very soon.");
 	}, north = (s, arg) -> {
 		s.go(Room.Direction.N);
 	}, east = (s, arg) -> {

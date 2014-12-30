@@ -48,13 +48,6 @@ public class Player extends Character /*implements PlayerLike*/ {
 		return name + "(" + connection + ")";
 	}*/
 
-	/** Overrides giving you Chronos: this is in it's own thread, so it must use
-	 it's own. */
-	/*@Override
-	public Mapper getMapper() {
-		return connection.getMapper();
-	}*/
-
 	/** Gives more info.
 	 @return More info on the object. */
 	@Override

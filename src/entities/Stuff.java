@@ -22,7 +22,7 @@ import main.Mud;
  @author	Sid, Neil
  @version	1.0, 11-2014
  @since		1.0, 11-2014 */
-public class Stuff implements Iterable<Stuff>, Mud.GetHandler {
+public class Stuff implements Iterable<Stuff> {
 
 	private static final int searchDepth = 3;
 
@@ -71,10 +71,6 @@ public class Stuff implements Iterable<Stuff>, Mud.GetHandler {
 	public String getTitle() {
 		return title;
 	}
-
-	/*public Mapper getMapper() {
-		return Mud.getMudInstance().getChronos().getMapper();
-	}*/
 
 	/** Noisy (mostly use this.) */
 	public void transportTo(final Stuff container) {

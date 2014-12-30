@@ -100,10 +100,10 @@ public class Mud implements Iterable<Connection> {
 	/** GetHandler is any class that is associated with a specific Handler; viz,
 	 any sort of Stuff is associated to Chronos, except Player which is
 	 assocated with it's own Connection */
-	public interface GetHandler {
+/*	public interface GetHandler {
 		public Mud.Handler getHandler();
 		//public String      getHandlerName();
-	}
+	}*/
 
 	/** The entire mud constructor.
 	 @param dataDir			The subdirectory where the data file is located.

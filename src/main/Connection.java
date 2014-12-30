@@ -24,7 +24,7 @@ import common.Orcish;
 import entities.Character;
 import entities.Player;
 import entities.Stuff;
-import entities.PlayerLike;
+//import entities.PlayerLike;
 
 /** Connections are the people connected to our mud; later we will build a
  character around them and put them in the game.
@@ -36,7 +36,7 @@ import entities.PlayerLike;
  @author	Neil
  @version	1.1, 12-2014
  @since		1.0, 11-2014 */
-public class Connection implements Mud.Handler, PlayerLike {
+public class Connection implements Mud.Handler/*, PlayerLike*/ {
 
 	private static final String newbieCommandset = "newbie";
 
@@ -59,18 +59,19 @@ public class Connection implements Mud.Handler, PlayerLike {
 	private BoundedReader   in;
 	/*private OutputStream    outRaw = null;
 	private InputStream     inRaw = null; <- for ansi commands */
-	/*private Player  player;*/
-	private PlayerLike playerlike;
+	private Player  player;
+	//private PlayerLike playerlike;
 	private boolean isExit = false;
 	/* fixme: ip */
 
 	/** Initalize the connection.
 	 @param socket	The client socket. */
 	Connection(final Socket socket, final Mud mud) {
-		this.socket       = socket;
-		this.mud          = mud;
+		this.socket = socket;
+		this.mud    = mud;
 		//player            = null;//new Player(this);
-		this.playerlike   = this;
+		//this.playerlike   = this;
+		this.player = new Player(this);
 		try {
 			this.commands = mud.getCommands(newbieCommandset);
 		} catch(NoSuchElementException e) {
@@ -85,8 +86,8 @@ public class Connection implements Mud.Handler, PlayerLike {
 //	/*public String getHanderName()   { return this.toString(); }*/
 
 	/* for PlayerLike */
-	public Mud.Handler getHandler() { return this; }
-	public String getPrompt() { return "> "; }
+	//public Mud.Handler getHandler() { return this; }
+	//public String getPrompt() { return "> "; }
 
 	/* for Mud.Handler, the thead thing */
 	public Mud    getMud()                    { return mud; }
@@ -135,7 +136,7 @@ public class Connection implements Mud.Handler, PlayerLike {
 
 				/* wait for next line */
 				//if(player != null) sendToRaw(player.prompt());
-				sendToRaw(playerlike.getPrompt());
+				sendToRaw(player.getPrompt());
 				isWaiting = true;
 				if((input = in.readLine()) == null) break;
 				isWaiting = false;
@@ -182,7 +183,7 @@ public class Connection implements Mud.Handler, PlayerLike {
 		sb.append(message);
 		sb.append("\n");
 //		if(isWaiting && player != null) sb.append(player.prompt());
-		if(isWaiting) sb.append(playerlike.getPrompt());
+		if(isWaiting) sb.append(player.getPrompt());
 		sendToRaw(sb.toString());
 	}
 
@@ -262,15 +263,12 @@ public class Connection implements Mud.Handler, PlayerLike {
 		return socket;
 	}
 
-	/*public Player getPlayer() {
+	public Player getPlayer() {
 		return player;
-	}*/
+	}
 
-/*	public void setPlayer(Player p) {
+	public void setPlayer(Player p) {
 		player = p;
-	}*/
-	public void setPlayerlike(PlayerLike p) {
-		playerlike = p;
 	}
 
 	/** This parses the string and runs it.
@@ -299,7 +297,8 @@ public class Connection implements Mud.Handler, PlayerLike {
 		Command command = commands.get(cmd);
 
 		if(command != null) {
-			command.command(this.playerlike, arg);
+			//command.command(this.playerlike, arg);
+			command.command(this.player, arg);
 		} else {
 			sendTo("Huh? \"" + cmd + "\" (use help for a list)");
 		}

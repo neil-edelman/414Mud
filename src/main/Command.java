@@ -112,7 +112,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		}
 		s.sendTo("You yell \"" + arg + "\"");
 		String str = s + " yells from %s-ish, \"%s\" (%d room(s) away.)";
-		s.getMapper().map((Room)r, yellDistance, (room, dist, dir) -> {
+		s.getHandler().getMapper().map((Room)r, yellDistance, (room, dist, dir) -> {
 			room.sendToContentsExcept(s, String.format(str, dir.getBack(), arg, dist));
 			return true; /* <- want everyone to hear */
 		});
@@ -290,7 +290,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			s.sendTo(a.toString());
 		}
 	}, map = (s, arg) -> {
-		s.getMapper();
+		s.getHandler().getMapper();
 		s.sendTo("You can do that yet. Very soon.");
 	}, north = (s, arg) -> {
 		s.go(Room.Direction.N);

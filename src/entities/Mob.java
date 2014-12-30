@@ -42,14 +42,14 @@ public class Mob extends Character {
 		} catch(common.UnrecognisedTokenException e) {
 			throw new java.text.ParseException(e.getMessage(), in.getLineNumber());
 		}
-		Mud.getMudInstance().getChronos().register(this);
+		getHandler().register(this);
 	}
 
 	/** Do a thing. */
 	public void doSomethingInteresting(Chance c) {
 
 		/* go to sleep? fixme: this should happen much less frequently */
-		if(getMapper().map((Room)in, Player.distanceWakeUp, (room, dis, dir) -> {
+		if(getHandler().getMapper().map((Room)in, Player.distanceWakeUp, (room, dis, dir) -> {
 			/*System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);*/
 			for(Stuff s : room) {
 				if(s instanceof Player) {

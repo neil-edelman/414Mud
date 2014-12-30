@@ -18,7 +18,7 @@ import main.Mud;
  @author	Sid, Neil
  @version	1.1, 2014-12
  @since		1.0, 2014-11 */
-public class Player extends Character implements PlayerLike {
+public class Player extends Character /*implements PlayerLike*/ {
 
 	static final int distanceWakeUp = 3;
 
@@ -28,7 +28,7 @@ public class Player extends Character implements PlayerLike {
 	public Player(Connection connection) {
 		super();
 		this.connection = connection;
-		name = "Nemo"; /* fixme: Orcish? */
+		name = "Nemo"; /* connection.getName? */
 		title= "Nemo hasn't chosen a name yet.";
 	}
 
@@ -73,7 +73,7 @@ public class Player extends Character implements PlayerLike {
 	@Override
 	protected void hasMoved() {
 		if(!(in instanceof Room)) return;
-		getMapper().map((Room)in, distanceWakeUp, (room, dis, dir) -> {
+		getHandler().getMapper().map((Room)in, distanceWakeUp, (room, dis, dir) -> {
 			System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);
 			//where.put(dis, room);
 			for(Stuff s : room) {
@@ -90,7 +90,7 @@ public class Player extends Character implements PlayerLike {
 	}
 
 	/** fixme! */
-	public String prompt() {
+	public String getPrompt() {
 		return hpCurrent + "/" + hpTotal + " > ";
 	}
 

@@ -41,7 +41,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 	/* fixme: there are many more in UTF-8 */
 	private static final String    vowels = "aeiouyAEIOUY";
 	private static StringBuilder testChar = new StringBuilder(1);
-	static { testChar.append(" "); } /* replaced with test char */
+	static { testChar.append(" "); } /* replaced with test char every time */
 
 	/** Loads a command set per implementation of Mud.Loader.
 	 @param in	The already open {@link common.TextReader}. */
@@ -246,7 +246,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 	}, who = (s, arg) -> {
 		s.sendTo("Active connections:");
 		for(Connection hoo : s.getHandler().getMud()) {
-			s.sendTo(hoo + " (" + hoo.getPlayer().getName() + ")");
+			s.sendTo(hoo + " (" + hoo.getPlayer() + ")");
 		}
 	}, shutdown = (s, arg) -> {
 		if(arg.length() != 0) {
@@ -307,7 +307,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 	}, mount = (s, arg) -> {
 		Stuff room, target;
 		if((room = s.getIn()) == null || (target = room.matchContents(arg)) == null) {
-			s.sendTo("Not any <" + arg + "> here.");
+			s.sendTo("Not any " + arg + " here.");
 			return;
 		}
 		if(!target.isEnterable()) {
@@ -316,7 +316,20 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		}
 		//s.enter(target, target instanceof Character ? false/*on*/ : true/*in*/); ???
 		s.enter(target, true);
-	} /* unmount */;
+	}, dismount = (s, arg) -> {
+		Stuff mount = s.getIn();
+		if(mount == null || !mount.isEnterable()) {
+			s.sendTo("You are not mounted on anything.");
+			s.sendToRoom(s + " looks like they are dismounting an imaginary horse.");
+			return;
+		}
+		Stuff in = mount.getIn();
+		String an = an(mount.toString());
+		s.sendTo("You dismount and join " + an + " in " + in + ".");
+		s.sendToRoom(s + " dismounts " + an + ".");
+		s.placeIn(in);
+		s.sendToRoom(s + " dismounts " + an + ".");
+	};
 
 	/* lazy */
 	static String an(final String str) {

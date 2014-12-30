@@ -20,4 +20,5 @@ drop	drop
 i	inventory
 inventory	inventory
 mount	mount
+dismount	dismount
 map	map

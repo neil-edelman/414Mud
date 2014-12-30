@@ -38,12 +38,6 @@ class Area {
 	private Map<String, Stuff> stuff;
 	private Room               recall;
 
-	/** @return	Default room. */
-	public Room getRecall()  { return recall; }
-
-	/** @return	A synecdochical {@link String}. */
-	public String toString() { return title + " by " + author; }
-
 	/** Loads an Area.
 	 @param in	The already open {@link common.TextReader}. */
 	Area(TextReader in) throws ParseException, IOException {
@@ -123,6 +117,12 @@ class Area {
 		System.err.format("%s: default room <%s>.\n", this, recall);
 
 	}
+
+	/** @return	Default room. */
+	public Room getRecall()  { return recall; }
+
+	/** @return	A synecdochical {@link String}. */
+	public String toString() { return title + " by " + author; }
 
 	/** An enum of all the types of stuff that we could have in the definitions
 	 part of an area. */

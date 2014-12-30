@@ -1,7 +1,8 @@
 /* Copyright 2014 Sid Gandhi and Neil Edelman, distributed under the terms of
  the GNU General Public License, see copying.txt */
 
-package main /*.handlers fuck you "package does not exist"*/;
+package main /*.handlers fuck you "package does not exist," yes, that's why I'm
+			  definining it; I don't understand */;
 
 import java.net.Socket;
 import java.net.SocketException;
@@ -24,23 +25,23 @@ import common.Orcish;
 import entities.Character;
 import entities.Player;
 import entities.Stuff;
-//import entities.PlayerLike;
 
 /** Connections are the people connected to our mud; later we will build a
  character around them and put them in the game.
  <p>
  Connections are Runnable things; the FixedThreadPool socket pool assigns
  serverSocket.accept() which is passed to the constructor. Boolean isExit is
- checked at every line, or we could force exit though a SocketException.
+ checked at every line, or we could force exit though a SocketException (eg,
+ mud shutdown.)
  
  @author	Neil
- @version	1.1, 12-2014
- @since		1.0, 11-2014 */
-public class Connection implements Mud.Handler/*, PlayerLike*/ {
+ @version	1.1, 2014-12
+ @since		1.0, 2014-11 */
+public class Connection implements Mud.Handler {
 
 	private static final String newbieCommandset = "newbie";
 
-	private static final int     bufferSize     = 80;
+	private static final int     bufferSize     = 80 * 2;
 	private static final String  cancelCommand  = "~";	
 	/* ^[\x00-\x1F\x7F] */
 	private static final Pattern invalidPattern = Pattern.compile("\\p{Cntrl}");
@@ -49,10 +50,6 @@ public class Connection implements Mud.Handler/*, PlayerLike*/ {
 	private final String name = Orcish.get();
 	private final Mud    mud;
 
-	/* so we don't have to worry about synconisation, we'll assign each
-	 Thread/Socket/Connection one and operate them in parallel */
-	private Mapper          mapper = new Mapper();
-
 	private Map<String, Command> commands;
 	private boolean         isWaiting;
 	private PrintWriter     out;
@@ -60,17 +57,16 @@ public class Connection implements Mud.Handler/*, PlayerLike*/ {
 	/*private OutputStream    outRaw = null;
 	private InputStream     inRaw = null; <- for ansi commands */
 	private Player  player;
-	//private PlayerLike playerlike;
 	private boolean isExit = false;
-	/* fixme: ip */
-
+	/* so we don't have to worry about synconisation, we'll assign each
+	 Thread/Socket/Connection one and operate them in parallel */
+	private Mapper          mapper = new Mapper();
+	
 	/** Initalize the connection.
 	 @param socket	The client socket. */
 	Connection(final Socket socket, final Mud mud) {
 		this.socket = socket;
 		this.mud    = mud;
-		//player            = null;//new Player(this);
-		//this.playerlike   = this;
 		this.player = new Player(this);
 		try {
 			this.commands = mud.getCommands(newbieCommandset);
@@ -80,14 +76,6 @@ public class Connection implements Mud.Handler/*, PlayerLike*/ {
 		}
 		System.err.print(this + " has connected to " + mud + ".\n");
 	}
-
-//	/* for Mud.GetHandler, allows us to enter the game with only a connection. */
-//	public Mud.Handler GetHandler() { return this; }
-//	/*public String getHanderName()   { return this.toString(); }*/
-
-	/* for PlayerLike */
-	//public Mud.Handler getHandler() { return this; }
-	//public String getPrompt() { return "> "; }
 
 	/* for Mud.Handler, the thead thing */
 	public Mud    getMud()                    { return mud; }
@@ -108,7 +96,6 @@ public class Connection implements Mud.Handler/*, PlayerLike*/ {
 	}
 	/** The server-side handler for connections. */
 	public void run() {
-		//System.err.print(this + " up and running, waiting for character creation.\n");
 		try(
 			PrintWriter   out = new PrintWriter(/*outRaw = */socket.getOutputStream(), true /* autoflush (doesn't work?) */);
 			BoundedReader  in = new BoundedReader(new BufferedReader(new InputStreamReader(/*inRaw = */socket.getInputStream())), bufferSize);
@@ -135,7 +122,6 @@ public class Connection implements Mud.Handler/*, PlayerLike*/ {
 			while(!isExit) {
 
 				/* wait for next line */
-				//if(player != null) sendToRaw(player.prompt());
 				sendToRaw(player.getPrompt());
 				isWaiting = true;
 				if((input = in.readLine()) == null) break;
@@ -151,8 +137,8 @@ public class Connection implements Mud.Handler/*, PlayerLike*/ {
 			}
 
 			this.sendTo("Closing " + this + ".");
-			socket.close();
 			mud.deleteClient(this);
+			socket.close();
 
 		} catch(UnsupportedEncodingException e) {
 			System.err.format("%s doesn't like UTF-8: %s.\n", this, e);
@@ -171,6 +157,54 @@ public class Connection implements Mud.Handler/*, PlayerLike*/ {
 
 	}
 
+	/** @return		The client socket. */
+	public Socket getSocket() {
+		return socket;
+	}
+
+	/** @return		Gets the player assocated with this connection. */
+	public Player getPlayer() {
+		return player;
+	}
+
+	/** @param p	Sets the player to another player, used at character creation. */
+	public void setPlayer(Player p) {
+		player = p;
+	}
+
+	/** This parses the string and runs it.
+	 @param c		The connection that's attributed the command.
+	 @param command	A command to parse. */
+	public void interpret(final String commandStr) {
+		String cmd, arg;
+
+		/* break it off if ~ is at the end */
+		if(commandStr.endsWith(cancelCommand)) {
+			sendTo("Cancelled.");
+			return;
+		}
+		/* break the string up */
+		/* fixme: any white space */
+		int space = commandStr.indexOf(' ');
+		if(space != -1) {
+			cmd = commandStr.substring(0, space);
+			arg = commandStr.substring(space).trim();
+		} else {
+			cmd = commandStr;
+			arg = "";
+		}
+
+		/* parse */
+		Command command = commands.get(cmd);
+
+		if(command != null) {
+			//command.command(this.playerlike, arg);
+			command.command(this.player, arg);
+		} else {
+			sendTo("Huh? \"" + cmd + "\" (use help for a list)");
+		}
+	}
+
 	/** Send a message to the connection.
 	 @param message		The message. */
 	public void sendTo(final String message) {
@@ -179,18 +213,23 @@ public class Connection implements Mud.Handler/*, PlayerLike*/ {
 		if(in == null) return;
 
 		StringBuilder sb = new StringBuilder();
-		if(isWaiting) sb.append("\n"); // fixme: it works, but should really be newLine(), \r\n
+		if(isWaiting) sb.append("\n"); // fixme: it works, but should really be newLine(), \r\n, right?
 		sb.append(message);
 		sb.append("\n");
-//		if(isWaiting && player != null) sb.append(player.prompt());
 		if(isWaiting) sb.append(player.getPrompt());
 		sendToRaw(sb.toString());
 	}
-
+	/** Send a message to the connection without prompt or newlines
+	 @param message		The message. */
 	private void sendToRaw(final String message) {
 		if(out == null) return;
 		out.print(message);
 		out.flush();
+	}
+
+	public String toString() {
+		String s = "Connection " + name + "(" + player + ")";
+		return s;
 	}
 
 /*	private boolean expectIn(final byte[] data) throws IOException {
@@ -253,58 +292,8 @@ public class Connection implements Mud.Handler/*, PlayerLike*/ {
 		 Sent by the Telnet client to inform the Telnet server of the
 		 window width and height. */
 
-	public String toString() {
-		String s = "Connection " + name;
-//		if(player != null) s += "(" + player + ")";
-		return s;
-	}
-
-	public Socket getSocket() {
-		return socket;
-	}
-
-	public Player getPlayer() {
-		return player;
-	}
-
-	public void setPlayer(Player p) {
-		player = p;
-	}
-
-	/** This parses the string and runs it.
-	 @param c		The connection that's attributed the command.
-	 @param command	A command to parse. */
-	public void interpret(final String commandStr) {
-		String cmd, arg;
-
-		/* break it off if ~ is at the end */
-		if(commandStr.endsWith(cancelCommand)) {
-			sendTo("Cancelled.");
-			return;
-		}
-		/* break the string up */
-		/* fixme: any white space */
-		int space = commandStr.indexOf(' ');
-		if(space != -1) {
-			cmd = commandStr.substring(0, space);
-			arg = commandStr.substring(space).trim();
-		} else {
-			cmd = commandStr;
-			arg = "";
-		}
-
-		/* parse */
-		Command command = commands.get(cmd);
-
-		if(command != null) {
-			//command.command(this.playerlike, arg);
-			command.command(this.player, arg);
-		} else {
-			sendTo("Huh? \"" + cmd + "\" (use help for a list)");
-		}
-	}
-
-	/** This is not used . . . yet. */
+	/** This is not used . . . yet. It's much trickier to send a binary command
+	 over the internet. */
 	private enum Telnet {
 		NAWS(31),	// Negotiate About Window Size
 		SE(240),	// End of subnegotiation parameters.

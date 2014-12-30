@@ -46,8 +46,8 @@ import main.Chronos;
  connnections are handled by a fixed socket pool.
 
  @author	Neil
- @version	1.1, 12-2014
- @since		1.0, 11-2014 */
+ @version	1.1, 2014-12
+ @since		1.0, 2014-11 */
 public class Mud implements Iterable<Connection> {
 
 	/* debug mode; everyone can read this */
@@ -60,7 +60,8 @@ public class Mud implements Iterable<Connection> {
 	private static final int sPeriod        = 10;
 	private static final String dataDir     = "../data";
 	private static final String mudData     = "mud";
-	private static /*final*/ Mud mudInstance; /* whatever, it keeps us from passing this parameter around */
+	private static /*final*/ Mud mudInstance; /* messy! whatever, it keeps us
+											   from passing this parameter around */
 
 	/* the mud data */
 	private String name     = "414Mud";
@@ -96,14 +97,6 @@ public class Mud implements Iterable<Connection> {
 		public void   setExit();
 		public void   register(Stuff stuff);
 	}
-
-	/** GetHandler is any class that is associated with a specific Handler; viz,
-	 any sort of Stuff is associated to Chronos, except Player which is
-	 assocated with it's own Connection */
-/*	public interface GetHandler {
-		public Mud.Handler getHandler();
-		//public String      getHandlerName();
-	}*/
 
 	/** The entire mud constructor.
 	 @param dataDir			The subdirectory where the data file is located.
@@ -149,7 +142,10 @@ public class Mud implements Iterable<Connection> {
 		/* set the [defaut] recall spot */
 		homearea = areas.get(homeareaStr);
 		try {
-			if(homearea == null) throw new Exception("area <" + homeareaStr + "> (line " + homeareaLine + ") does not exist; connections will be sent to the null room");
+			if(homearea == null)
+				throw new Exception("area <" + homeareaStr + "> (line "
+									+ homeareaLine
+									+ ") does not exist; connections will be sent to null");
 			homeroom = homearea.getRecall();
 			System.err.format("%s: set home room: <%s.%s>.\n", this, homearea, homeroom);
 		} catch(Exception e) {
@@ -167,6 +163,11 @@ public class Mud implements Iterable<Connection> {
 		System.err.format("%s: starting timer.\n", this);
 		chonosFuture = scheduler.scheduleAtFixedRate(chronos, sStartupDelay, sPeriod, TimeUnit.SECONDS);
 
+	}
+
+	/** @return	Gets the iterator of all the connections. Part of Interator interface. */
+	public Iterator<Connection> iterator() {
+		return clients.iterator();
 	}
 
 	/** Run the mud. */
@@ -196,7 +197,7 @@ public class Mud implements Iterable<Connection> {
 					}
 				}
 				System.err.print("Server socket closing.\n");
-				serverSocket.close(); // fixme: autoclosable, will already be closed in most sit
+				serverSocket.close(); // fixme: autoclosable, will already be closed in most sit?
 			} catch(InterruptedException ie) {
 				// (Re-)Cancel if current thread also interrupted
 				pool.shutdownNow();
@@ -261,14 +262,9 @@ public class Mud implements Iterable<Connection> {
 
 	}
 
-	/****** fixme!!! *******/
+	/****** fixme!!! this is stupid *******/
 	public static Mud getMudInstance() {
 		return mudInstance;
-	}
-
-	/** Prints out the mud info. */
-	public String toString() {
-		return name;
 	}
 
 	public Map<String, Area> getAreas() {
@@ -284,17 +280,6 @@ public class Mud implements Iterable<Connection> {
 		return chronos;
 	}
 
-	/** @param p	The test password.
-	 @return		True is the password matches the one when the mud started up. */
-	public boolean comparePassword(final String p) {
-		return p.compareTo(password) == 0;
-	}
-
-	/** @return	Gets the iterator of all the connections. */
-	public Iterator<Connection> iterator() {
-		return clients.iterator();
-	}
-
 	/** @return	Gets the Message of the Day. */
 	public String getMotd() {
 		return motd;
@@ -306,6 +291,12 @@ public class Mud implements Iterable<Connection> {
 		Map<String, Command> command = commandsets.get(commandStr);
 		if(command == null) throw new NoSuchElementException(this + ": command set <" + commandStr + "> not loaded");
 		return command;
+	}
+
+	/** @param p	The test password.
+	 @return		True is the password matches the one when the mud started up. */
+	public boolean comparePassword(final String p) {
+		return p.compareTo(password) == 0;
 	}
 
 	/** Load all resouces into a hash, one per filename. The hash keys are it's
@@ -347,6 +338,11 @@ public class Mud implements Iterable<Connection> {
 		}
 
 		return loadDir/*Collections.unmodifiableMap(loadMod)???*/;
+	}
+
+	/** Prints out the mud info. */
+	public String toString() {
+		return name;
 	}
 
 }

@@ -227,6 +227,10 @@ public class Stuff implements Iterable<Stuff> {
 		sendToRoom(this + " gets up here.");
 	}
 
+	public void levelUp() {
+		sendTo("Only players can level up.");
+	}
+
 	/** Prints all the data so it will be serialisable (but in text, not binary.)
 	 @return Blank string; fixme: the serialised version. */
 	public String saveString() {

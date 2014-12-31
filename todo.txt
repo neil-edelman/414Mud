@@ -1,3 +1,4 @@
+kill
 track
 follow
 savearea
@@ -7,6 +8,9 @@ as/force <stuff> (immortal)
 flee
 help start at the beginning
 sacrifice
+
+
+hit ppl! then get fighting
 
 afk on exit!
 put in subdir

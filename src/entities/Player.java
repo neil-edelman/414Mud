@@ -30,6 +30,9 @@ public class Player extends Character /*implements PlayerLike*/ {
 		this.connection = connection;
 		name = "Nemo"; /* connection.getName? */
 		title= "Nemo hasn't chosen a name yet.";
+		hpTotal = hpCurrent = 1;
+		level = 0;
+		money = 0;
 	}
 
 	/*public Player(Connection connection, String name) {
@@ -80,6 +83,17 @@ public class Player extends Character /*implements PlayerLike*/ {
 	@Override
 	public void sendTo(final String message) {
 		connection.sendTo(message);
+	}
+
+	@Override
+	public void levelUp() {
+		level++;
+		int hpOld = hpTotal;
+		int hpNew = 50 * level + 100;
+		if(hpNew > hpTotal) hpTotal = hpNew;
+		int hpGain = hpTotal - hpOld;
+		hpCurrent += hpGain;
+		sendTo("You level up to " + level + "; health: " + hpOld + "->" + hpTotal + " (imporoved " + hpGain + ")");
 	}
 
 	/** fixme! */

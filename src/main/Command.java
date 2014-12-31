@@ -201,6 +201,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		}
 		System.err.format("%s: create <%s>.\n", s.getHandler(), s);
 		//c.sendTo("You create a character named " + s + "!");
+		s.levelUp();
 		s.transportTo(s.getHandler().getMud().getHome());
 	}, look = (s, arg) -> {
 		Stuff in = s.getIn();
@@ -283,6 +284,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			s.sendTo("No command set immortal exists.");
 			return;
 		}
+		s.levelUp();
 		s.sendTo("You are now an immortal; type 'help' for new commands.");
 		s.sendToRoom("A glorious light surronds " + s + " as they ascend.");
 		System.err.print(s.getHandler() + " has ascended.\n");

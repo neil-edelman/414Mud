@@ -21,6 +21,10 @@ import entities.Player;
  @since		1.1, 2014-12 */
 public class Mapper {
 
+	/* fixme: map and mapRooms should be combined, then as long as you're in the
+	 same room, it uses the chached map! simple . . . but now the first thing
+	 in the chache would the depth-limiting (which is kind of what we want) */
+
 	/* the braching factor could be used to upper-bound bfs; nah, rooms are
 	 sparse, we'll just go with the default, 16, and allow it to grow */
 	/* roomQueue and dirQueue are the same, but Java provides no static

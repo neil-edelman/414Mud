@@ -14,6 +14,8 @@ getConnection->getHandler Connection, Chronos, extend Handler (getMapper); put i
 
 channels, on/off, given chat at 1
 
+Map stored as long as you are in the room.
+
 Commandset stuff; do new Stuff Newbie->Login
 
 Room: capacity

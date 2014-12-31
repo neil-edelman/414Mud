@@ -20,16 +20,17 @@ import java.lang.NoSuchFieldException;
 public class Room extends Stuff {
 
 	public enum Direction {
-		HERE("here", "here"),
-		N("n", "north"),
-		E("e", "east"),
-		S("s", "south"),
-		W("w", "west"),
-		U("u", "up"),
-		D("d", "down");
+		HERE("here", "here", 0, 0),
+		N("n", "north",      0, 1),
+		E("e", "east",       1, 0),
+		S("s", "south",      0, -1),
+		W("w", "west",      -1, 0),
+		U("u", "up",         0, 0),
+		D("d", "down",       0, 0);
 
 		private String       name, var;
 		private Direction    back;
+		private int          x, y;
 		private static final Map<String, Direction> map;
 
 		static {
@@ -55,9 +56,11 @@ public class Room extends Stuff {
 
 		}
 
-		private Direction(final String var, final String name) {
+		private Direction(final String var, final String name, int x, int y) {
 			this.var  = var;  /* must match Field names in Room! */
 			this.name = name;
+			this.x    = x;
+			this.y    = y;
 		}
 		private Field     getRoomField(Room r) throws NoSuchFieldException {
 			/* fixme: I would really like to chache this */
@@ -73,6 +76,8 @@ public class Room extends Stuff {
 		}
 		public Direction getBack()                     { return back; }
 		public String    toString()                    { return name; }
+		public int getX()                              { return x; }
+		public int getY()                              { return y; }
 		public static Direction find(final String str) { return map.get(str); }
 	};
 

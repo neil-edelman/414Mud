@@ -38,6 +38,16 @@ interface Command { void command(final Stuff s, final String arg); }
  @since		1.0, 11-2014 */
 class LoadCommands implements Mud.Loader<Map<String, Command>> {
 
+	/* sorry, I use a US keyboard and it's difficult to type in accents, etc,
+	 when addressing, etc, players in real time; only allow players to have
+	 ascii names */
+	private static final Pattern namePattern = Pattern.compile("([A-Z][a-z]+('[a-z]+)*){1,3}");
+	private static final int minName  = 3;
+	private static final int maxName  = 8;
+
+	private static final int yellDistance = 3;
+	private static final int mapDistance  = 2;
+
 	/* fixme: there are many more in UTF-8 */
 	private static final String    vowels = "aeiouyAEIOUY";
 	private static StringBuilder testChar = new StringBuilder(1);
@@ -75,15 +85,6 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 	/* these are the static pool of commands; the Command variable name is the
 	 second parameter of the .cset file (see {@link load}.) */
 
-	/* sorry, I use a US keyboard and it's difficult to type in accents, etc,
-	 when addressing, etc, players in real time; only allow players to have
-	 ascii names */
-	private static final Pattern namePattern = Pattern.compile("([A-Z][a-z]+('[a-z]+)*){1,3}");
-	private static final int minName  = 3;
-	private static final int maxName  = 8;
-
-	private static final int yellDistance = 3;
-
 	protected static final Command help = (s, arg) -> {
 		Map<String, Command> commands = s.getHandler().getCommands();
 		s.sendTo("These are the commands which you are authorised to use right now:");
@@ -106,6 +107,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		}
 	}, yell = (s, arg) -> {
 		Stuff r = s.getIn();
+		/* fixme: do like map, escape to the room */
 		if(r == null || !(r instanceof Room)) {
 			s.sendTo("You can't yell in here.");
 			return;
@@ -290,8 +292,15 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			s.sendTo(a.toString());
 		}
 	}, map = (s, arg) -> {
-		s.getHandler().getMapper();
-		s.sendTo("You can do that yet. Very soon.");
+		Stuff in = room(s);
+		if(in == null || !(in instanceof Room)) {
+			s.sendTo("Interminable blackness surrounds you.");
+			return;
+		}
+		s.sendTo("You close your eyes and concentrate.");
+		s.sendToRoom(s + " closes their eyes and concentrates.");
+		/* make a map */
+		s.sendTo(s.getHandler().getMapper().mapRooms((Room)in));
 	}, north = (s, arg) -> {
 		s.go(Room.Direction.N);
 	}, east = (s, arg) -> {
@@ -331,6 +340,17 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		s.sendToRoom(s + " dismounts " + an + ".");
 	};
 
+	/**
+	 @param s	Something.
+	 @return	The room s is in, or null */
+	static Stuff room(Stuff s) {
+		do {
+			s = s.getIn();
+			if(s == null) return null;
+		} while(s.isEnterable());
+		return s;
+	}
+
 	/* lazy */
 	static String an(final String str) {
 		try {
@@ -353,5 +373,10 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			sb.append(str);
 		}
 	}*/
+
+	/** How much Mapper should give to the size. */
+	static int mapDepth() {
+		return mapDistance;
+	}
 
 }

@@ -61,7 +61,7 @@ public class Connection implements Mud.Handler {
 	/* so we don't have to worry about synconisation, we'll assign each
 	 Thread/Socket/Connection one and operate them in parallel */
 	private Mapper          mapper = new Mapper();
-	
+
 	/** Initalize the connection.
 	 @param socket	The client socket. */
 	Connection(final Socket socket, final Mud mud) {

@@ -36,7 +36,7 @@ public class Chronos implements Mud.Handler {
 	/** Constructor. */
 	public Chronos(final Mud mud) {
 		Map<String, Command> c = null;
-		this.mud = mud;
+		this.mud    = mud;
 		try {
 			c = mud.getCommands(stuffCommandset);
 		} catch(NoSuchElementException e) {

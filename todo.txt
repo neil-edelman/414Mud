@@ -1,12 +1,10 @@
-drop
-follow
-track
-areas
 map
+track
+follow
 savearea
 rundown
 fire (as in, shoot) <at something, or default mob you're hating>
-as <stuff> (immortal)
+as/force <stuff> (immortal)
 flee
 help start at the beginning
 
@@ -18,23 +16,15 @@ channels, on/off, given chat at 1
 
 Commandset stuff; do new Stuff Newbie->Login
 
-try abstraction again: Commandset->Commands should only be a container for commands
-
-mud: have names of directories instead of hc
-
 Room: capacity
 
 Character: conflict (hating)
 
+Now Connections don't close; they used to.
+
 control the car! tank. humvee, hot air ballon, moped, firetruck . . . bike (security guards will be pissed) boat (sub!) helicopter! police car (make sure they don't set it on fire while you're in it!) . . . also "ride dragon" mountable, motorcycle (have isIn as one obj flags); unmount; look out: have a look in in look? two things, if(r.isEnterable()) for(Stuff in : r) {"\t" +...}, in.isEnterable()... ; neswup control the tank, but only on chronos timer; have mass and capacity restraints
 
-make an/a/this/etc so we know what to print
-
-Areas: make like Commandset
-
 Chance: static lookup tables
-
-hearing Mobs, map
 
 Mob: how evasive is it? zombies are easy to hit with chalk, dinosaurs are not
 

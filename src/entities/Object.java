@@ -27,6 +27,7 @@ public class Object extends Stuff {
 	public boolean isTransportable;
 	public boolean isEnterable;
 	private int    mass;
+	protected Room.Direction nextDir; /* for entering and controlling */
 
 	public Object() {
 		super();
@@ -63,5 +64,26 @@ public class Object extends Stuff {
 	public boolean isEnterable() {
 		return isEnterable;
 	}
+
+	/** Each clock tick. */
+	@Override
+	public boolean doClockTick() {
+		System.err.format("%s.doClockTick(): %s\n", this, nextDir);
+		/* fixme: perSecond, decrement and then go */
+		/* this is used, eg, with commands to mounts */
+		//if(command != null) { command.invoke(this, ""); }
+		if(nextDir == null) return false;
+		/* fixme: sendToContentsRecursive()? */
+		sendToContents(/*fixme: An(this)*/"A " + this + " is going " + nextDir + ".");
+		System.err.format("%s.doClockTick(): will do go(nextDir)\n", this);
+		go(nextDir);
+		nextDir = null;
+		System.err.format("%s.doClockTick(): return false\n", this);
+		/* remove from list */
+		return false;
+	}
+
+	/** Objects can have NextDir. */
+	public void setNextDir(final Room.Direction where) { nextDir = where; }
 
 }

@@ -6,8 +6,6 @@ package entities;
 import java.util.Map;
 import java.util.HashMap;
 
-//import java.util.Iterator;
-
 import main.Connection;
 import entities.Room;
 import main.Mapper;
@@ -18,7 +16,7 @@ import main.Mud;
  @author	Sid, Neil
  @version	1.1, 2014-12
  @since		1.0, 2014-11 */
-public class Player extends Character /*implements PlayerLike*/ {
+public class Player extends Character {
 
 	static final int distanceWakeUp = 3;
 
@@ -28,31 +26,20 @@ public class Player extends Character /*implements PlayerLike*/ {
 	public Player(Connection connection) {
 		super();
 		this.connection = connection;
-		name = "Nemo"; /* connection.getName? */
+		name = "Nemo"; /* connection.getName()? */
 		title= "Nemo hasn't chosen a name yet.";
 		hpTotal = hpCurrent = 1;
 		level = 0;
 		money = 0;
 	}
 
-	/*public Player(Connection connection, String name) {
-		super();
-		this.connection = connection;
-		this.name  = name;
-		this.title = name + " is here.";
-	}*/
-
-	/** Part of the contract with GetHandler: this is in it's own thread, so it
-	 must use it's own Handler, viz, Connection implemts Mud.Handler */
+	/** @return	This is in it's own thread, so it must use it's own Handler. */
+	@Override
 	public Mud.Handler getHandler() {
 		return connection;
 	}
-	/*public String getHandlerName() {
-		return name + "(" + connection + ")";
-	}*/
 
-	/** Gives more info.
-	 @return More info on the object. */
+	/** @return More info on the object. */
 	@Override
 	public String lookDetailed(final Stuff exempt) {
 		StringBuilder sb = new StringBuilder();
@@ -68,10 +55,22 @@ public class Player extends Character /*implements PlayerLike*/ {
 	/* Update players' bfs. */
 	@Override
 	protected void hasMoved() {
-		if(!(in instanceof Room)) return;
-		getHandler().getMapper().map((Room)in, distanceWakeUp, (room, dis, dir) -> {
+		StringBuilder sb = new StringBuilder("\n");
+		Room r;
+
+		/* create appropriate message */
+		if((r = getRoom()) == null) {
+			sb.append("Endless blackness surrounds you; you suddenly feel weightless.");
+		} else {
+			sb.append(r.lookDetailed(this));
+		}
+		sendTo(sb.toString());
+
+		/* wake up mobs */
+		getHandler().getMapper().map(r, distanceWakeUp, (room, dis, dir) -> {
 			System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);
 			//where.put(dis, room);
+			/* fixme: have separite lists for mobs, players, and stuff; be careful */
 			for(Stuff s : room) {
 				/* fixme: just to be evil . . . dinosaurs can smell and hunt you! */
 				if(s instanceof Mob) ((Mob)s).wakeUp();

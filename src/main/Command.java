@@ -29,7 +29,7 @@ import entities.Room;
 import main.Mud;
 
 /** The contract that a command will have. */
-interface Command { void command(final Stuff s, final String arg); }
+public interface Command { void invoke(final Stuff s, final String arg); }
 
 /** Command loader. This is where the commands are stored as lambdas.
  
@@ -204,25 +204,30 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		s.levelUp();
 		s.transportTo(s.getHandler().getMud().getHome());
 	}, look = (s, arg) -> {
-		Stuff in = s.getIn();
 
+		Room           room = s.getRoom();
+		Room           otherRoom;
 		Stuff          victim;
 		Room.Direction dir;
-		Room           room;
 
 		if(arg.length() > 0) {
 			/* look at something */
 			int count = 0;
-			if(in != null) {
+			if(room != null) {
 				/* look at things in the room */
-				if((victim = in.matchContents(arg)) != null) {
-					s.sendTo(victim.lookDetailed(s));
+				if((victim = room.matchContents(arg)) != null) {
+					Stuff in = s.getIn();
+					if(room == in) {
+						s.sendTo(victim.lookDetailed(s));
+					} else {
+						s.sendTo("You can't look at this from " + in + ".");
+					}
 					count++;
 				}
 				/* look at exits */
 				if((dir = Room.Direction.find(arg)) != null) {
-					if((room = in.getRoom(dir)) != null) {
-						s.sendTo(room.look());
+					if((otherRoom = room.getRoom(dir)) != null) {
+						s.sendTo(otherRoom.look());
 					} else {
 						s.sendTo("You don't want to go that way.");
 					}
@@ -240,8 +245,8 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 
 		} else {
 			/* just look in general */
-			if(in != null) {
-				s.sendTo(in.lookDetailed(s));
+			if(room != null) {
+				s.sendTo(room.lookDetailed(s));
 			} else {
 				s.sendTo("You are floating in space.");
 			}
@@ -294,8 +299,8 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			s.sendTo(a.toString());
 		}
 	}, map = (s, arg) -> {
-		Stuff in = room(s);
-		if(in == null || !(in instanceof Room)) {
+		Room in = s.getRoom();
+		if(in == null) {
 			s.sendTo("Interminable blackness surrounds you.");
 			return;
 		}
@@ -341,17 +346,6 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		s.placeIn(in);
 		s.sendToRoom(s + " dismounts " + an + ".");
 	};
-
-	/**
-	 @param s	Something.
-	 @return	The room s is in, or null */
-	static Stuff room(Stuff s) {
-		do {
-			s = s.getIn();
-			if(s == null) return null;
-		} while(s.isEnterable());
-		return s;
-	}
 
 	/* lazy */
 	static String an(final String str) {

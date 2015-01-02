@@ -88,6 +88,9 @@ public class Room extends Stuff {
 	@Override
 	public Room getRoom(Direction dir) { return dir.getRoom(this); }
 
+	@Override
+	public Room getRoom() { return this; };
+
 	public Room() {
 		super();
 		here        = this;

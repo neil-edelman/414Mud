@@ -3,7 +3,7 @@ neil dot edelman each mail dot mcgill dot ca
 
 Version 1.1
 
-Neil Edelman, just for lolz.
+Neil Edelman. Requires Java 8 for Lambdas.
 
 Version 1.0
 

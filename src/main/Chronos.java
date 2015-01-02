@@ -8,8 +8,11 @@ import java.util.Map;
 //import java.util.Collections;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Iterator;
 
 import java.util.NoSuchElementException;
+import java.lang.UnsupportedOperationException;
+import java.lang.IllegalStateException;
 
 import common.Chance;
 import main.Mapper;
@@ -27,10 +30,10 @@ public class Chronos implements Mud.Handler {
 
 	private static final String stuffCommandset = "stuff";
 
-	private final Chance chance = new Chance();
-	private final Mapper mapper = new Mapper();
-	private      List<Mob> mobs = new LinkedList<Mob>(); /* <- hashmap!!? */
-	private final Mud       mud;
+	private final Chance     chance = new Chance();
+	private final Mapper     mapper = new Mapper();
+	private      List<Stuff> active = new LinkedList<Stuff>(); /* <- hashmap!!? */
+	private final Mud           mud;
 	private	final Map<String, Command> commands; /* could be null! */
 
 	/** Constructor. */
@@ -56,27 +59,41 @@ public class Chronos implements Mud.Handler {
 
 	public Mapper getMapper() { return mapper; }
 
+	public Chance getChance() { return chance; }
+
 	public void   setExit()   {
 		/* fixme! on death? */
 	}
 
-	public void register(Stuff stuff) {
-		System.err.print("Chronos::register stuff = " + stuff + "\n");
-		if(!(stuff instanceof Mob)) {
+	public void register(final Stuff stuff) {
+		//System.err.print("Chronos::register stuff = " + stuff + "\n");
+		/*if(!(stuff instanceof Mob)) {
 			System.err.format("%s: that's funny, <%s>, is not a Mob; ignoring.\n", this, stuff);
 			return;
-		}
-		mobs.add((Mob)stuff);
-		System.err.format("%s: registered <%s>.\n", this, stuff);
+		}*/
+		if(active.contains(stuff)) return; /* fixme: ugh, O(n) */
+		active.add(stuff);
+		System.err.format("%s: registered <%s> as active.\n", this, stuff);
 	}
 
 	/* one time step */
 	public void run() {
-		System.out.format("<Bump>\n");
-		for(Mob m : mobs) {
-			if(m.isSleeping()) continue;
-			m.doSomethingInteresting(chance);
+		System.err.format("<%s.run(): ", this);
+		Stuff a;
+		Iterator<Stuff> it = active.iterator();
+		try {
+			while(it.hasNext()) {
+				a = it.next();
+				//System.err.format("%s.hasNext = %b ", a, it.hasNext());
+				System.err.format("%s ", a);
+				if(a.doClockTick()) continue;
+				System.err.format("(removing) ");
+				it.remove();
+			}
+		} catch(NoSuchElementException | UnsupportedOperationException | IllegalStateException e) {
+			System.err.print(this + ": confused? " + e + ".\n");
 		}
+		System.err.format(">\n");
 	}
 
 	/** @return A synecdochical {@link String}. */

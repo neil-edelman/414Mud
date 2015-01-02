@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import common.BoundedReader;
 import common.Orcish;
+import common.Chance;
 import entities.Character;
 import entities.Player;
 import entities.Stuff;
@@ -61,6 +62,7 @@ public class Connection implements Mud.Handler {
 	/* so we don't have to worry about synconisation, we'll assign each
 	 Thread/Socket/Connection one and operate them in parallel */
 	private Mapper          mapper = new Mapper();
+	private Chance          chance = new Chance();
 
 	/** Initalize the connection.
 	 @param socket	The client socket. */
@@ -84,15 +86,19 @@ public class Connection implements Mud.Handler {
 		commands = getMud().getCommands(cmdStr);
 	}
 	public Mapper getMapper()                 { return mapper; }
+	public Chance getChance()                 { return chance; }
 	public void   setExit()                   { isExit = true; }
-	public void   register(Stuff stuff) {
-		if(!(stuff instanceof Player)) {
+	public void   register(Stuff stuff)       {
+		/* fixme: have register be an active connections list, and delete the
+		 active connection list */
+		System.err.format("%s: register(%s) is useless, still.");
+		/*if(!(stuff instanceof Player)) {
 			System.err.format("%s: that's funny, <%s>, is not a Player; ignoring.\n", this, stuff);
 			return;
 		}
 		//mud.players . . . fixme! we don't have to keep track of players in mud
 		//players.add((Player)stuff);
-		System.err.format("%s: registered <%s>. (but not really)\n", this, stuff);
+		System.err.format("%s: registered <%s>. (but not really)\n", this, stuff);*/
 	}
 	/** The server-side handler for connections. */
 	public void run() {
@@ -175,22 +181,22 @@ public class Connection implements Mud.Handler {
 	/** This parses the string and runs it.
 	 @param c		The connection that's attributed the command.
 	 @param command	A command to parse. */
-	public void interpret(final String commandStr) {
+	public void interpret(final String input) {
 		String cmd, arg;
 
 		/* break it off if ~ is at the end */
-		if(commandStr.endsWith(cancelCommand)) {
+		if(input.endsWith(cancelCommand)) {
 			sendTo("Cancelled.");
 			return;
 		}
 		/* break the string up */
 		/* fixme: any white space */
-		int space = commandStr.indexOf(' ');
+		int space = input.indexOf(' ');
 		if(space != -1) {
-			cmd = commandStr.substring(0, space);
-			arg = commandStr.substring(space).trim();
+			cmd = input.substring(0, space);
+			arg = input.substring(space).trim();
 		} else {
-			cmd = commandStr;
+			cmd = input;
 			arg = "";
 		}
 
@@ -198,10 +204,9 @@ public class Connection implements Mud.Handler {
 		Command command = commands.get(cmd);
 
 		if(command != null) {
-			//command.command(this.playerlike, arg);
-			command.command(this.player, arg);
+			command.invoke(this.player, arg);
 		} else {
-			sendTo("Huh? \"" + cmd + "\" (use help for a list)");
+			sendTo("Huh? \"" + cmd + "\" (use 'help' for a list)");
 		}
 	}
 

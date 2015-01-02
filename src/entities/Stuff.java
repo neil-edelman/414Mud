@@ -14,6 +14,7 @@ import java.util.Iterator;
 
 import main.Connection;
 import main.Mapper;
+import main.Command;
 import entities.Room.Direction;
 import main.Mud;
 
@@ -34,19 +35,25 @@ public class Stuff implements Iterable<Stuff> {
 	protected List<Stuff> contents = new LinkedList<Stuff>();
 	protected Stuff in;
 
+	/** Create it with default values. */
 	public Stuff() {
 		name     = "stuff";
 		title    = "Some stuff is here.";
 	}
 
-	/** Read it from a file. */
+	/** @param in	Read it from a file. */
 	public Stuff(common.TextReader in) throws java.text.ParseException, java.io.IOException {
 		name  = in.nextLine();
 		title = in.nextLine();
 	}
 
-	/** Part of the contract with GetHander to return Chronos, the defaut
-	 timer-Handler-thread. */
+	/** Each clock tick. */
+	public boolean doClockTick() {
+		System.err.print("%s: on active list? removing.");
+		return false;
+	}
+
+	/** @return		The defaut timer-Handler-thread thing. */
 	public Mud.Handler getHandler() {
 		return Mud.getMudInstance().getChronos();
 	}
@@ -72,19 +79,24 @@ public class Stuff implements Iterable<Stuff> {
 		return title;
 	}
 
-	/** Noisy (mostly use this.) */
+	/** Noisy wrap of {@link #placeIn} (ie, writes what it's doing to the
+	 screen.) */
 	public void transportTo(final Stuff container) {
 		sendToRoom(this + " suddenly disapparates.");
+		sendTo("You disapparate and instantly travel to '" + container + "'");
 		placeIn(container);
-		sendTo("You disapparate and instantly travel to '" + container + "'\n"); /* newline! we are going somewhere else */
 		sendToRoom(this + " suddenly apparates.");
 		/* players will want to look around immediatly */
-		sendTo((container != null) ? container.lookDetailed(this) : "Endless blackness surrounds you; you suddenly feel weightless.");
+		//sendTo((container != null) ? container.lookDetailed(this) : "Endless blackness surrounds you; you suddenly feel weightless.");
 	}
 
-	/** Silent (only if you know what you're doing.) */
+	/** @param container	Silently places this in container with no checks.
+	 @bug					Check for DAG; if not, {@link getRoom()} could be
+							infinitly recusing. */
 	public void placeIn(Stuff container) {
 		Connection connection;
+
+		//System.err.format("%s.placeIn(%s);\n", this, container);
 
 		/* we're already in something */
 		if(in != null) {
@@ -98,35 +110,42 @@ public class Stuff implements Iterable<Stuff> {
 
 		hasMoved();
 
-		//System.err.print(this + " in " + container + ".\n");
 	}
 
-	/** Called by {@link placeIn} to do stuff. */
+	/** Called by {@link placeIn} to do stuff specific all the different
+	 entities. */
 	protected void hasMoved() {
-		/* do nothing */
+		/* recurse */
+		System.err.format("%s.hasMoved();\n", this);
+
+		// ************************************* this is important, but crashes
+		// the thread?
+		// if(isEnterable()) ...
+		//for(Stuff i : this) i.hasMoved();
 	}
 
-	public Stuff getIn() {
+	/** @return		The one above it in the Stuff tree. Can be null. */
+	public final Stuff getIn() {
 		return in;
 	}
 
-	/** Overwrote on things that have a connection.
+	/** Overwrote on things that have a connection; viz, Player.
 	 @param message
 		The string to send; no newline. */
 	public void sendTo(final String message) {
 	}
 
-	public void sendToRoom(final String message) {
+	public final void sendToRoom(final String message) {
 		if(this.in == null) return;
 		this.in.sendToContentsExcept(this, message);
 	}
 
-	public void sendToRoomExcept(final Stuff except, final String message) {
+	public final void sendToRoomExcept(final Stuff except, final String message) {
 		if(this.in == null) return;
 		this.in.sendToContentsExcept(this, except, message);
 	}
 
-	public void sendToContentsExcept(final Stuff except, final String message) {
+	public final void sendToContentsExcept(final Stuff except, final String message) {
 		for(Stuff s : this) {
 			if(s == except) continue;
 			s.sendTo(message);
@@ -134,14 +153,17 @@ public class Stuff implements Iterable<Stuff> {
 	}
 
 	/** fixme: could be more optimised */
-	private void sendToContentsExcept(final Stuff except1, final Stuff except2, final String message) {
+	private final void sendToContentsExcept(final Stuff except1, final Stuff except2, final String message) {
 		for(Stuff s : this) {
 			if(s == except1 || s == except2) continue;
 			s.sendTo(message);
 		}
 	}
 
-	public void sendToContents(final String message) {
+	public final void sendToContents(final String message) {
+		/* fixme: perhaps make this recursive? pros: if you are on an emu in a
+		 tank, this will work properly; cons: a lot of sendTo(inventory);
+		 perhaps make a sendToContentsRec()? */
 		for(Stuff s : this) s.sendTo(message);
 	}
 
@@ -170,13 +192,17 @@ public class Stuff implements Iterable<Stuff> {
 		return sb.toString();
 	}
 
-	/** @return Iterate over the contents. */
+	/** @return	Iterate over the contents. */
 	public Iterator<Stuff> iterator() {
 		return contents.iterator();
 	}
 
-	/* @return Null since there is no directions (overwriten in Room.) */
+	/* @return	Null since there is no directions (overwriten in Room.) */
 	public Room getRoom(Direction dir) { return null; }
+
+	/* @return	Recursive room search; in practice, a depth of one or two, but
+	 allows in an in an in, etc; why that would be useful is unclear. */
+	public Room getRoom() { return in.getRoom(); }
 
 	/** Sets the flags from a line
 	 @param line	The line. */
@@ -187,18 +213,33 @@ public class Stuff implements Iterable<Stuff> {
 		return false;
 	}
 
-	public void go(Room.Direction where) {
+	/** Stuff can not go anywhere. */
+	public void setNextDir(final Room.Direction where) { }
+
+	public final void go(final Room.Direction where) {
 		if(in == null) {
 			sendTo("Can't do that; you are floating in space.");
 			return;
 		}
+		if(!(in instanceof Room)) {
+			System.err.format("%s: %s not instaceof Room\n", this, in);
+			/* we are mounted somehow */
+			in.setNextDir(where);
+			in.getHandler().register(in);
+			System.err.format("%s.getHandler().register(%s);\n", this, in);
+			sendTo("You tell " + /*fixme:an*/in + " to go " + where + ".");
+			sendToRoom(this + " tells " + /*the()*/in + " to go " + where + ".");
+			return;
+		}
+		System.err.format("%s: %s instaceof Room\n", this, in);
+		/* we are walking normaly */
 		Room target = in.getRoom(where);
 		if(target == null) {
 			sendTo("You can't go that way.");
-			sendToRoom(this + " searches for a way " + where + ".");
+			sendToRoom(/*the*/this + " searches for a way " + where + ".");
 			return;
 		}
-		sendTo("You walk " + where + ".\n"); /* newline! helps keep room seperate */
+		sendTo("You walk " + where + ".");
 		sendToRoom(this + " walks " + where + ".");
 		placeIn(target);
 		sendToRoom(this + " walks in from the " + where.getBack() + ".");

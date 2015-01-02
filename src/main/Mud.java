@@ -82,7 +82,7 @@ public class Mud implements Iterable<Connection> {
 	/* the timer */
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private final ScheduledFuture<?> chonosFuture;
-	private final Chronos chronos;/* = new Chronos();*/
+	private final Chronos chronos;
 
 	/** classes can implement Mud.Loader to be loaded in {@link loadAll}. */
 	interface Loader<F> { F load(TextReader in) throws ParseException, IOException; }
@@ -94,8 +94,9 @@ public class Mud implements Iterable<Connection> {
 		public Map<String, Command> getCommands();
 		public void setCommands(final String cmdStr) throws NoSuchElementException;
 		public Mapper getMapper();
+		public Chance getChance();
 		public void   setExit();
-		public void   register(Stuff stuff);
+		public void   register(final Stuff stuff);
 	}
 
 	/** The entire mud constructor.
@@ -122,11 +123,13 @@ public class Mud implements Iterable<Connection> {
 			motd         = text.nextParagraph();
 			/* could go really customisable and set the, eg, ".area", but why? */
 		} catch(ParseException e) {
-			System.err.format("%s/%s; syntax error: %s, line %d.\n", dataDir, mudData, e.getMessage(), e.getErrorOffset());
+			System.err.format("%s/%s; syntax error: %s, line %d.\n",
+							  dataDir, mudData, e.getMessage(), e.getErrorOffset());
 			throw new IOException(dataDir + "/" + mudData);
 		}
 		this.poolSize = poolSize; /* set class final = local rewritable */
-		System.err.format("%s: port %d, max connections %d, home area <%s>.\n", this, port, poolSize, homeareaStr);
+		System.err.format("%s: port %d, max connections %d, home area <%s>.\n",
+						  this, port, poolSize, homeareaStr);
 		System.err.format("%s: set the ascent password: <%s>.\n", this, password);
 		System.err.format("%s: set MOTD: <%s>.\n", this, motd);
 
@@ -138,19 +141,13 @@ public class Mud implements Iterable<Connection> {
 		 exception, but before the areas are loaded so mobs will be able to register */
 		chronos     = new Chronos(this);
 		areas       = loadAll("areas",       ".area", (in) -> { return new Area(in); });
-
 		/* set the [defaut] recall spot */
-		homearea = areas.get(homeareaStr);
-		try {
-			if(homearea == null)
-				throw new Exception("area <" + homeareaStr + "> (line "
-									+ homeareaLine
-									+ ") does not exist; connections will be sent to null");
-			homeroom = homearea.getRecall();
+		if((homearea = areas.get(homeareaStr)) != null) {
 			System.err.format("%s: set home room: <%s.%s>.\n", this, homearea, homeroom);
-		} catch(Exception e) {
-			System.err.format("%s/%s: %s.\n", dataDir, mudData, e.getMessage());
-			/* we let is start anyway; it's a chat server at least */
+			homeroom = homearea.getRecall();
+		} else {
+			System.err.format("%s/%s: area <%s> (line %d) does not exist; connections will be sent to null.\n",
+							  dataDir, mudData, homeareaStr, homeareaLine);
 		}
 
 		/* start the networking */
@@ -289,7 +286,8 @@ public class Mud implements Iterable<Connection> {
 	 @throws NamingException	That name isn't loaded. */
 	public Map<String, Command>getCommands(final String commandStr) throws NoSuchElementException {
 		Map<String, Command> command = commandsets.get(commandStr);
-		if(command == null) throw new NoSuchElementException(this + ": command set <" + commandStr + "> not loaded");
+		if(command == null) throw new NoSuchElementException(this
+		                     + ": command set <" + commandStr + "> not loaded");
 		return command;
 	}
 
@@ -328,7 +326,8 @@ public class Mud implements Iterable<Connection> {
 				) {
 				loadFile = loader.load(in);
 			} catch(ParseException e) {
-				System.err.format("%s; syntax error: %s, line %d.\n", file, e.getMessage(), e.getErrorOffset());
+				System.err.format("%s; syntax error: %s, line %d.\n", file,
+				                            e.getMessage(), e.getErrorOffset());
 			} catch(IOException e) {
 				System.err.format("%s; %s.\n", file, e);
 			}

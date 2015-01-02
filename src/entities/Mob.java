@@ -26,12 +26,12 @@ public class Mob extends Character {
 	public boolean isFriendly;
 	public boolean isXeno;
 
-	private boolean isSleeping = true;
+	//private boolean isSleeping = true;
 
 	public Mob() {
 		super();
 		title = "Someone is looking confused.";
-		Mud.getMudInstance().getChronos().register(this);
+		// is there anyone around? register. Mud.getMudInstance().getChronos().register(this);
 	}
 
 	/** Read it from a file. */
@@ -42,43 +42,52 @@ public class Mob extends Character {
 		} catch(common.UnrecognisedTokenException e) {
 			throw new java.text.ParseException(e.getMessage(), in.getLineNumber());
 		}
-		getHandler().register(this);
+		//getHandler().register(this);
 	}
 
-	/** Do a thing. */
-	public void doSomethingInteresting(Chance c) {
+	/** Do a thing.
+	 @return	Whether it continues to be on the stuff list. */
+	@Override
+	public boolean doClockTick() {
+
+		/* fixme: mounts do commands with probability */
+
+		Mud.Handler handler = getHandler();
 
 		/* go to sleep? fixme: this should happen much less frequently */
-		if(getHandler().getMapper().map((Room)in, Player.distanceWakeUp, (room, dis, dir) -> {
+		if(handler.getMapper().map((Room)in, Player.distanceWakeUp, (room, dis, dir) -> {
 			/*System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);*/
+			/* fixme: have Player, Mob, Other lists, then this becomes
+			 room.playerList.isEmpty(), O(1) instead of O(n) for @ room; but
+			 tricky beacuse of, eg, Players in Mobs */
 			for(Stuff s : room) {
 				if(s instanceof Player) {
-					System.err.format("%s: staying awake because of %s.\n", this, s);
+					//System.err.format("%s: staying awake because of %s.\n", this, s);
 					return false;
 				}
 			}
 			return true;
 		})) {
-			isSleeping = true;
-			System.err.format("%s: no one nearby, going to sleep.\n", this);
-			return;
+			//System.err.format("%s: no one nearby, going to sleep.\n", this);
+			return false;
 		}
 
 		/* random walking into walls */
-		switch(c.uniform(1)) {
+		switch(handler.getChance().uniform(1)) {
 			case 0: go(Room.Direction.S); break;
 			case 1: sendToRoomExcept(this, this + ": \"Aha!\""); break;
 			default:
 		}
+		return true;
 	}
 
 	/** Public fuction to tell if they're sleeping; used by chronos in 414Mud. */
-	public boolean isSleeping() { return isSleeping; }
+	//public boolean isSleeping() { return isSleeping; }
 
-	/** Wake them up; eg, a Player is in the area */
+	/** Wake them up when a Player is in the area. */
 	public void wakeUp() {
-		isSleeping = false;
-		System.err.format("%s is awake!\n", this);
+		getHandler().register(this);
+		//System.err.format("%s is awake!\n", this);
 	}
 
 	/** fixme: you should so be able to, eg, "ride dragon" */

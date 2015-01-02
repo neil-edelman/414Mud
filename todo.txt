@@ -1,17 +1,23 @@
-kill
+fix Iterator error in Chronos
+
 track
+kill
 follow
 savearea
 rundown
 fire (as in, shoot) <at something, or default mob you're hating>
 as/force <stuff> (immortal)
+in (imm)
+active (imm, see how many active mobs)
 flee
 help start at the beginning
 sacrifice
 
+Mobs: isProper
+getEntrableContents() to have awaken Mobs on Objects
 
+specify sendTo/send(String, Object/Stuff...); improved with Formatter, formatter.addFormat("self", () -> s.toString()) ???
 hit ppl! then get fighting
-
 afk on exit!
 put in subdir
 channels, on/off, given chat at 1

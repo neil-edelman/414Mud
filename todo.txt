@@ -26,6 +26,8 @@ Character: conflict (hating)
 Now Connections don't close; they used to.
 food (for hp)
 fix 'map'
+jar
+have a StringBuffer as part of Handler
 
 control the car! Car2Go, tank. humvee, hot air ballon, moped, firetruck . . . bike (security guards will be pissed) boat (sub!) helicopter! police car (make sure they don't set it on fire while you're in it!) . . . also "ride dragon" mountable, motorcycle (have isIn as one obj flags/or create a new Class extending Object); have mass and capacity restraints
 

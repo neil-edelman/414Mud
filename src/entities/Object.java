@@ -75,15 +75,6 @@ public class Object extends Stuff {
 		// sent already! sendToRoom(/*fixme: An(this)*/"A " + this + " is goes " + nextDir + ".");
 		go(nextDir);
 
-		Room r;
-		StringBuilder sb = new StringBuilder("You ride ");
-		sb.append(nextDir);
-		sb.append(" on ");
-		sb.append(this.toString());
-		sb.append(".\n\n");
-		sb.append((r = getRoom()) != null ? r.lookDetailed(this) : " . . . into space.");
-		sendToContents(sb.toString());
-
 		// sent already! sendToRoom("A " + this + " comes in from the " + nextDir.getBack() + ".");
 
 //		player.sendTo(sb.toString());

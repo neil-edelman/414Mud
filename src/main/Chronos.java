@@ -95,7 +95,7 @@ public class Chronos implements Mud.Handler {
 			while(it.hasNext()) {
 				a = it.next();
 				//System.err.format("%s.hasNext = %b ", a, it.hasNext());
-				System.err.format("%s (%s) ", a, a.getClass());
+				System.err.format("%s ", a/*, a.getClass()*/);
 				if(a.doClockTick()) continue;
 				System.err.format("(removing) ");
 				it.remove();

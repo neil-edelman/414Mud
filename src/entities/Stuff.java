@@ -127,13 +127,8 @@ public class Stuff implements Iterable<Stuff> {
 	protected void hasMoved() {
 		if(!isEnterable()) return;
 		/* recurse */
-		System.err.format("%s.hasMoved() ", this);
+		System.err.format("%s.hasMoved()\n", this);
 		forAllContent((stuff) -> stuff instanceof Player, (player) -> player.hasMoved());
-		/*for(Stuff i : this) {
-			System.err.format("%s ", i);
-			i.hasMoved();
-		}
-		System.err.format(">}) ");*/
 	}
 
 	/** @return		The one above it in the Stuff tree. Can be null. */
@@ -163,17 +158,17 @@ public class Stuff implements Iterable<Stuff> {
 	 player was inside; which was not what we wanted from culling) -- forget it */
 
 	public final void sendToContents(final String message) {
-		forAllContent((s) -> /*(s instanceof Player)*/true,
+		forAllContent((s) -> true,
 					  (s) -> s.sendTo(message));
 	}
 
 	public final void sendToContentsExcept(final Stuff except, final String message) {
-		forAllContent((s) -> /*(s instanceof Player) &&*/ (s != except),
+		forAllContent((s) -> (s != except),
 					  (s) -> s.sendTo(message));
 	}
 
 	public final void sendToContentsExceptTwo(final Stuff except1, final Stuff except2, final String message) {
-		forAllContent((s) -> /*(s instanceof Player) &&*/ (s != except1) && (s != except2),
+		forAllContent((s) -> (s != except1) && (s != except2),
 					  (s) -> s.sendTo(message));
 	}
 
@@ -242,17 +237,30 @@ public class Stuff implements Iterable<Stuff> {
 		/* we are walking normaly */
 		Room target = in.getRoom(where);
 		if(target == null) {
-			sendTo("You can't go that way.");
+			sendTo("You can't go " + where + ".");
 			sendToRoom(/*the*/this + " searches for a way " + where + ".");
+			sendToContents("You can't go " + where + " on " + this + ".");
 			return;
 		}
-		sendTo("You walk " + where + ".");
+		Room r;
+		
+		sendTo(/*ride?*/"You walk " + where + ".");
 		sendToRoom(/*The(*/this + /*this.walking*/" walks " + where + ".");
 		placeIn(target);
 		sendToRoom(/*The(*/this + /*this.walking*/" walks in from the " + where.getBack() + ".");
 		/* newline -- players have swiched locations */
-		sendTo("\n" + target.lookDetailed(this));
+		sendTo("\n" + target.lookDetailed(this/*do we want to see the mount? no*/)); /* newline! */
+		/* send to contents, too! */
+		StringBuilder sb = new StringBuilder("You ride ");
+		sb.append(where);
+		sb.append(" on ");
+		sb.append(this.toString());
+		sb.append(".\n\n");
+		sb.append(target.lookDetailed(this));
+		sendToContents(sb.toString());
 	}
+
+	/** fixme: An/an(aeiou) The/the(isCapital()?/isProper) */
 
 	/** fixme!!! it's annoying; more advanced please! */
 	public Stuff matchContents(String obj) {

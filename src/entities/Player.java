@@ -59,7 +59,7 @@ public class Player extends Character {
 
 		/* wake up mobs */
 		if((r = getRoom()) == null) return;
-		System.err.format("(Player)%s.getRoom = %s, BFS {\n", this, r);
+		System.err.format("%s.hasMoved() %s:{\n", this, r);
 		getHandler().getMapper().map(r, distanceWakeUp, (room, dis, dir) -> {
 			System.err.format("\t%s\t%d\t%s\n", room, dis, dir);
 			/* fixme: have separite lists for mobs, players, and stuff; be careful */

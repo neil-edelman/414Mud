@@ -74,9 +74,25 @@ public class Object extends Stuff {
 		//if(command != null) { command.invoke(this, ""); }
 		if(nextDir == null) return false;
 		/* fixme: sendToContentsRecursive()? */
-		sendToContents(/*fixme: An(this)*/"A " + this + " is going " + nextDir + ".");
+//		sendToContents(/*fixme: An(this)*/"A " + this + " is going " + nextDir + ".");
 		//System.err.format("%s.doClockTick(): will do go(nextDir)\n", this);
 		go(nextDir);
+		//forAllContent((stuff) -> stuff instanceof Player, (player) -> player.hasMoved());
+		forAllContent((stuff) -> stuff instanceof Player, (player) -> {
+			Room r;
+			if((r = player.getRoom()) == null) {
+				player.sendTo("\nYou run " + this + " " + nextDir + " into space.");
+			} else {
+				/////////////////////////////////////////////// fixme
+				PBuilder 
+				b.append("You ride ");
+				b.append(nextDir);
+				b.append(".\n\n");
+				r.lookDetailed(this) + nextDir
+				player.sendTo(b.toString());
+		sendToContents(/*fixme: An(this)*/"A " + this + " is going " + nextDir + ".");
+			}
+		});
 		nextDir = null;
 		/* remove from list */
 		return false;

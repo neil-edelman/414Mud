@@ -206,32 +206,31 @@ public class Stuff implements Iterable<Stuff> {
 
 	/* @return	Recursive room search; in practice, a depth of one or two, but
 	 allows in an in an in, etc; why that would be useful is unclear. */
-	public Room getRoom() { return in.getRoom(); }
+	public Room getRoom() { return (in == null) ? null : in.getRoom(); }
 
-	/** Sets the flags from a line
+	/** Sets the flags from a line. There are no flags on Stuff.
 	 @param line	The line. */
-	public void setFlags(final String line) {
-	}
+	public void setFlags(final String line) { }
 
-	public boolean isTransportable() {
-		return false;
-	}
+	/** @return	Stuff is not transportable. */
+	public boolean isTransportable() { return false; }
 
 	/** Stuff can not move anywhere. */
 	public void setNextDir(final Room.Direction where) { }
 
+	/** @param where	Direction in which this moves. */
 	public final void go(final Room.Direction where) {
 		if(in == null) {
 			sendTo("Can't do that; you are floating in space.");
 			return;
 		}
+		/* we are mounted somehow? */
 		if(!(in instanceof Room)) {
-			/* we are mounted somehow */
 			in.setNextDir(where);
 			in.getHandler().register(in);
-			System.err.format("%s.getHandler().register(%s);\n", this, in);
+			//System.err.format("%s.getHandler().register(%s);\n", this, in);
 			sendTo("You tell " + /*fixme:an*/in + " to go " + where + ".");
-			sendToRoom(this + " tells " + /*the()*/in + " to go " + where + ".");
+			sendToRoom(/*the(*/this + " tells " + /*the()*/in + " to go " + where + ".");
 			return;
 		}
 		/* we are walking normaly */
@@ -242,9 +241,10 @@ public class Stuff implements Iterable<Stuff> {
 			return;
 		}
 		sendTo("You walk " + where + ".");
-		sendToRoom(/*The(*/this + " walks " + where + ".");
+		sendToRoom(/*The(*/this + /*this.walking*/" walks " + where + ".");
 		placeIn(target);
-		sendToRoom(/*The(*/this + " walks in from the " + where.getBack() + ".");
+		forAllContent((stuff) -> stuff instanceof Player, (player) -> hasMoved());
+		sendToRoom(/*The(*/this + /*this.walking*/" walks in from the " + where.getBack() + ".");
 		/* newline -- players have swiched locations */
 		sendTo("\n" + target.lookDetailed(this));
 	}
@@ -278,7 +278,13 @@ public class Stuff implements Iterable<Stuff> {
 	/** Prints all the data so it will be serialisable (but in text, not binary.)
 	 @return Blank string; fixme: the serialised version. */
 	public String saveString() {
-		return ""; //<------
+		return ""; //<------ fixme
+	}
+
+	/** Wake up (viz, when a Player is in the area.) */
+	public final void wakeUp() {
+		getHandler().register(this);
+		System.err.format("%s is awake!\n", this);
 	}
 
 	/** A recusive function short-circuit testing if everything is true for all
@@ -287,21 +293,22 @@ public class Stuff implements Iterable<Stuff> {
 	 @return		None of the things in contents that it tested were true. */
 	public final boolean isAllContent(final Predicate<Stuff> test) {
 		for(Stuff s : this) {
+			//System.err.format("(Stuff)%s? ", s);
 			/* recurse as needed */
-			System.err.format("(Stuff)%s? ", s);
 			if(!test.test(s) || (isEnterable() && !s.isAllContent(test))) return false;
 		}
 		return true;
 	}
 
-	/** Every Stuff in content will be called.
-	 @param test	A function which will be called to see if set should be called.
+	/** Stuff in content recursively will be called with test and, if true, set.
+	 @param test	A function which which determines if set should be called.
 	 @param set		A function which will be called if test is true. */
-/*	public final void forAllContent(final Predicate<Stuff> test, final Consumer<Stuff> set) {
+	public final void forAllContent(final Predicate<Stuff> test, final Consumer<Stuff> set) {
 		for(Stuff s : this) {
-			System.err.format("(Stuff)%s? ", s);
-			if(!test.test(s) || (isEnterable() && !s.isAll(test))) return false;
+			if(test.test(s))  set.accept(s);
+			/* recurse */
+			if(isEnterable()) s.forAllContent(test, set);
 		}
-	}*/
+	}
 
 }

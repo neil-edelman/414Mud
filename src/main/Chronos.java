@@ -92,7 +92,7 @@ public class Chronos implements Mud.Handler {
 				System.err.format("(removing) ");
 				it.remove();
 			}
-			/* prevents ConcurrentModificationException */
+			/* prevents ConcurrentModificationException; fixme: delayed 1? */
 			active.addAll(preactive);
 			preactive.clear();
 		} catch(/*NoSuchElementException | UnsupportedOperationException | IllegalStateException | ConcurrentModificationException |*/ Exception e) {

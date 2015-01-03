@@ -60,15 +60,10 @@ public class Player extends Character {
 		/* wake up mobs */
 		if((r = getRoom()) == null) return;
 		System.err.format("(Player)%s.getRoom = %s, BFS {\n", this, r);
-		//////////////////////// fixme: doesn't check for mounted
 		getHandler().getMapper().map(r, distanceWakeUp, (room, dis, dir) -> {
 			System.err.format("\t%s\t%d\t%s\n", room, dis, dir);
-			//where.put(dis, room);
 			/* fixme: have separite lists for mobs, players, and stuff; be careful */
-			for(Stuff s : room) {
-				/* fixme: just to be evil . . . dinosaurs can smell and hunt you! */
-				if(s instanceof Mob) ((Mob)s).wakeUp();
-			}
+			room.forAllContent((stuff) -> stuff instanceof Mob, (mob) -> mob.wakeUp());
 			return true;
 		});
 		System.err.format("}\n");

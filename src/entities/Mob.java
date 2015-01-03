@@ -27,12 +27,10 @@ public class Mob extends Character {
 	public boolean isFriendly;
 	public boolean isXeno;
 
-	//private boolean isSleeping = true;
-
 	public Mob() {
 		super();
 		title = "Someone is looking confused.";
-		// is there anyone around? register. Mud.getMudInstance().getChronos().register(this);
+		// fixme: is there anyone around? register. same f'n as below
 	}
 
 	/** Read it from a file. */
@@ -43,7 +41,6 @@ public class Mob extends Character {
 		} catch(common.UnrecognisedTokenException e) {
 			throw new java.text.ParseException(e.getMessage(), in.getLineNumber());
 		}
-		//getHandler().register(this);
 	}
 
 	/** Do a thing.
@@ -58,12 +55,13 @@ public class Mob extends Character {
 		/* use two times */
 		Mud.Handler handler = getHandler();
 
-		/* go to sleep? fixme: this should happen much less frequently */
+		/* go to sleep?
+		 fixme: this should happen much less frequently
+		 fixme: have Player, Mob, Other lists, then this becomes
+		 room.playerList.isEmpty(), O(1) instead of O(n) for @ room; but
+		 tricky beacuse of, eg, Players in Mobs */
+		/* fixme: const static ^ */
 		if(handler.getMapper().map(r, Player.distanceWakeUp, (room, dis, dir) -> {
-			/*System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);*/
-			/* fixme: have Player, Mob, Other lists, then this becomes
-			 room.playerList.isEmpty(), O(1) instead of O(n) for @ room; but
-			 tricky beacuse of, eg, Players in Mobs */
 			return room.isAllContent((s) -> !(s instanceof Player));
 		})) {
 			System.err.format("%s: no one nearby, going to sleep.\n", this);
@@ -77,15 +75,6 @@ public class Mob extends Character {
 			default:
 		}
 		return true;
-	}
-
-	/** Public fuction to tell if they're sleeping; used by chronos in 414Mud. */
-	//public boolean isSleeping() { return isSleeping; }
-
-	/** Wake them up when a Player is in the area. */
-	public void wakeUp() {
-		getHandler().register(this);
-		//System.err.format("%s is awake!\n", this);
 	}
 
 	/** fixme: you should so be able to, eg, "ride dragon" */

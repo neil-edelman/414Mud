@@ -93,13 +93,20 @@ public class Stuff implements Iterable<Stuff> {
 			   : "\nEndless blackness surrounds you; you suddenly feel weightless.");
 	}
 
-	/** @param container	Silently places this in container with no checks.
-	 @bug					Check for DAG; if not, {@link getRoom()} could be
-							infinitly recusing. */
+	/** @param container	Silently places this in container with no checks on
+							whether it can go into that container. If you
+							voilate the acycinicness of the world, it will just
+							refuse to put it in. */
 	public void placeIn(Stuff container) {
-		Connection connection;
 
 		//System.err.format("%s.placeIn(%s);\n", this, container);
+
+		/* check that we're still a DAG (viz, tree;) ie, you can't move
+		 something inside itself */
+		if(this == container || !isAllContent((s) -> s != container)) {
+			System.err.format("%s.placeIn(%s): no (doing so would voilate acyclic condition.)", this, container);
+			return;
+		}
 
 		/* we're already in something */
 		if(in != null) {

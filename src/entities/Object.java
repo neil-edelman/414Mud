@@ -22,7 +22,8 @@ public class Object extends Stuff {
 	}
 	BitVector<ObjectFlags> objectFlags = new BitVector<ObjectFlags>(ObjectFlags.class);
 
-	/* "breakable" must have a "public isBreakable" for the BitVector magic to work */
+	/* "breakable" must have a "public isBreakable" for the BitVector magic to
+	 work, etc */
 	public boolean isBreakable;
 	public boolean isTransportable;
 	public boolean isEnterable;
@@ -70,29 +71,27 @@ public class Object extends Stuff {
 	public boolean doClockTick() {
 		//System.err.format("(Object)%s.doClockTick(): %s\n", this, nextDir);
 		/* fixme: perSecond, decrement and then go */
-		/* this is used, eg, with commands to mounts */
-		//if(command != null) { command.invoke(this, ""); }
 		if(nextDir == null) return false;
-		/* fixme: sendToContentsRecursive()? */
-//		sendToContents(/*fixme: An(this)*/"A " + this + " is going " + nextDir + ".");
-		//System.err.format("%s.doClockTick(): will do go(nextDir)\n", this);
+		// sent already! sendToRoom(/*fixme: An(this)*/"A " + this + " is goes " + nextDir + ".");
 		go(nextDir);
-		//forAllContent((stuff) -> stuff instanceof Player, (player) -> player.hasMoved());
-		forAllContent((stuff) -> stuff instanceof Player, (player) -> {
-			Room r;
-			if((r = player.getRoom()) == null) {
-				player.sendTo("\nYou run " + this + " " + nextDir + " into space.");
-			} else {
-				/////////////////////////////////////////////// fixme
-				PBuilder 
-				b.append("You ride ");
-				b.append(nextDir);
-				b.append(".\n\n");
-				r.lookDetailed(this) + nextDir
-				player.sendTo(b.toString());
-		sendToContents(/*fixme: An(this)*/"A " + this + " is going " + nextDir + ".");
-			}
-		});
+
+		Room r;
+		StringBuilder sb = new StringBuilder("You ride ");
+		sb.append(nextDir);
+		sb.append(" on ");
+		sb.append(this.toString());
+		sb.append(".\n\n");
+		sb.append((r = getRoom()) != null ? r.lookDetailed(this) : " . . . into space.");
+		sendToContents(sb.toString());
+
+		// sent already! sendToRoom("A " + this + " comes in from the " + nextDir.getBack() + ".");
+
+//		player.sendTo(sb.toString());
+//		sendToContents();
+//		forAllContent((stuff) -> stuff instanceof Player, (player) -> {
+//			Room r = player.getRoom();
+//
+//		});
 		nextDir = null;
 		/* remove from list */
 		return false;

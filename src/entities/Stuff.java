@@ -134,41 +134,38 @@ public class Stuff implements Iterable<Stuff> {
 	}
 
 	/** Overwrote on things that have a connection; viz, Player.
-	 @param message
-		The string to send; no newline. */
+	 @param message		The string to send; no newline. */
 	public void sendTo(final String message) {
 	}
 
 	public final void sendToRoom(final String message) {
-		if(this.in == null) return;
-		this.in.sendToContentsExcept(this, message);
+		Room r;
+		if((r = getRoom()) == null) return;
+		r.sendToContentsExcept(this, message);
 	}
 
 	public final void sendToRoomExcept(final Stuff except, final String message) {
-		if(this.in == null) return;
-		this.in.sendToContentsExcept(this, except, message);
+		Room r;
+		if((r = getRoom()) == null) return;
+		r.sendToContentsExceptTwo(this, except, message);
+	}
+
+	/* fixme: stuffprogs are activated on some event, you have to get rid of
+	 (s instanceof Player) */
+
+	public final void sendToContents(final String message) {
+		forAllContent((s) -> (s instanceof Player),
+					  (s) -> s.sendTo(message));
 	}
 
 	public final void sendToContentsExcept(final Stuff except, final String message) {
-		for(Stuff s : this) {
-			if(s == except) continue;
-			s.sendTo(message);
-		}
+		forAllContent((s) -> (s instanceof Player) && (s != except),
+					  (s) -> s.sendTo(message));
 	}
 
-	/** fixme: could be more optimised */
-	private final void sendToContentsExcept(final Stuff except1, final Stuff except2, final String message) {
-		for(Stuff s : this) {
-			if(s == except1 || s == except2) continue;
-			s.sendTo(message);
-		}
-	}
-
-	public final void sendToContents(final String message) {
-		/* fixme: perhaps make this recursive? pros: if you are on an emu in a
-		 tank, this will work properly; cons: a lot of sendTo(inventory);
-		 perhaps make a sendToContentsRec()? */
-		for(Stuff s : this) s.sendTo(message);
+	public final void sendToContentsExceptTwo(final Stuff except1, final Stuff except2, final String message) {
+		forAllContent((s) -> (s instanceof Player) && (s != except1) && (s != except2),
+					  (s) -> s.sendTo(message));
 	}
 
 	/** @return How the object looks very simply. */
@@ -268,7 +265,6 @@ public class Stuff implements Iterable<Stuff> {
 		sendTo("You get " + (isIn ? "in" : "on") + " the " + target + ".");
 		sendToRoom(this + " gets up and rides the " + target + ".");
 		placeIn(target);
-		sendToRoom(this + " gets up here.");
 	}
 
 	public void levelUp() {
@@ -305,7 +301,8 @@ public class Stuff implements Iterable<Stuff> {
 	 @param set		A function which will be called if test is true. */
 	public final void forAllContent(final Predicate<Stuff> test, final Consumer<Stuff> set) {
 		for(Stuff s : this) {
-			if(test.test(s))  set.accept(s);
+			if(!test.test(s)) continue;
+			set.accept(s);
 			/* recurse */
 			if(isEnterable()) s.forAllContent(test, set);
 		}

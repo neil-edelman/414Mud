@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.lang.UnsupportedOperationException;
 import java.lang.IllegalStateException;
+import java.util.ConcurrentModificationException;
 
 import common.Chance;
 import main.Mapper;
@@ -33,6 +34,7 @@ public class Chronos implements Mud.Handler {
 	private final Chance     chance = new Chance();
 	private final Mapper     mapper = new Mapper();
 	private      List<Stuff> active = new LinkedList<Stuff>(); /* <- hashmap!!? */
+	private      List<Stuff> preactive = new LinkedList<Stuff>(); /* <- hashmap!!? */
 	private final Mud           mud;
 	private	final Map<String, Command> commands; /* could be null! */
 
@@ -71,9 +73,9 @@ public class Chronos implements Mud.Handler {
 			System.err.format("%s: that's funny, <%s>, is not a Mob; ignoring.\n", this, stuff);
 			return;
 		}*/
-		if(active.contains(stuff)) return; /* fixme: ugh, O(n) */
-		active.add(stuff);
-		System.err.format("%s: registered <%s> as active.\n", this, stuff);
+		if(active.contains(stuff) || preactive.contains(stuff)) return; /* fixme: ugh, O(n) */
+		preactive.add(stuff);
+		System.err.format("%s: will register <%s> as active.\n", this, stuff);
 	}
 
 	/* one time step */
@@ -90,7 +92,10 @@ public class Chronos implements Mud.Handler {
 				System.err.format("(removing) ");
 				it.remove();
 			}
-		} catch(NoSuchElementException | UnsupportedOperationException | IllegalStateException e) {
+			/* prevents ConcurrentModificationException */
+			active.addAll(preactive);
+			preactive.clear();
+		} catch(/*NoSuchElementException | UnsupportedOperationException | IllegalStateException | ConcurrentModificationException |*/ Exception e) {
 			System.err.print(this + ": confused? " + e + ".\n");
 		}
 		System.err.format(">\n");

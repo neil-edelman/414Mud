@@ -180,4 +180,9 @@ public class Room extends Stuff {
 		sb.append("]\33[0m");
 	}
 
+	/** tests if the target is enterable */
+	public boolean isEnterable() {
+		return true; /* <- have some rooms that aren't */
+	}
+
 }

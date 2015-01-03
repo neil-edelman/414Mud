@@ -5,6 +5,7 @@ package entities;
 
 import common.Chance;
 import common.BitVector;
+import main.Mapper;
 import main.Mud;
 
 /** NPC.
@@ -49,26 +50,30 @@ public class Mob extends Character {
 	 @return	Whether it continues to be on the stuff list. */
 	@Override
 	public boolean doClockTick() {
+		Room r;
 
-		/* fixme: mounts do commands with probability */
+		/* the mob is in space, deactivate it */
+		if((r = getRoom()) == null) return false;
 
+		/* use two times */
 		Mud.Handler handler = getHandler();
 
 		/* go to sleep? fixme: this should happen much less frequently */
-		if(handler.getMapper().map((Room)in, Player.distanceWakeUp, (room, dis, dir) -> {
+		if(!handler.getMapper().map(r, Player.distanceWakeUp, (room, dis, dir) -> {
 			/*System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);*/
 			/* fixme: have Player, Mob, Other lists, then this becomes
 			 room.playerList.isEmpty(), O(1) instead of O(n) for @ room; but
 			 tricky beacuse of, eg, Players in Mobs */
-			for(Stuff s : room) {
-				if(s instanceof Player) {
-					//System.err.format("%s: staying awake because of %s.\n", this, s);
+			return isAll((s) -> !(s instanceof Player));
+			/*for(Stuff s : room) {
+				if(s instanceof Player) return false;
+				if(s.isEnterable()) {
 					return false;
 				}
 			}
-			return true;
+			return true;*/
 		})) {
-			//System.err.format("%s: no one nearby, going to sleep.\n", this);
+			System.err.format("%s: no one nearby, going to sleep.\n", this);
 			return false;
 		}
 

@@ -55,20 +55,14 @@ public class Player extends Character {
 	/* Update players' bfs. */
 	@Override
 	protected void hasMoved() {
-		StringBuilder sb = new StringBuilder("\n");
 		Room r;
 
-		/* create appropriate message */
-		if((r = getRoom()) == null) {
-			sb.append("Endless blackness surrounds you; you suddenly feel weightless.");
-		} else {
-			sb.append(r.lookDetailed(this));
-		}
-		sendTo(sb.toString());
-
 		/* wake up mobs */
+		if((r = getRoom()) == null) return;
+		System.err.format("(Player)%s.getRoom = %s, BFS {\n", this, r);
+		//////////////////////// fixme: doesn't check for mounted
 		getHandler().getMapper().map(r, distanceWakeUp, (room, dis, dir) -> {
-			System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);
+			System.err.format("\t%s\t%d\t%s\n", room, dis, dir);
 			//where.put(dis, room);
 			/* fixme: have separite lists for mobs, players, and stuff; be careful */
 			for(Stuff s : room) {
@@ -77,6 +71,7 @@ public class Player extends Character {
 			}
 			return true;
 		});
+		System.err.format("}\n");
 	}
 
 	@Override

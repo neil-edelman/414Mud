@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.Iterator;
+import java.util.function.Predicate;
 
 import main.Connection;
 import main.Mapper;
@@ -86,8 +87,9 @@ public class Stuff implements Iterable<Stuff> {
 		sendTo("You disapparate and instantly travel to '" + container + "'");
 		placeIn(container);
 		sendToRoom(this + " suddenly apparates.");
-		/* players will want to look around immediatly */
-		//sendTo((container != null) ? container.lookDetailed(this) : "Endless blackness surrounds you; you suddenly feel weightless.");
+		/* players will want to look around immediatly; don't forget the newline */
+		sendTo((container != null) ? "\n" + container.lookDetailed(this)
+			   : "\nEndless blackness surrounds you; you suddenly feel weightless.");
 	}
 
 	/** @param container	Silently places this in container with no checks.
@@ -115,13 +117,14 @@ public class Stuff implements Iterable<Stuff> {
 	/** Called by {@link placeIn} to do stuff specific all the different
 	 entities. */
 	protected void hasMoved() {
+		if(!isEnterable()) return;
 		/* recurse */
-		System.err.format("%s.hasMoved();\n", this);
-
-		// ************************************* this is important, but crashes
-		// the thread?
-		// if(isEnterable()) ...
-		//for(Stuff i : this) i.hasMoved();
+		System.err.format("(%s.hasMoved() { ", this);
+		for(Stuff i : this) {
+			System.err.format("%s ", i);
+			i.hasMoved();
+		}
+		System.err.format(">}) ");
 	}
 
 	/** @return		The one above it in the Stuff tree. Can be null. */
@@ -193,7 +196,7 @@ public class Stuff implements Iterable<Stuff> {
 	}
 
 	/** @return	Iterate over the contents. */
-	public Iterator<Stuff> iterator() {
+	public final Iterator<Stuff> iterator() {
 		return contents.iterator();
 	}
 
@@ -213,7 +216,7 @@ public class Stuff implements Iterable<Stuff> {
 		return false;
 	}
 
-	/** Stuff can not go anywhere. */
+	/** Stuff can not move anywhere. */
 	public void setNextDir(final Room.Direction where) { }
 
 	public final void go(final Room.Direction where) {
@@ -222,7 +225,6 @@ public class Stuff implements Iterable<Stuff> {
 			return;
 		}
 		if(!(in instanceof Room)) {
-			System.err.format("%s: %s not instaceof Room\n", this, in);
 			/* we are mounted somehow */
 			in.setNextDir(where);
 			in.getHandler().register(in);
@@ -231,7 +233,6 @@ public class Stuff implements Iterable<Stuff> {
 			sendToRoom(this + " tells " + /*the()*/in + " to go " + where + ".");
 			return;
 		}
-		System.err.format("%s: %s instaceof Room\n", this, in);
 		/* we are walking normaly */
 		Room target = in.getRoom(where);
 		if(target == null) {
@@ -240,10 +241,11 @@ public class Stuff implements Iterable<Stuff> {
 			return;
 		}
 		sendTo("You walk " + where + ".");
-		sendToRoom(this + " walks " + where + ".");
+		sendToRoom(/*The(*/this + " walks " + where + ".");
 		placeIn(target);
-		sendToRoom(this + " walks in from the " + where.getBack() + ".");
-		sendTo(target.lookDetailed(this));
+		sendToRoom(/*The(*/this + " walks in from the " + where.getBack() + ".");
+		/* newline -- players have swiched locations */
+		sendTo("\n" + target.lookDetailed(this));
 	}
 
 	/** fixme!!! it's annoying; more advanced please! */
@@ -276,6 +278,17 @@ public class Stuff implements Iterable<Stuff> {
 	 @return Blank string; fixme: the serialised version. */
 	public String saveString() {
 		return ""; //<------
+	}
+
+	/**
+	 @param test	A function taking in Stuff and outputing true/false.
+	 @return		None of the things in contents that it tested were true. */
+	public boolean isAll(Predicate<Stuff> test) {
+		for(Stuff s : this) {
+			/* fixme: recurse on isEnterable() */
+			if(!test.test(s)) return false;
+		}
+		return true;
 	}
 
 }

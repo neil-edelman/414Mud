@@ -122,13 +122,13 @@ public class Mapper {
 					for(Stuff s : row) {
 						if(s instanceof entities.Object) {
 							isObj = true;
-							System.err.format("BFS %s: %s obj\n", row, s);
+							//System.err.format("BFS %s: %s obj\n", row, s);
 						} else if(s instanceof Mob) {
 							isMob = true;
-							System.err.format("BFS %s: %s mob\n", row, s);
+							//System.err.format("BFS %s: %s mob\n", row, s);
 						} else if(s instanceof Player) {
 							isPlr = true;
-							System.err.format("BFS %s: %s plr\n", row, s);
+							//System.err.format("BFS %s: %s plr\n", row, s);
 						}
 					}
 					upd = isUpD ? 's' : ' ';

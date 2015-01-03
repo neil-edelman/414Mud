@@ -7,7 +7,8 @@ import java.util.Map;
 //import java.util.HashMap;
 //import java.util.Collections;
 import java.util.List;
-import java.util.LinkedList;
+//import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import java.util.NoSuchElementException;
@@ -33,10 +34,10 @@ public class Chronos implements Mud.Handler {
 
 	private final Chance     chance = new Chance();
 	private final Mapper     mapper = new Mapper();
-	private      List<Stuff> active = new LinkedList<Stuff>(); /* <- hashmap!!? */
-	private      List<Stuff> preactive = new LinkedList<Stuff>(); /* <- hashmap!!? */
+	private      List<Stuff> active = new ArrayList<Stuff>(); /* <- hashmap!!? */
+	private      List<Stuff> preactive = new /*Linked*/ArrayList<Stuff>(); /* <- hashmap!!? */
 	private final Mud           mud;
-	private	final Map<String, Command> commands; /* could be null! */
+	private	final Map<String, Command> commands; /* could be null! (for now) */
 
 	/** Constructor. */
 	public Chronos(final Mud mud) {
@@ -80,22 +81,28 @@ public class Chronos implements Mud.Handler {
 
 	/* one time step */
 	public void run() {
-		System.err.format("<%s.run(): ", this);
+		Iterator<Stuff> it;
 		Stuff a;
-		Iterator<Stuff> it = active.iterator();
+
+		System.err.format("<%s.run() %s -> %s: ", this, preactive, active);
+
+		/* pre-active prevents ConcurrentModificationException */
+		active.addAll(preactive);
+		preactive.clear();
+
 		try {
+			it = active.iterator();
 			while(it.hasNext()) {
 				a = it.next();
 				//System.err.format("%s.hasNext = %b ", a, it.hasNext());
-				System.err.format("%s ", a);
+				System.err.format("%s (%s) ", a, a.getClass());
 				if(a.doClockTick()) continue;
 				System.err.format("(removing) ");
 				it.remove();
 			}
-			/* prevents ConcurrentModificationException; fixme: delayed 1? */
-			active.addAll(preactive);
-			preactive.clear();
-		} catch(/*NoSuchElementException | UnsupportedOperationException | IllegalStateException | ConcurrentModificationException |*/ Exception e) {
+		} catch(/*NoSuchElementException | UnsupportedOperationException
+				 | IllegalStateException | ConcurrentModificationException |*/
+				Exception e) {
 			System.err.print(this + ": confused? " + e + ".\n");
 		}
 		System.err.format(">\n");

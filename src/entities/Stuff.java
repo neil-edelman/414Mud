@@ -120,12 +120,13 @@ public class Stuff implements Iterable<Stuff> {
 	protected void hasMoved() {
 		if(!isEnterable()) return;
 		/* recurse */
-		System.err.format("(%s.hasMoved() { ", this);
-		for(Stuff i : this) {
+		System.err.format("%s.hasMoved() ", this);
+		forAllContent((stuff) -> stuff instanceof Player, (player) -> player.hasMoved());
+		/*for(Stuff i : this) {
 			System.err.format("%s ", i);
 			i.hasMoved();
 		}
-		System.err.format(">}) ");
+		System.err.format(">}) ");*/
 	}
 
 	/** @return		The one above it in the Stuff tree. Can be null. */
@@ -151,20 +152,21 @@ public class Stuff implements Iterable<Stuff> {
 	}
 
 	/* fixme: stuffprogs are activated on some event, you have to get rid of
-	 (s instanceof Player) */
+	 (s instanceof Player) (yes; tank !instanceof Player, skip it, even though
+	 player was inside; which was not what we wanted from culling) -- forget it */
 
 	public final void sendToContents(final String message) {
-		forAllContent((s) -> (s instanceof Player),
+		forAllContent((s) -> /*(s instanceof Player)*/true,
 					  (s) -> s.sendTo(message));
 	}
 
 	public final void sendToContentsExcept(final Stuff except, final String message) {
-		forAllContent((s) -> (s instanceof Player) && (s != except),
+		forAllContent((s) -> /*(s instanceof Player) &&*/ (s != except),
 					  (s) -> s.sendTo(message));
 	}
 
 	public final void sendToContentsExceptTwo(final Stuff except1, final Stuff except2, final String message) {
-		forAllContent((s) -> (s instanceof Player) && (s != except1) && (s != except2),
+		forAllContent((s) -> /*(s instanceof Player) &&*/ (s != except1) && (s != except2),
 					  (s) -> s.sendTo(message));
 	}
 
@@ -240,7 +242,6 @@ public class Stuff implements Iterable<Stuff> {
 		sendTo("You walk " + where + ".");
 		sendToRoom(/*The(*/this + /*this.walking*/" walks " + where + ".");
 		placeIn(target);
-		forAllContent((stuff) -> stuff instanceof Player, (player) -> hasMoved());
 		sendToRoom(/*The(*/this + /*this.walking*/" walks in from the " + where.getBack() + ".");
 		/* newline -- players have swiched locations */
 		sendTo("\n" + target.lookDetailed(this));

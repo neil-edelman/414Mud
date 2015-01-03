@@ -1,6 +1,3 @@
-fix delayed run
-propagate fail to inside
-
 track
 kill
 follow
@@ -14,10 +11,12 @@ flee
 help start at the beginning
 sacrifice
 
-Mobs: isProper
+hit ppl! then get fighting
+
+propagate fail to inside of Object
+Mobs: isProper (or Capital implies proper?)
 
 specify sendTo/send(String, Object/Stuff...); improved with Formatter, formatter.addFormat("self", () -> s.toString()) ???
-hit ppl! then get fighting
 afk on exit!
 put in subdir
 channels, on/off, given chat at 1
@@ -28,7 +27,7 @@ Now Connections don't close; they used to.
 food (for hp)
 fix 'map'
 
-control the car! tank. humvee, hot air ballon, moped, firetruck . . . bike (security guards will be pissed) boat (sub!) helicopter! police car (make sure they don't set it on fire while you're in it!) . . . also "ride dragon" mountable, motorcycle (have isIn as one obj flags); unmount; look out: have a look in in look? two things, if(r.isEnterable()) for(Stuff in : r) {"\t" +...}, in.isEnterable()... ; neswup control the tank, but only on chronos timer; have mass and capacity restraints
+control the car! Car2Go, tank. humvee, hot air ballon, moped, firetruck . . . bike (security guards will be pissed) boat (sub!) helicopter! police car (make sure they don't set it on fire while you're in it!) . . . also "ride dragon" mountable, motorcycle (have isIn as one obj flags/or create a new Class extending Object); have mass and capacity restraints
 
 Chance: static lookup tables
 
@@ -45,7 +44,7 @@ have different objects on your body for eq't, Object->Equipment { worn }; bitvec
 jet-pack (floating,) hockey stick (blunt,) chalk (throw: have density and mass, low mass, high density does the most damage,) grenades, magnum? MP-5? (have ammo,) bombs, load of swords, katana, pencils/pens (sharp,) rocket launchers!!! body armour, shin pads, batons, flash-bangs, pepper spray, water cannon, mining laser, laser beam
 
 HelpMap extends HashMap { put(key, value, help) { super.put(key, new Help(value, help)); } ...
-exits [ n ] <- explain, all this ^ and fhdfghjf~
+exits [ n ] <- explain, all this ^ and cancel~
 
 // I tried
 Telnet negotiate line width, word-wrap

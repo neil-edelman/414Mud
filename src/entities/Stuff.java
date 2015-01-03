@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.util.Iterator;
 import java.util.function.Predicate;
+import java.util.function.Consumer;
 
 import main.Connection;
 import main.Mapper;
@@ -280,16 +281,27 @@ public class Stuff implements Iterable<Stuff> {
 		return ""; //<------
 	}
 
-	/** A recusive function testing if everything is true for all the contents.
+	/** A recusive function short-circuit testing if everything is true for all
+	 the contents.
 	 @param test	A function taking in Stuff and outputing true/false.
 	 @return		None of the things in contents that it tested were true. */
-	public boolean isAll(Predicate<Stuff> test) {
+	public final boolean isAllContent(final Predicate<Stuff> test) {
 		for(Stuff s : this) {
 			/* recurse as needed */
 			System.err.format("(Stuff)%s? ", s);
-			if(!test.test(s) || (isEnterable() && !s.isAll(test))) return false;
+			if(!test.test(s) || (isEnterable() && !s.isAllContent(test))) return false;
 		}
 		return true;
 	}
+
+	/** Every Stuff in content will be called.
+	 @param test	A function which will be called to see if set should be called.
+	 @param set		A function which will be called if test is true. */
+/*	public final void forAllContent(final Predicate<Stuff> test, final Consumer<Stuff> set) {
+		for(Stuff s : this) {
+			System.err.format("(Stuff)%s? ", s);
+			if(!test.test(s) || (isEnterable() && !s.isAll(test))) return false;
+		}
+	}*/
 
 }

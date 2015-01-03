@@ -64,14 +64,7 @@ public class Mob extends Character {
 			/* fixme: have Player, Mob, Other lists, then this becomes
 			 room.playerList.isEmpty(), O(1) instead of O(n) for @ room; but
 			 tricky beacuse of, eg, Players in Mobs */
-			return room.isAll((s) -> { return !(s instanceof Player); } );
-			/*for(Stuff s : room) {
-				if(s instanceof Player) return false;
-				if(s.isEnterable()) {
-					return false;
-				}
-			}
-			return true;*/
+			return room.isAllContent((s) -> !(s instanceof Player));
 		})) {
 			System.err.format("%s: no one nearby, going to sleep.\n", this);
 			return false;

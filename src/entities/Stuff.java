@@ -280,13 +280,14 @@ public class Stuff implements Iterable<Stuff> {
 		return ""; //<------
 	}
 
-	/**
+	/** A recusive function testing if everything is true for all the contents.
 	 @param test	A function taking in Stuff and outputing true/false.
 	 @return		None of the things in contents that it tested were true. */
 	public boolean isAll(Predicate<Stuff> test) {
 		for(Stuff s : this) {
-			/* fixme: recurse on isEnterable() */
-			if(!test.test(s)) return false;
+			/* recurse as needed */
+			System.err.format("(Stuff)%s? ", s);
+			if(!test.test(s) || (isEnterable() && !s.isAll(test))) return false;
 		}
 		return true;
 	}

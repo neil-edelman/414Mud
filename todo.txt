@@ -1,4 +1,4 @@
-fix Iterator error in Chronos
+fix delayed run
 
 track
 kill

@@ -59,12 +59,12 @@ public class Mob extends Character {
 		Mud.Handler handler = getHandler();
 
 		/* go to sleep? fixme: this should happen much less frequently */
-		if(!handler.getMapper().map(r, Player.distanceWakeUp, (room, dis, dir) -> {
+		if(handler.getMapper().map(r, Player.distanceWakeUp, (room, dis, dir) -> {
 			/*System.err.format("%s: %s\t%d\t%s\n", this, room, dis, dir);*/
 			/* fixme: have Player, Mob, Other lists, then this becomes
 			 room.playerList.isEmpty(), O(1) instead of O(n) for @ room; but
 			 tricky beacuse of, eg, Players in Mobs */
-			return isAll((s) -> !(s instanceof Player));
+			return room.isAll((s) -> { return !(s instanceof Player); } );
 			/*for(Stuff s : room) {
 				if(s instanceof Player) return false;
 				if(s.isEnterable()) {

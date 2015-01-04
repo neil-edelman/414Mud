@@ -12,6 +12,7 @@ help start at the beginning
 sacrifice
 
 hit ppl! then get fighting
+skip() instead of read()?
 
 propagate fail to inside of Object
 Mobs: isProper (or Capital implies proper?)

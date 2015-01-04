@@ -127,7 +127,11 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		/* fixme: have them be in order, 1.obj 2.obj, this is hacked */
 		Stuff target = r.matchContents(arg);
 		if(target == null) {
-			s.sendTo("You see no " + arg + " here.");
+			if(r instanceof Room) {
+				s.sendTo("You see no " + arg + " here.");
+			} else {
+				s.sendTo("You probably want the get off the " + r + " first.");
+			}
 			s.sendToRoom(s + " tries to find " + an(arg) + " here, but fails.");
 			return;
 		}

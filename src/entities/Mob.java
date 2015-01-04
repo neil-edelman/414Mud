@@ -15,7 +15,7 @@ import main.Mud;
 @since		1.0, 11-2014 */
 public class Mob extends Character {
 
-	public enum MobFlags {
+	public enum MobFlags implements BitVector.Flags {
 		FRIENDLY("friendly"),
 		XENO("xeno");
 		public String symbol;

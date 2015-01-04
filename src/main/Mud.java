@@ -72,6 +72,7 @@ public class Mud implements Iterable<Connection> {
 	private Area   homearea;
 	private Room   homeroom;
 	Map<String, Map<String, Command>> commandsets;
+	Map<String, Damage> damtypes;
 
 	/* the clients of the mud */
 	private final ServerSocket    serverSocket;
@@ -85,7 +86,8 @@ public class Mud implements Iterable<Connection> {
 	private final Chronos chronos;
 
 	/** classes can implement Mud.Loader to be loaded in {@link loadAll}. */
-	interface Loader<F> { F load(TextReader in) throws ParseException, IOException; }
+	@FunctionalInterface
+	interface Loader<F> { F load(final TextReader in) throws ParseException, IOException; }
 
 	/** Handlers are threads (extends Runnable) that do more stuff. At least
 	 they're meant to be. */
@@ -137,6 +139,7 @@ public class Mud implements Iterable<Connection> {
 		/* new LoadCommands() is like a lambda, but in it's own file; because
 		 it's big */
 		commandsets = loadAll("commandsets", ".cset", new LoadCommands());
+		damtypes    = loadAll("damagetypes", ".damt", (in) -> new Damage(in));
 		/* after commandsets so that stuff.cset is loaded and we don't get a null-pointer-
 		 exception, but before the areas are loaded so mobs will be able to register */
 		chronos     = new Chronos(this);
@@ -159,7 +162,6 @@ public class Mud implements Iterable<Connection> {
 
 		System.err.format("%s: starting timer.\n", this);
 		chonosFuture = scheduler.scheduleAtFixedRate(chronos, sStartupDelay, sPeriod, TimeUnit.SECONDS);
-
 	}
 
 	/** @return	Gets the iterator of all the connections. Part of Interator interface. */

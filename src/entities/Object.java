@@ -12,7 +12,7 @@ import common.BitVector;
  @since		1.0, 11-2014 */
 public class Object extends Stuff {
 
-	public enum ObjectFlags /*implements Flags*/ {
+	public enum ObjectFlags implements BitVector.Flags {
 		BREAKABLE("breakable"),
 		ENTERABLE("enterable"),
 		TRANSPORTABLE("transportable");

@@ -24,6 +24,12 @@ import entities.Stuff;
  @since		1.1, 12-2014 */
 public class BitVector<E extends Enum<E>> {
 
+	/* fixme: right now, it doesn't specify anything: trust that the
+	 public String symbol is defined */
+	public interface Flags {
+		/*public String getSymbol;*/
+	}
+
 	private static final String symbol = "symbol";
 
 	private final Class<E> aClass;

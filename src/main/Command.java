@@ -29,13 +29,14 @@ import entities.Room;
 import main.Mud;
 
 /** The contract that a command will have. */
+@FunctionalInterface
 public interface Command { void invoke(final Stuff s, final String arg); }
 
 /** Command loader. This is where the commands are stored as lambdas.
  
  @author	Neil
- @version	1.1, 12-2014
- @since		1.0, 11-2014 */
+ @version	1.1, 2014-12
+ @since		1.0, 2014-11 */
 class LoadCommands implements Mud.Loader<Map<String, Command>> {
 
 	/* sorry, I use a US keyboard and it's difficult to type in accents, etc,
@@ -55,7 +56,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 
 	/** Loads a command set per implementation of Mud.Loader.
 	 @param in	The already open {@link common.TextReader}. */
-	public Map<String, Command> load(TextReader in) throws ParseException, IOException {
+	public Map<String, Command> load(final TextReader in) throws ParseException, IOException {
 		Scanner scan;
 		String line, alias, cmdStr;
 		Command command;

@@ -17,6 +17,8 @@ up	up
 down	down
 take	take
 drop	drop
+kill	kill
+k	kill
 i	inventory
 inventory	inventory
 mount	mount

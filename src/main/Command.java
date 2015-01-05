@@ -119,6 +119,29 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			room.sendToContentsExcept(s, String.format(str, dir.getBack(), arg, dist));
 			return true; /* <- want everyone to hear */
 		});
+	}, kill = (s, arg) -> {
+Room r = s.getRoom();
+if(r == null) {
+s.sendTo("You are in space.");
+return;
+}
+Stuff target = r.matchContents(arg);
+if(target == null) {
+s.sendTo("You see no " + arg + " here.");
+s.sendToRoom(s + " tries to find " + an(arg) + " here, but fails.");
+return;
+}
+if(target == s) {
+s.sendTo("Seppuchu!");
+s.sendToRoom(s + ": seppuchu!");
+}
+try {
+Damage dt = Mud.getMudInstance().getDamageType("fire");
+Damage.hit(s, target, dt);
+} catch(NoSuchElementException e) {
+System.err.format("kill(%s, %s): damage type <%s> does not exist.\n", s, arg, "fire");
+s.sendTo("It doesn't seem to work.");
+}
 	}, take = (s, arg) -> {
 		Stuff r = s.getIn();
 		if(r == null) {
@@ -139,6 +162,7 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 		if(target == s) {
 			s.sendTo("You try to pick yourself up, but it's not working.");
 			s.sendToRoom(s + " tries to pick themselves up, without success.");
+			return;
 		}
 		if(!target.isTransportable()) {
 			s.sendTo("You can't pick " + target + " up.");

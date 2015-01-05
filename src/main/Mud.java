@@ -287,13 +287,26 @@ public class Mud implements Iterable<Connection> {
 		return motd;
 	}
 
-	/** @return A command set with that name.
-	 @throws NamingException	That name isn't loaded. */
+	/**
+	 @param commandStr				A command set string.
+	 @return						A command set with that name.
+	 @throws NoSuchElementException	That name isn't loaded. */
 	public Map<String, Command>getCommands(final String commandStr) throws NoSuchElementException {
 		Map<String, Command> command = commandsets.get(commandStr);
 		if(command == null) throw new NoSuchElementException(this
 		                     + ": command set <" + commandStr + "> not loaded");
 		return command;
+	}
+
+	/**
+	 @param dtStr					Damage type string.
+	 @return						Damage type.
+	 @throws NoSuchElementException	That name isn't loaded. */
+	public Damage getDamageType(final String dtStr) throws NoSuchElementException {
+		Damage dt = damtypes.get(dtStr);
+		if(dt == null) throw new NoSuchElementException(this
+															 + ": damage type <" + dtStr + "> not loaded");
+		return dt;
 	}
 
 	/** @param p	The test password.

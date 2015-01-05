@@ -140,10 +140,13 @@ public class Mud implements Iterable<Connection> {
 		 it's big */
 		commandsets = loadAll("commandsets", ".cset", new LoadCommands());
 		damtypes    = loadAll("damagetypes", ".damt", (in) -> new Damage(in));
-		/* after commandsets so that stuff.cset is loaded and we don't get a null-pointer-
-		 exception, but before the areas are loaded so mobs will be able to register */
-		chronos     = new Chronos(this);
-		areas       = loadAll("areas",       ".area", (in) -> { return new Area(in); });
+
+		chronos     = new Chronos(this); /* after commandsets so that stuff.cset
+										  is loaded, but before the areas, so
+										  mobs will be able to register */
+
+		areas       = loadAll("areas",       ".area", (in) -> new Area(in));
+
 		/* set the [defaut] recall spot */
 		if((homearea = areas.get(homeareaStr)) != null) {
 			System.err.format("%s: set home room: <%s.%s>.\n", this, homearea, homeroom);

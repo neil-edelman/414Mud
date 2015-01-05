@@ -262,6 +262,8 @@ public class Stuff implements Iterable<Stuff> {
 
 	/** fixme: An/an(aeiou) The/the(isCapital()?/isProper) */
 
+	/** fixme: have matchAround(), matchContents but also room null should match
+	 yourself */
 	/** fixme!!! it's annoying; more advanced please! */
 	public Stuff matchContents(String obj) {
 		/* lol O(n) badness */

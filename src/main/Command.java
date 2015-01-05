@@ -120,28 +120,30 @@ class LoadCommands implements Mud.Loader<Map<String, Command>> {
 			return true; /* <- want everyone to hear */
 		});
 	}, kill = (s, arg) -> {
-Room r = s.getRoom();
-if(r == null) {
-s.sendTo("You are in space.");
-return;
-}
-Stuff target = r.matchContents(arg);
-if(target == null) {
-s.sendTo("You see no " + arg + " here.");
-s.sendToRoom(s + " tries to find " + an(arg) + " here, but fails.");
-return;
-}
-if(target == s) {
-s.sendTo("Seppuchu!");
-s.sendToRoom(s + ": seppuchu!");
-}
-try {
-Damage dt = Mud.getMudInstance().getDamageType("fire");
-Damage.hit(s, target, dt);
-} catch(NoSuchElementException e) {
-System.err.format("kill(%s, %s): damage type <%s> does not exist.\n", s, arg, "fire");
-s.sendTo("It doesn't seem to work.");
-}
+		Room r = s.getRoom();
+		/* fixme: the only time you'd actually want to kill yourself . . . */
+		if(r == null) {
+			s.sendTo("You are in space.");
+			return;
+		}
+		Stuff target = r.matchContents(arg);
+		if(target == null) {
+			s.sendTo("You see no " + arg + " here.");
+			s.sendToRoom(s + " tries to find " + an(arg) + " to kill here, but fails.");
+			return;
+		}
+		if(target == s) {
+			s.sendTo("Seppuku!");
+			s.sendToRoom(s + ": seppuku!");
+		}
+		String dtStr = "blunt";
+		try {
+			Damage dt = Mud.getMudInstance().getDamageType(dtStr);
+			Damage.hit(s, target, dt);
+		} catch(NoSuchElementException e) {
+			System.err.format("kill(%s, %s): damage type <%s> does not exist.\n", s, arg, dtStr);
+			s.sendTo("It doesn't seem to work.");
+		}
 	}, take = (s, arg) -> {
 		Stuff r = s.getIn();
 		if(r == null) {

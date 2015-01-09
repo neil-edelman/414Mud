@@ -55,9 +55,9 @@ public class Mud implements Iterable<Connection> {
 
 	/* constants */
 	private static final int fibonacci20    = 6765;
-	private static final int sStartupDelay  = 20;
-	private static final int sShutdownTime  = 10;
-	private static final int sPeriod        = 10;
+	private static final int sStartupDelay  = 2;
+	private static final int sShutdownTime  = 5;
+	private static final int sPeriod        = 1;
 	private static final String dataDir     = "../data";
 	private static final String mudData     = "mud";
 	private static /*final*/ Mud mudInstance; /* messy! whatever, it keeps us
@@ -149,8 +149,8 @@ public class Mud implements Iterable<Connection> {
 
 		/* set the [defaut] recall spot */
 		if((homearea = areas.get(homeareaStr)) != null) {
-			System.err.format("%s: set home room: <%s.%s>.\n", this, homearea, homeroom);
 			homeroom = homearea.getRecall();
+			System.err.format("%s: set home room: <%s.%s>.\n", this, homearea, homeroom);
 		} else {
 			System.err.format("%s/%s: area <%s> (line %d) does not exist; connections will be sent to null.\n",
 							  dataDir, mudData, homeareaStr, homeareaLine);
@@ -217,10 +217,25 @@ public class Mud implements Iterable<Connection> {
 	public static void main(String args[]) {
 		Mud mud;
 
+		Chance c = new Chance();
+
+		for(int i = 0; i < 10; i++) c.compare(i * 100);
+
+		int x, n = 10000, beta = 10;
+		double mean = 0, sq = 0;
+		for(int i = 0; i < n; i++) {
+			x    = c.exponential(beta);
+			mean = (mean * i + (double)x    ) / (i + 1);
+			sq   = (sq   * i + (double)(x*x)) / (i + 1);
+			//System.out.format("%d\n", x);
+		}
+		double var = sq - mean * mean;
+		System.out.format("\\beta\t%d\n\\mu\t%f\n\\sigma\t%f\n", beta, mean, Math.sqrt(var));
+
 		/* run mud */
 		try {
 			mud = new Mud(dataDir, mudData);
-		} catch(IOException e) {
+		} catch(/*IO*/Exception e) {
 			System.err.format("At top level: %s.\n", e);
 			/* deal-breaker */
 			return;

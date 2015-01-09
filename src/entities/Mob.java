@@ -27,6 +27,8 @@ public class Mob extends Character {
 	public boolean isFriendly;
 	public boolean isXeno;
 
+	private int countDown = 0;
+
 	public Mob() {
 		super();
 		title = "Someone is looking confused.";
@@ -48,6 +50,12 @@ public class Mob extends Character {
 	@Override
 	public boolean doClockTick() {
 		Room r;
+
+		if(countDown > 0) {
+			System.err.format("%s: countdown %d.\n", this, countDown);
+			countDown--;
+			return true;
+		}
 
 		/* the mob is in space, deactivate it */
 		if((r = getRoom()) == null) return false;
@@ -74,6 +82,10 @@ public class Mob extends Character {
 			case 1: sendToRoomExcept(this, this + ": \"Aha!\""); break;
 			default:
 		}
+		/* the time between events in a poisson process is an exponential random
+		 variable; \beta = avg time b/t events */
+		/* fixme: not a geiger counter; uniform with markov? */
+		countDown = handler.getChance().exponential(10);
 		return true;
 	}
 

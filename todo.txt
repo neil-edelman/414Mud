@@ -42,7 +42,7 @@ have red mobiles be the ones who are pissed off
 
 dinosaurs (that eat you,) robots (from some experement gone awry,) vampires, zombies
 
-have different objects on your body for eq't, Object->Equipment { worn }; bitvector as part of the Equipment, wear -> 1 (or many) eq't spot per bit
+have different objects on your body for eq't, Object->Equipment { worn }; bitvector as part of the Equipment, wear -> one (or many) eq't spot per bit
 
 jet-pack (floating,) hockey stick (blunt,) chalk (throw: have density and mass, low mass, high density does the most damage,) grenades, magnum? MP-5? (have ammo,) bombs, load of swords, katana, pencils/pens (sharp,) rocket launchers!!! body armour, shin pads, batons, flash-bangs, pepper spray, water cannon, mining laser, laser beam
 

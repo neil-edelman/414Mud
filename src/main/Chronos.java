@@ -84,6 +84,7 @@ public class Chronos implements Mud.Handler {
 		Iterator<Stuff> it;
 		Stuff a;
 
+		if(preactive.isEmpty() && active.isEmpty()) return;
 		System.err.format("<%s.run() %s -> %s: ", this, preactive, active);
 
 		/* pre-active prevents ConcurrentModificationException */
